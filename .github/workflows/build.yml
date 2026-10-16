@@ -6,6 +6,9 @@ on:
 jobs:
   verify:
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: cmd
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
