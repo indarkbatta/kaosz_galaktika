@@ -1,5 +1,5 @@
 const hu={
-brand:'HATÁRVILÁG',subtitle:'Parancsnoki terminál',language:'Nyelv',explore:'Felfedezés',command:'Irányítás',survive:'Túlélés',
+brand:'HATÁRVILÁG',subtitle:'Parancsnoki belépés',language:'Nyelv',explore:'Felfedezés',command:'Irányítás',survive:'Túlélés',
 status:'Rendszerállapot',ready:'Kommunikációs hálózat készenlétben',notice:'Galaktikus adás',noticeBody:'Új horizontok várnak. A határvidék sorsa a kezedben.',
 login:'Belépés',register:'Regisztráció',create:'Fiók létrehozása',email:'E-mail-cím',password:'Jelszó',repeat:'Jelszó újra',name:'Parancsnoki név',
 forgot:'Elfelejtett jelszó?',recover:'Jelszó visszaállítása',send:'Visszaállító levél küldése',back:'Vissza a belépéshez',
