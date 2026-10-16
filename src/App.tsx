@@ -2,6 +2,7 @@ import {useEffect,useState,type FormEvent,type CSSProperties} from 'react';
 import type {User} from '@supabase/supabase-js';
 import {supabase,type Role} from './lib/supabase';
 import {dictionaries,rememberLocale,storedLocale,type Locale,type Key} from './i18n';
+import Editor from './Editor';
 
 type Mode='login'|'register'|'recover'|'change';
 type Page='dashboard'|'editor'|'admin';
@@ -50,6 +51,7 @@ function App(){
    if(!mounted)return;
    if(p.error||r.error){setProfileError(true);setLoading(false);return;}
    setProfile(p.data as Profile);setRole((r.data?.role||'user') as Role);
+   if(r.data?.role==='editor'||r.data?.role==='admin')setPage('editor');
    if(p.data?.preferred_locale==='hu'||p.data?.preferred_locale==='en'){
     setLocale(p.data.preferred_locale);rememberLocale(p.data.preferred_locale);
    }
@@ -119,16 +121,16 @@ function App(){
    <div className="spacer"/>{selector}
   </header>
   <div className="scene">
-   <aside className="sidebar">
+   {page!=='editor'&&<aside className="sidebar">
     <section><h2>{t('status')}</h2><p><span className="dot"/> {t('ready')}</p></section>
     <section><h2>{t('notice')}</h2><p>{t('noticeBody')}</p><span className="signal">⌁　◈　⌁</span></section>
-   </aside>
+   </aside>}
    {loading?<div className="terminal"><p className="dim">{t('loading')}</p></div>
     :profileError?<div className="terminal"><p role="alert">{t('profileError')}</p><button className="action" onClick={()=>window.location.reload()}>{t('retry')}</button><button className="alternate" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div>
     :(!user||mode==='change')?<main className="terminal auth">
      <img className="large-sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
-     <h1>{t('brand')}</h1>
-     <p className="center-sub">{mode==='recover'?t('recover'):mode==='change'?t('change'):t('subtitle')}</p>
+     <h1 className="auth-heading">{mode==='login'?t('subtitle'):mode==='register'?t('register'):mode==='recover'?t('recover'):t('change')}</h1>
+     <p className="center-sub">{t('brand')} // {t('explore')} · {t('command')} · {t('survive')}</p>
      <form onSubmit={submit}>
       {mode==='register'&&<label>{t('name')}<input maxLength={60} required autoComplete="nickname" value={name} onChange={e=>setName(e.target.value)}/></label>}
       {mode!=='change'&&<label>{t('email')}<input required type="email" autoComplete="email" placeholder="nev@pelda.hu" value={email} onChange={e=>setEmail(e.target.value)}/></label>}
@@ -141,6 +143,7 @@ function App(){
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>
     </main>
+    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')}/>
     :<main className="terminal in-game">
       <nav className="tabs">
        <button className={page==='dashboard'?'active':''} onClick={()=>setPage('dashboard')}>{t('dashboard')}</button>
@@ -149,7 +152,7 @@ function App(){
        <button className="logout" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button>
       </nav>
       {page==='dashboard'&&<section className="content"><small>COMMAND / 01</small><h2>{t('welcome')}, {profile?.display_name||user.email?.split('@')[0]}.</h2><div className="stats"><div><span>{t('role')}</span><strong>{t(role)}</strong></div><div><span>{t('email')}</span><strong>{user.email}</strong></div></div><p className="dim">{t('description')}</p><div className="settings"><strong>{t('settings')}</strong>{selector}</div></section>}
-      {page==='editor'&&(role==='editor'||role==='admin')&&<section className="content"><small>EDITOR / 02</small><h2>{t('editor')}</h2><p className="dim">{t('editorText')}</p></section>}
+
       {page==='admin'&&role==='admin'&&<section className="content"><small>ACCESS / 03</small><h2>{t('users')}</h2><p className="dim">{t('adminText')}</p>{rosterError&&<p role="alert">{rosterError}</p>}{rows.length===0?<p>{t('noUsers')}</p>:rows.map(r=><div className="role-row" key={r.user_id}><code>{r.user_id.slice(0,12)}…</code><strong>{t(r.role)}</strong></div>)}</section>}
       {(page==='admin'&&role!=='admin'||page==='editor'&&role==='user')&&<p>{t('noAccess')}</p>}
      </main>}
