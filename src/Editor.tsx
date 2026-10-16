@@ -37,6 +37,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
  const l=locale==='en'?'en':'hu';const t=labels[l];
  const [kind,setKind]=useState<Kind>('species');
  const [records,setRecords]=useState<RecordRow[]>([]);
+ const [counts,setCounts]=useState<{species:number;classes:number}>({species:7,classes:7});
  const [skills,setSkills]=useState<Skill[]>([]);
  const [selection,setSelection]=useState<string|null>(null);
  const [form,setForm]=useState<FormData>(newForm);
@@ -57,7 +58,9 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
  const reload=useCallback(async(currentKind:Kind,retain?:string)=>{
   setLoading(true);setError('');
   try{
-   const [rows,sk]=await Promise.all([fetchRecords(currentKind),supabase.from('game_skills').select('id,slug,attribute,is_combat,position,game_skills_i18n(locale,name)').order('attribute').order('position')]);
+   const other=currentKind==='species'?'classes':'species';
+   const [rows,sk,otherTotal]=await Promise.all([fetchRecords(currentKind),supabase.from('game_skills').select('id,slug,attribute,is_combat,position,game_skills_i18n(locale,name)').order('attribute').order('position'),supabase.from(table(other)).select('id',{count:'exact',head:true})]);
+   setCounts(prev=>({...prev,[currentKind]:rows.length,[other]:otherTotal.count??prev[other]}));
    if(sk.error)throw sk.error;
    setSkills((sk.data||[]) as Skill[]);
    setRecords(rows);
@@ -114,8 +117,8 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
   <nav className="ed-nav">
    <div className="ed-nav-title">{t.dashboard}</div>
    <button onClick={onBack}>⌂　{t.back}</button>
-   <button className={kind==='species'?'active':''} onClick={()=>{setKind('species');setMessage('');}}>◈　{t.species} <span>07</span></button>
-   <button className={kind==='classes'?'active':''} onClick={()=>{setKind('classes');setMessage('');}}>✥　{t.classes} <span>07</span></button>
+   <button className={kind==='species'?'active':''} onClick={()=>{setKind('species');setMessage('');}}>◈　{t.species} <span>{counts.species}</span></button>
+   <button className={kind==='classes'?'active':''} onClick={()=>{setKind('classes');setMessage('');}}>✥　{t.classes} <span>{counts.classes}</span></button>
    <div className="ed-menu-muted">◇　{t.translations} · HU / EN</div>
    <div className="ed-nav-bottom"><span className="ed-live-dot"/> {t.rights}<p>{t.security}</p></div>
   </nav>
@@ -124,12 +127,12 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
    <div className="ed-roster-content">
     {loading?<p>{t.loading}</p>:records.length===0?<p>{t.empty}</p>:records.map(r=>
      <button key={r.id} className={'ed-entry '+(selection===r.id?'selected':'')} onClick={()=>select(r)}>
-      <span className="ed-entry-image">{r.image_path?<img src={imageSrc(r.image_path)} alt=""/>:'◈'}</span>
+      <span className="ed-entry-image">{r.image_path?<img loading="lazy" decoding="async" src={imageSrc(r.image_path)} alt=""/>:'◈'}</span>
       <span className="ed-entry-name"><strong>{translateItem(r,kind,l,'name')}</strong><small>{attrText[l][r.primary_attribute]} +1D / {attrText[l][r.secondary_attribute]} +1</small></span>
       <span className={'ed-entry-state '+(r.is_published?'':'draft')}>{r.is_published?'●':'○'}</span>
      </button>)}
    </div>
-   <div className="ed-roster-footer">Space D6 Free <span>·</span> 5D / 25 {t.noncombat}</div>
+   <div className="ed-roster-footer">Space D6 Free <span>·</span> 5 ATTR / 25 SKILL</div>
   </section>
   <section className="ed-main">
    <div className="ed-title-row"><h2>{kind==='species'?t.species:t.classes} <span>// {form.id?tr('overview'):tr('create')}</span></h2><div className="ed-locale-tabs">{languages.map(locale=><button key={locale} className={editingLocale===locale?'active':''} onClick={()=>setEditingLocale(locale)}>{locale==='hu'?'Magyar':'English'}</button>)}</div></div>
