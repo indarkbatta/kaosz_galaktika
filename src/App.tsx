@@ -113,7 +113,7 @@ function App(){
  const sceneStyle:CSSProperties=assetOrigin?{'--space-image':'url('+assetOrigin+'/hatarvilag/backgrounds/login-scene.webp)'} as CSSProperties:{};
  return <div className="shell" style={sceneStyle}>
   <header className="topbar">
-   <span className="sigil" aria-hidden="true">◈</span>
+   <img className="sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
    <strong className="brand">{t('brand')}</strong>
    <span className="head-sub">{t('explore')} <em>//</em> {t('command')} <em>//</em> {t('survive')}</span>
    <div className="spacer"/>{selector}
@@ -126,7 +126,7 @@ function App(){
    {loading?<div className="terminal"><p className="dim">{t('loading')}</p></div>
     :profileError?<div className="terminal"><p role="alert">{t('profileError')}</p><button className="action" onClick={()=>window.location.reload()}>{t('retry')}</button><button className="alternate" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div>
     :(!user||mode==='change')?<main className="terminal auth">
-     <span className="large-sigil" aria-hidden="true">◈</span>
+     <img className="large-sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
      <h1>{t('brand')}</h1>
      <p className="center-sub">{mode==='recover'?t('recover'):mode==='change'?t('change'):t('subtitle')}</p>
      <form onSubmit={submit}>
