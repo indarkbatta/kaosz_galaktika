@@ -63,3 +63,15 @@
 - Az editor jelenleg az R2 objektum útvonalát szerkeszti, közvetlen böngészős image upload még nincs. Nincs külön admin szerepkör kezelés ezen a mérföldkövön.
 - Vercel Hobby szabály: git.deploymentEnabled=false; GitHub commit nem publikálhat önmagától. Csak külön ellenőrzött mérföldkő-publikálás indokolt.
 - Következő: admin role kezelés, skill editor, kétnyelvű további játékadatok, karaktergenerálás és server-authoritative Space D6 játékmag.
+
+## M1 editor completed / verified (2026-10-17)
+- Az editor most valódi, jogosultságvédett adatbázis CRUD (faj + kaszt), HU/EN leírásokkal; publikálás, szerkesztés, törlés custom decision modalban, R2 képútvonal, attribútumbónuszok.
+- Faj extra mezők: localized passives, strukturált resistances (array of code/value). Kaszt extra mezők: localized starting_equipment, traits, gameplay_role.
+- Kiegészítő Supabase migration: hatarvilag_editor_species_class_details. Commitolva: supabase/migrations/20261016224000_hatarvilag_editor_species_class_details.sql.
+- Az eredeti catalog migration is GitHubban van: supabase/migrations/20261016220000_hatarvilag_species_classes_skills_editor.sql.
+- A Space D6-alapú 5 tulajdonsághoz DB ellenőrzéssel bizonyított: minden attribútumnál 4 általános + 1 harci skill. Faj és kaszt primary +1D és secondary +1 pip bónusz.
+- R2 (voidnoir) ténylegesen ellenőrzött tartalom: 1 új login-space-v2.jpg háttér, 7 species/<slug>.jpg, 7 classes/<slug>.jpg, összesen 15 friss játékillusztráció. Manifest: hatarvilag/asset-manifest.json.
+- A belépett első és egyetlen felhasználó szerepkörét editorra emeltük. Admin rangot nem adtunk és nem tettük nyilvánosan állíthatóvá.
+- GitHub Windows self-hosted runner: TypeScript és production Vite build SIKERES a 2a86d50f5c commiton, run 38974779442.
+- Egyszeri, tudatos Vercel production deployment elindítva és READY: dpl_8nLk76btwy6vwSYiocg7k8Yzc5uF, a frontend verziója 2a86d50f5c, https://hatarvilag.vercel.app. A git.deploymentEnabled=false változatlan, tehát új GitHub commitok nem publikálnak automatikusan.
+- Nyitott: hitelesített felhasználóval kattintgatós regisztráció+editor CRUD E2E; Supabase Auth leaked password protection beállításához adminisztráció, R2 belső image uploader és játékbeli karaktergenerálás. UI kétdimenziós illusztrált változat, nem a mockup pixelenkénti másolata.
