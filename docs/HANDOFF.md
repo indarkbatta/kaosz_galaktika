@@ -51,3 +51,15 @@
 - `vercel.json` is already committed with `git.deploymentEnabled:false` to prevent automatic deployment consumption. This should remain set; publish manually for authorized milestones.
 - To unblock: in the Vercel account/team `inDarkBatta`, authorize project creation for the connected app or manually **Import Git Repository** `indarkbatta/kaosz_galaktika` as `hatarvilag` with Vite, root `.`, build `npm run build`, output `dist`; then publish production once (verify no automatic repeated builds). Do not add untrusted credentials to repo.
 - Once a public URL exists, configure Supabase Authentication URL settings (Site URL + allowed Redirect URLs), and verify registration/confirmation and password reset against that exact origin.
+
+## M1 – faj- és kasztszerkesztő (2026-10-17)
+- Valódi kétnyelvű CRUD editor: src/Editor.tsx + src/editor.css. Fajok és kasztok készítése/módosítása/publikálása/törlése, saját törlési decision modal, tulajdonságbónuszok + HU/EN mezők, teljes attribútum/skill áttekintés.
+- Editor/admin belépés után automatikusan a szerkesztői dashboard jelenik meg; az adatbázis RLS-je ellenőrzi az írási jogokat.
+- Supabase applied migration: hatarvilag_species_classes_skills_editor. Táblák: game_species, game_classes, game_species_i18n, game_classes_i18n, game_skills, game_skills_i18n. 7 faj, 7 kaszt, 25 skill HU/EN fordításokkal.
+- 5 attribútum: body, mind, soul, morale, social. Mindegyikhez 4 egyedi általános skill és 1 külön harci skill. Elsődleges faji/kaszt bónusz +1D; másodlagos +1 pip. A valódi karaktergenerálás/dice engine következő mérföldkő.
+- Az egyetlen meglévő usert editor role-ra állítottuk át. A regisztráció továbbra is biztonságosan user role-t ad.
+- Cloudflare R2 voidnoir prefix hatarvilag/: háttér backgrounds/login-space-v2.jpg, 7 db species/<slug>.jpg, 7 db classes/<slug>.jpg. Publikus origin: https://assets.voidnoir.net. Az image_path mezők már összekapcsolva a seedekkel.
+- A grafikák Cloudflare Workers AI képgenerálásból kerültek közvetlenül a meglévő R2 bucketbe. Az assetek nyelvfüggetlenek, a megjelenített szöveg kétnyelvű.
+- Az editor jelenleg az R2 objektum útvonalát szerkeszti, közvetlen böngészős image upload még nincs. Nincs külön admin szerepkör kezelés ezen a mérföldkövön.
+- Vercel Hobby szabály: git.deploymentEnabled=false; GitHub commit nem publikálhat önmagától. Csak külön ellenőrzött mérföldkő-publikálás indokolt.
+- Következő: admin role kezelés, skill editor, kétnyelvű további játékadatok, karaktergenerálás és server-authoritative Space D6 játékmag.
