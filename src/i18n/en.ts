@@ -1,6 +1,6 @@
 import type hu from './hu';
 const en:Record<keyof typeof hu,string>={
-brand:'HATÁRVILÁG',subtitle:'Command terminal',language:'Language',explore:'Explore',command:'Command',survive:'Survive',
+brand:'HATÁRVILÁG',subtitle:'Commander login',language:'Language',explore:'Explore',command:'Command',survive:'Survive',
 status:'System status',ready:'Communication network ready',notice:'Galactic transmission',noticeBody:'New horizons await. The frontier is in your hands.',
 login:'Log in',register:'Register',create:'Create account',email:'Email address',password:'Password',repeat:'Repeat password',name:'Commander name',
 forgot:'Forgot password?',recover:'Password recovery',send:'Send reset email',back:'Back to login',
