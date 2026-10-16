@@ -3,11 +3,11 @@ import type {User} from '@supabase/supabase-js';
 import {supabase,type Role} from './lib/supabase';
 import {dictionaries,rememberLocale,storedLocale,type Locale,type Key} from './i18n';
 
-type Mode='login'|'register'|'recover';
+type Mode='login'|'register'|'recover'|'change';
 type Page='dashboard'|'editor'|'admin';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
-const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'').replace(/\/$/,'');
+const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
 
 function App(){
  const [locale,setLocale]=useState<Locale>(storedLocale);
@@ -56,6 +56,7 @@ function App(){
    setLoading(false);
   };
   const {data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{
+   if(_event==='PASSWORD_RECOVERY')setMode('change');
    // Delay DB access outside the auth state-change callback to avoid auth-client deadlocks.
    queueMicrotask(()=>{if(mounted)void handle(session?.user??null);});
   });
@@ -69,7 +70,7 @@ function App(){
   let mounted=true;setRosterError('');
   void supabase.from('user_roles').select('user_id,role').order('created_at').then(({data,error})=>{
    if(!mounted)return;
-   if(error)setRosterError(error.message);else setRows((data||[]) as RoleRow[]);
+   if(error)setRosterError(dictionaries[storedLocale()].error);else setRows((data||[]) as RoleRow[]);
   });
   return ()=>{mounted=false;};
  },[page,role,user]);
@@ -78,8 +79,8 @@ function App(){
  const submit=async(event:FormEvent)=>{
   event.preventDefault();if(busy)return;
   setError('');setMessage('');
-  if(mode==='register'&&password.length<8){setError(t('passwordShort'));return;}
-  if(mode==='register'&&password!==confirm){setError(t('passwordMismatch'));return;}
+  if((mode==='register'||mode==='change')&&password.length<8){setError(t('passwordShort'));return;}
+  if((mode==='register'||mode==='change')&&password!==confirm){setError(t('passwordMismatch'));return;}
   setBusy(true);
   try {
    if(mode==='login'){
@@ -91,6 +92,11 @@ function App(){
     });
     if(error)throw error;
     if(!data.session)setMessage(t('verify'));
+   }else if(mode==='change'){
+    const {error}=await supabase.auth.updateUser({password});
+    if(error)throw error;
+    await supabase.auth.signOut();
+    setMode('login');setMessage(t('changed'));
    }else{
     const {error}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin});
     if(error)throw error;
@@ -98,7 +104,7 @@ function App(){
    }
   }catch(e){
    const msg=e instanceof Error?e.message:'';
-   setError(/invalid login credentials/i.test(msg)?t('invalid'):msg||t('error'));
+   setError(/invalid login credentials/i.test(msg)?t('invalid'):t('error'));
   }finally{setBusy(false);}
  };
  const selector=<div className="language"><span>{t('language')}</span>{(['hu','en'] as Locale[]).map(l=>
@@ -119,18 +125,18 @@ function App(){
    </aside>
    {loading?<div className="terminal"><p className="dim">{t('loading')}</p></div>
     :profileError?<div className="terminal"><p role="alert">{t('profileError')}</p><button className="action" onClick={()=>window.location.reload()}>{t('retry')}</button><button className="alternate" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div>
-    :!user?<main className="terminal auth">
+    :(!user||mode==='change')?<main className="terminal auth">
      <span className="large-sigil" aria-hidden="true">◈</span>
      <h1>{t('brand')}</h1>
-     <p className="center-sub">{mode==='recover'?t('recover'):t('subtitle')}</p>
+     <p className="center-sub">{mode==='recover'?t('recover'):mode==='change'?t('change'):t('subtitle')}</p>
      <form onSubmit={submit}>
       {mode==='register'&&<label>{t('name')}<input maxLength={60} required autoComplete="nickname" value={name} onChange={e=>setName(e.target.value)}/></label>}
-      <label>{t('email')}<input required type="email" autoComplete="email" placeholder="nev@pelda.hu" value={email} onChange={e=>setEmail(e.target.value)}/></label>
+      {mode!=='change'&&<label>{t('email')}<input required type="email" autoComplete="email" placeholder="nev@pelda.hu" value={email} onChange={e=>setEmail(e.target.value)}/></label>}
       {mode!=='recover'&&<label>{t('password')}<span className="password-field"><input required minLength={mode==='register'?8:undefined} type={showPassword?'text':'password'} autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" onClick={()=>setShowPassword(!showPassword)} aria-label={t('password')}>◉</button></span></label>}
-      {mode==='register'&&<label>{t('repeat')}<input required autoComplete="new-password" type="password" value={confirm} onChange={e=>setConfirm(e.target.value)}/></label>}
+      {(mode==='register'||mode==='change')&&<label>{t('repeat')}<input required autoComplete="new-password" type="password" value={confirm} onChange={e=>setConfirm(e.target.value)}/></label>}
       {error&&<div className="notice error" role="alert">{error}</div>}
       {message&&<div className="notice success" role="status">{message}</div>}
-      <button className="action" type="submit" disabled={busy}>{busy?t('working'):mode==='login'?t('login'):mode==='register'?t('create'):t('send')}</button>
+      <button className="action" type="submit" disabled={busy}>{busy?t('working'):mode==='login'?t('login'):mode==='register'?t('create'):mode==='change'?t('change'):t('send')}</button>
       {mode==='login'?<><button className="link" type="button" onClick={()=>resetMode('recover')}>{t('forgot')}</button><button type="button" className="alternate" onClick={()=>resetMode('register')}>{t('register')}　›</button></>
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>

@@ -10,5 +10,5 @@ dashboard:'Áttekintés',editor:'Tartalomszerkesztő',admin:'Adminisztráció',u
 description:'A galaktikus játék és az energiavisszatöltés fejlesztés alatt.',editorText:'A későbbi tartalomszerkesztés helye. A hozzáférés szerepkörhöz kötött.',
 adminText:'Jogosultságok megtekintése. Szerepkört csak biztonságos szerveroldali eljárás módosíthat.',
 noAccess:'Nincs jogosultságod ehhez a felülethez.',users:'Felhasználók',noUsers:'Nincs megjeleníthető felhasználó.',
-profileError:'Nem sikerült lekérni a jogosultságokat.',retry:'Újrapróbálás',settings:'Nyelvi beállítások',footer:'A kapcsolat létrejött // Határvilág v0.1'
+profileError:'Nem sikerült lekérni a jogosultságokat.',retry:'Újrapróbálás',settings:'Nyelvi beállítások',change:'Jelszó megváltoztatása',changed:'A jelszó megváltozott. Jelentkezz be újra.',footer:'A kapcsolat létrejött // Határvilág v0.1'
 } as const; export default hu;

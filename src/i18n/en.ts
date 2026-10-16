@@ -11,5 +11,5 @@ dashboard:'Overview',editor:'Content editor',admin:'Administration',user:'Player
 description:'The galactic game and energy regeneration are under development.',editorText:'Content editing will be added here. This section is role protected.',
 adminText:'View permissions. Roles can only be changed through a trusted server-side procedure.',
 noAccess:'You do not have access to this section.',users:'Users',noUsers:'No users available.',
-profileError:'Failed to load permissions.',retry:'Try again',settings:'Language settings',footer:'Connection established // Határvilág v0.1'
+profileError:'Failed to load permissions.',retry:'Try again',settings:'Language settings',change:'Change password',changed:'Password changed. Please log in again.',footer:'Connection established // Határvilág v0.1'
 };export default en;
