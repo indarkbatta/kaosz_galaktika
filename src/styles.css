@@ -2,3 +2,28 @@
 
 /* Cloudflare R2 brand artwork: multilingual-neutral insignia */
 img.sigil{width:37px;height:37px;object-fit:contain;flex-shrink:0}img.large-sigil{display:block;width:72px;height:72px;object-fit:contain;margin:0 auto;filter:drop-shadow(0 0 16px #e8303640)}
+
+/* M1 visual refresh: compact angular industrial login over a full-width R2 scene */
+.topbar{background:linear-gradient(180deg,#10151b 0%,#06090cf8 85%);border-bottom:2px solid #313e48;min-height:88px;height:88px;box-shadow:0 5px 14px #0008}
+.topbar .brand{font-size:clamp(24px,2.7vw,42px);letter-spacing:.22em;font-weight:900;text-shadow:0 3px 5px #000,0 0 14px #f3efe944;background:linear-gradient(#fff,#cad1d6 48%,#85929e);background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .sigil{width:74px;height:74px;filter:drop-shadow(0 0 9px #da363b66)}
+.head-sub{line-height:1.7;color:#bbc0c5}
+.scene{min-height:calc(100vh - 137px);background-position:center 43%}
+.scene:has(.ed-layout){padding:0;align-items:stretch;justify-content:stretch}
+.scene:has(.ed-layout) .sidebar{display:none}
+.scene:has(.ed-layout) .ed-layout{height:calc(100vh - 143px)}
+.auth.terminal{width:min(445px,94vw);padding:28px 39px 34px;border:1px solid #5b6972;background:linear-gradient(135deg,#121b24f9,#05080cf5);box-shadow:0 20px 65px #000e,0 0 0 6px #020406b3;transform:translateX(50px)}
+.auth .large-sigil{width:51px;height:51px}
+.auth-heading{text-transform:none!important;letter-spacing:.05em!important;font-size:clamp(26px,2.2vw,33px)!important;font-weight:700!important;color:#d9dee5;text-shadow:0 2px 5px #000!important}
+.auth .center-sub{font-size:10px;margin-bottom:22px;line-height:1.7}
+.auth .action{margin-top:12px;background:linear-gradient(110deg,#5c1112,#bc3324,#611313);border:1px solid #ed5a44;font-size:15px;min-height:52px;letter-spacing:.08em}
+.auth .alternate{font-size:15px;letter-spacing:.03em}
+.auth label{font-size:13px;letter-spacing:.04em}
+.auth input{height:51px;font-size:15px;background:#050a0f}
+.sidebar{width:300px;top:25px}
+.sidebar section{border-radius:0;border-color:#56606a;background:linear-gradient(110deg,#0b1119e8,#070c12e8);box-shadow:0 8px 18px #0006}
+.sidebar h2{font-size:13px;letter-spacing:.08em}
+.sidebar p{font-size:13px}
+.status{border-top:1px solid #4d5965;background:linear-gradient(#0a1018,#05090c);font-size:11px;min-height:55px}
+@media(max-width:1100px){.auth.terminal{transform:none}}
+@media(max-width:600px){.topbar{height:70px;min-height:70px}.topbar .brand{font-size:19px;letter-spacing:.1em}.topbar .sigil{width:42px;height:42px}.auth.terminal{padding:20px}.scene:has(.ed-layout) .ed-layout{height:auto;min-height:calc(100vh - 125px)}}
