@@ -4,22 +4,26 @@ import './editor.css';
 
 export type Attr='body'|'mind'|'soul'|'morale'|'social';
 type Kind='species'|'classes';
-type Base={id:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string|null;is_published:boolean;created_at:string};
-type Local={locale:string;name:string;description:string};
+type Base={id:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string|null;is_published:boolean;resistances?:Resist[];created_at:string};
+type Local={locale:string;name:string;description:string;passives?:string;starting_equipment?:string;traits?:string;gameplay_role?:string};
+type Resist={code:string;value:number};
 type RecordRow=Base&{game_species_i18n?:Local[];game_classes_i18n?:Local[]};
 type Skill={id:string;slug:string;attribute:Attr;is_combat:boolean;position:number;game_skills_i18n:{locale:string;name:string}[]};
-type FormData={id?:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string;is_published:boolean;translations:Record<string,{name:string;description:string}>};
+type FormData={id?:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string;is_published:boolean;resistances:Resist[];translations:Record<string,{name:string;description:string;passives:string;starting_equipment:string;traits:string;gameplay_role:string}>};
 const attrs:Attr[]=['body','mind','soul','morale','social'];
 const languages=['hu','en'] as const;
+const resistanceCodes=['kinetic','thermal','psionic','occult','sonic','chemical','fear','terror'] as const;
+const resistanceNames={hu:{kinetic:'Kinetikus',thermal:'Hő',psionic:'Pszionikus',occult:'Okkult',sonic:'Hang',chemical:'Vegyi',fear:'Félelem',terror:'Terror'},en:{kinetic:'Kinetic',thermal:'Thermal',psionic:'Psionic',occult:'Occult',sonic:'Sonic',chemical:'Chemical',fear:'Fear',terror:'Terror'}};
 const attrText:Record<string,Record<Attr,string>>={
  hu:{body:'Test',mind:'Elme',soul:'Lélek',morale:'Morál',social:'Szociális'},
  en:{body:'Body',mind:'Mind',soul:'Soul',morale:'Morale',social:'Social'}
 };
 const labels={
- hu:{dashboard:'Szerkesztői vezérlőpult',species:'Fajok',classes:'Kasztok',translations:'Fordítások',settings:'Beállítások',newSpecies:'Új faj',newClass:'Új kaszt',name:'Név',description:'Leírás',slug:'Azonosító (slug)',primary:'Elsődleges bónusz',secondary:'Másodlagos bónusz',image:'R2 képfájl útvonala',published:'Publikált',draft:'Vázlat',save:'Mentés',delete:'Törlés',cancel:'Mégse',create:'Létrehozás',confirm:'Biztosan törlöd ezt a bejegyzést?',required:'Mindkét nyelven kötelező a név.',different:'A két bónusz nem lehet ugyanazon a tulajdonságon.',saved:'Sikeres mentés.',deleted:'A bejegyzés törölve.',loading:'Adatok betöltése…',empty:'Nincs ilyen tartalom. Készíts újat.',skills:'Tulajdonságok és képességek',combat:'Harci skill',noncombat:'Képességek',overview:'Áttekintés',hint:'Egy faj és egy kaszt egyaránt +1D-t ad az elsődleges, és +1 pipet a másodlagos tulajdonsághoz.',portrait:'Előnézet',missing:'Még nincs kép',back:'Vissza a játékhoz',security:'A mentési jogokat az adatbázis ellenőrzi.',invalidPath:'A kép elérési útja hatarvilag/ kezdetű legyen.',localeInfo:'HU az alap, EN a második nyelv; az adatmodell további nyelvekkel bővíthető.',error:'Nem sikerült betölteni vagy menteni az adatot.',rights:'Szerkesztői hozzáférés'},
- en:{dashboard:'Editor dashboard',species:'Species',classes:'Classes',translations:'Translations',settings:'Settings',newSpecies:'New species',newClass:'New class',name:'Name',description:'Description',slug:'Identifier (slug)',primary:'Primary bonus',secondary:'Secondary bonus',image:'R2 image path',published:'Published',draft:'Draft',save:'Save',delete:'Delete',cancel:'Cancel',create:'Create',confirm:'Delete this entry permanently?',required:'Both languages require a name.',different:'Primary and secondary bonuses must differ.',saved:'Saved successfully.',deleted:'Entry deleted.',loading:'Loading content…',empty:'No content yet. Create the first entry.',skills:'Attributes and skills',combat:'Combat skill',noncombat:'Skills',overview:'Overview',hint:'Species and classes each grant +1D to the primary attribute and +1 pip to the secondary.',portrait:'Preview',missing:'No image yet',back:'Return to game',security:'Database authorization is enforced on every save.',invalidPath:'Image path must begin with hatarvilag/.',localeInfo:'HU is default, EN is secondary; the data model supports more languages.',error:'Could not load or save content.',rights:'Editor access'}
+ hu:{dashboard:'Szerkesztői vezérlőpult',species:'Fajok',classes:'Kasztok',translations:'Fordítások',settings:'Beállítások',newSpecies:'Új faj',newClass:'Új kaszt',name:'Név',description:'Leírás',slug:'Azonosító (slug)',primary:'Elsődleges bónusz',secondary:'Másodlagos bónusz',image:'R2 képfájl útvonala',published:'Publikált',draft:'Vázlat',save:'Mentés',delete:'Törlés',cancel:'Mégse',create:'Létrehozás',confirm:'Biztosan törlöd ezt a bejegyzést?',required:'Mindkét nyelven kötelező a név.',different:'A két bónusz nem lehet ugyanazon a tulajdonságon.',saved:'Sikeres mentés.',deleted:'A bejegyzés törölve.',loading:'Adatok betöltése…',empty:'Nincs ilyen tartalom. Készíts újat.',skills:'Tulajdonságok és képességek',combat:'Harci skill',noncombat:'Képességek',overview:'Áttekintés',hint:'Egy faj és egy kaszt egyaránt +1D-t ad az elsődleges, és +1 pipet a másodlagos tulajdonsághoz.',portrait:'Előnézet',missing:'Még nincs kép',back:'Vissza a játékhoz',security:'A mentési jogokat az adatbázis ellenőrzi.',invalidPath:'A kép elérési útja hatarvilag/ kezdetű legyen.',localeInfo:'HU az alap, EN a második nyelv; az adatmodell további nyelvekkel bővíthető.',error:'Nem sikerült betölteni vagy menteni az adatot.',rights:'Szerkesztői hozzáférés',passives:'Passzív sajátosságok (soronként egy)',resistances:'Kezdő ellenállások',addResistance:'Ellenállás hozzáadása',equipment:'Kezdő felszerelés (soronként egy)',traits:'Kezdő sajátosságok (soronként egy)',gameplayRole:'Játékbeli szerep'},
+ en:{dashboard:'Editor dashboard',species:'Species',classes:'Classes',translations:'Translations',settings:'Settings',newSpecies:'New species',newClass:'New class',name:'Name',description:'Description',slug:'Identifier (slug)',primary:'Primary bonus',secondary:'Secondary bonus',image:'R2 image path',published:'Published',draft:'Draft',save:'Save',delete:'Delete',cancel:'Cancel',create:'Create',confirm:'Delete this entry permanently?',required:'Both languages require a name.',different:'Primary and secondary bonuses must differ.',saved:'Saved successfully.',deleted:'Entry deleted.',loading:'Loading content…',empty:'No content yet. Create the first entry.',skills:'Attributes and skills',combat:'Combat skill',noncombat:'Skills',overview:'Overview',hint:'Species and classes each grant +1D to the primary attribute and +1 pip to the secondary.',portrait:'Preview',missing:'No image yet',back:'Return to game',security:'Database authorization is enforced on every save.',invalidPath:'Image path must begin with hatarvilag/.',localeInfo:'HU is default, EN is secondary; the data model supports more languages.',error:'Could not load or save content.',rights:'Editor access',passives:'Passive traits (one per line)',resistances:'Starting resistances',addResistance:'Add resistance',equipment:'Starting equipment (one per line)',traits:'Starting traits (one per line)',gameplayRole:'Gameplay role'}
 };
-const newForm=():FormData=>({slug:'',primary_attribute:'body',secondary_attribute:'mind',image_path:'',is_published:false,translations:{hu:{name:'',description:''},en:{name:'',description:''}}});
+const blankTranslation=()=>({name:'',description:'',passives:'',starting_equipment:'',traits:'',gameplay_role:''});
+const newForm=():FormData=>({slug:'',primary_attribute:'body',secondary_attribute:'mind',image_path:'',is_published:false,resistances:[],translations:{hu:blankTranslation(),en:blankTranslation()}});
 const slugify=(name:string)=>name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,45);
 const table=(kind:Kind)=>kind==='species'?'game_species':'game_classes';
 const i18nTable=(kind:Kind)=>kind==='species'?'game_species_i18n':'game_classes_i18n';
@@ -30,7 +34,7 @@ function translateItem(r:RecordRow,kind:Kind,locale:string,field:'name'|'descrip
 }
 function toForm(r:RecordRow,kind:Kind):FormData{
  const trans=(kind==='species'?r.game_species_i18n:r.game_classes_i18n)||[];
- return {id:r.id,slug:r.slug,primary_attribute:r.primary_attribute,secondary_attribute:r.secondary_attribute,image_path:r.image_path||'',is_published:r.is_published,translations:Object.fromEntries(languages.map(l=>[l,{name:trans.find(x=>x.locale===l)?.name||'',description:trans.find(x=>x.locale===l)?.description||''}]))};
+ return {id:r.id,slug:r.slug,primary_attribute:r.primary_attribute,secondary_attribute:r.secondary_attribute,image_path:r.image_path||'',is_published:r.is_published,resistances:Array.isArray(r.resistances)?r.resistances:[],translations:Object.fromEntries(languages.map(l=>[l,{...blankTranslation(),...(trans.find(x=>x.locale===l)||{})}]))};
 }
 function imageSrc(path:string){return path.startsWith('hatarvilag/')?'https://assets.voidnoir.net/'+path:undefined}
 export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
@@ -51,7 +55,8 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
  const tr=(k:keyof typeof labels.hu)=>t[k];
  const fetchRecords=useCallback(async(currentKind:Kind)=>{
   const tbl=table(currentKind),related=i18nTable(currentKind);
-  const {data,error}=await supabase.from(tbl).select('*, '+related+'(locale,name,description)').order('created_at',{ascending:true});
+  const fields=currentKind==='species'?'locale,name,description,passives':'locale,name,description,starting_equipment,traits,gameplay_role';
+  const {data,error}=await supabase.from(tbl).select('*, '+related+'('+fields+')').order('created_at',{ascending:true});
   if(error)throw error;
   return data as unknown as RecordRow[];
  },[]);
@@ -73,7 +78,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
  useEffect(()=>{void reload(kind);},[kind,reload]);
  const select=(r:RecordRow)=>{setSelection(r.id);setForm(toForm(r,kind));setError('');setMessage('');setDirty(false);};
  const update=(diff:Partial<FormData>)=>{setForm(p=>({...p,...diff}));setDirty(true);setMessage('');};
- const localized=(field:'name'|'description',value:string)=>{
+ const localized=(field:'name'|'description'|'passives'|'starting_equipment'|'traits'|'gameplay_role',value:string)=>{
   setForm(prev=>({...prev,translations:{...prev.translations,[editingLocale]:{...prev.translations[editingLocale], [field]:value}}}));
   setDirty(true);setMessage('');
  };
@@ -87,7 +92,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
   if(!slug){setError(t.required);return;}
   setSaving(true);
   try{
-   const payload={slug,primary_attribute:form.primary_attribute,secondary_attribute:form.secondary_attribute,image_path:form.image_path.trim()||null,is_published:form.is_published};
+   const payload={slug,primary_attribute:form.primary_attribute,secondary_attribute:form.secondary_attribute,image_path:form.image_path.trim()||null,is_published:form.is_published,...(kind==='species'?{resistances:form.resistances}: {})};
    let id=form.id;
    if(id){
     const {error}=await supabase.from(table(kind)).update(payload).eq('id',id);
@@ -97,7 +102,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
     if(error)throw error;
     id=data.id;
    }
-   const updated=languages.map(locale=>({[fk(kind)]:id,locale,name:form.translations[locale].name.trim(),description:form.translations[locale].description.trim()}));
+   const updated=languages.map(locale=>({[fk(kind)]:id,locale,name:form.translations[locale].name.trim(),description:form.translations[locale].description.trim(),...(kind==='species'?{passives:form.translations[locale].passives.trim()}:{starting_equipment:form.translations[locale].starting_equipment.trim(),traits:form.translations[locale].traits.trim(),gameplay_role:form.translations[locale].gameplay_role.trim()})}));
    const {error}=await supabase.from(i18nTable(kind)).upsert(updated,{onConflict:fk(kind)+',locale'});
    if(error)throw error;
    await reload(kind,id);
@@ -144,7 +149,20 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
      <div className="ed-fields">
       <div className="ed-fields-two"><label>{t.name} ({editingLocale.toUpperCase()})<input required value={form.translations[editingLocale]?.name||''} onChange={e=>localized('name',e.target.value)} /></label><label>{t.slug}<input required value={form.slug} onChange={e=>update({slug:e.target.value})} placeholder="slug"/></label></div>
       <div className="ed-fields-two"><label>{t.primary} <b>+1D</b><select value={form.primary_attribute} onChange={e=>update({primary_attribute:e.target.value as Attr})}>{attrs.map(a=><option key={a} value={a}>{attrText[l][a]}</option>)}</select></label><label>{t.secondary} <b>+1</b><select value={form.secondary_attribute} onChange={e=>update({secondary_attribute:e.target.value as Attr})}>{attrs.map(a=><option key={a} value={a}>{attrText[l][a]}</option>)}</select></label></div>
-      <label>{t.description} ({editingLocale.toUpperCase()})<textarea rows={5} value={form.translations[editingLocale]?.description||''} onChange={e=>localized('description',e.target.value)}/></label>
+      <label>{t.description} ({editingLocale.toUpperCase()})<textarea rows={4} value={form.translations[editingLocale]?.description||''} onChange={e=>localized('description',e.target.value)}/></label>
+      {kind==='species'?<>
+       <label>{t.passives} ({editingLocale.toUpperCase()})<textarea rows={3} value={form.translations[editingLocale]?.passives||''} onChange={e=>localized('passives',e.target.value)}/></label>
+       <div className="ed-resistances"><h4>{t.resistances}</h4>{form.resistances.map((res,index)=><div className="ed-resistance" key={index}>
+        <select value={res.code} aria-label={t.resistances} onChange={e=>update({resistances:form.resistances.map((r,i)=>i===index?{...r,code:e.target.value}:r)})}>{resistanceCodes.map(code=><option key={code} value={code}>{resistanceNames[l][code]}</option>)}</select>
+        <input type="number" min="-100" max="100" aria-label="%" value={res.value} onChange={e=>update({resistances:form.resistances.map((r,i)=>i===index?{...r,value:Math.max(-100,Math.min(100,Number(e.target.value)))}:r)})}/>
+        <span>%</span><button type="button" aria-label="Remove resistance" onClick={()=>update({resistances:form.resistances.filter((_,i)=>i!==index)})}>×</button>
+       </div>)}
+       <button className="ed-add" type="button" onClick={()=>update({resistances:[...form.resistances,{code:'kinetic',value:10}]})} disabled={form.resistances.length>=12}>＋ {t.addResistance}</button></div>
+      </>:<>
+       <label>{t.equipment} ({editingLocale.toUpperCase()})<textarea rows={3} value={form.translations[editingLocale]?.starting_equipment||''} onChange={e=>localized('starting_equipment',e.target.value)}/></label>
+       <label>{t.traits} ({editingLocale.toUpperCase()})<textarea rows={3} value={form.translations[editingLocale]?.traits||''} onChange={e=>localized('traits',e.target.value)}/></label>
+       <label>{t.gameplayRole} ({editingLocale.toUpperCase()})<textarea rows={3} value={form.translations[editingLocale]?.gameplay_role||''} onChange={e=>localized('gameplay_role',e.target.value)}/></label>
+      </>}
       <label className="ed-publish"><input type="checkbox" checked={form.is_published} onChange={e=>update({is_published:e.target.checked})}/><span>{form.is_published?t.published:t.draft}</span></label>
      </div>
     </div>
