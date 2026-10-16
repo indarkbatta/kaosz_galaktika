@@ -52,7 +52,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
   const tbl=table(currentKind),related=i18nTable(currentKind);
   const {data,error}=await supabase.from(tbl).select('*, '+related+'(locale,name,description)').order('created_at',{ascending:true});
   if(error)throw error;
-  return data as RecordRow[];
+  return data as unknown as RecordRow[];
  },[]);
  const reload=useCallback(async(currentKind:Kind,retain?:string)=>{
   setLoading(true);setError('');
