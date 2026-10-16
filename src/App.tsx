@@ -112,7 +112,7 @@ function App(){
  const selector=<div className="language"><span>{t('language')}</span>{(['hu','en'] as Locale[]).map(l=>
   <button key={l} className={locale===l?'current':''} aria-pressed={locale===l} onClick={()=>chooseLocale(l)}>{l.toUpperCase()}</button>
  )}</div>;
- const sceneStyle:CSSProperties=assetOrigin?{'--space-image':'url('+assetOrigin+'/hatarvilag/backgrounds/login-scene.webp)'} as CSSProperties:{};
+ const sceneStyle:CSSProperties=assetOrigin?{'--space-image':'url('+assetOrigin+'/hatarvilag/backgrounds/login-space-v2.jpg)'} as CSSProperties:{};
  return <div className="shell" style={sceneStyle}>
   <header className="topbar">
    <img className="sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
