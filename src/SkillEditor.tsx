@@ -12,7 +12,6 @@ const attrs:Attr[]=['body','mind','soul','morale','social'];
 const attrsHu:Record<Attr,string>={body:'Test',mind:'Elme',soul:'Lélek',morale:'Morál',social:'Szociális'};
 const attrsEn:Record<Attr,string>={body:'Body',mind:'Mind',soul:'Soul',morale:'Morale',social:'Social'};
 const initialRules:Rules={id:1,base_attribute_pips:3,free_attribute_pips:6,max_attribute_pips:18,free_skill_pips:6,max_allocated_skill_pips:6};
-const pathToUrl=(path:string)=>path.startsWith('hatarvilag/skills/')?'https://assets.voidnoir.net/'+path:null;
 const tx={
  hu:{title:'Skill Editor',back:'Vissza',skills:'Skillek',rules:'Szabályok',description:'Képesség leírása',name:'Név',icon:'Ikon R2 útvonala',slot:'Hozzárendelés',combat:'Harci skill',general:'Általános skill',save:'Mentés',saved:'Mentve.',error:'Mentési hiba.',needNames:'Magyar és angol név kötelező.',iconError:'Csak a hatarvilag/skills/ mappa fájljai használhatók.',noIcon:'Nincs ikon',rulesIntro:'Ezekből az értékekből számítja ki a szerver az új kapitány induló statisztikáit.',base_attribute_pips:'Tulajdonság alap (pip)',free_attribute_pips:'Kiosztható tulajdonságpontok',max_attribute_pips:'Maximum tulajdonság (pip)',free_skill_pips:'Kiosztható skillpontok',max_allocated_skill_pips:'Maximum szabad skillpont / skill',fixed:'A 25 kezdő képesség helye rögzített: tulajdonságonként 4 normál + 1 harci. A nevük, leírásuk és ikonjuk szerkeszthető.',language:'Szótár',preview:'Előnézet',loading:'Betöltés…'},
  en:{title:'Skill Editor',back:'Back',skills:'Skills',rules:'Rules',description:'Skill description',name:'Name',icon:'R2 icon key',slot:'Assignment',combat:'Combat skill',general:'General skill',save:'Save',saved:'Saved.',error:'Could not save.',needNames:'Hungarian and English names are required.',iconError:'Only objects inside hatarvilag/skills/ are supported.',noIcon:'No icon',rulesIntro:'These settings control server-side initial captain generation.',base_attribute_pips:'Base attribute (pips)',free_attribute_pips:'Assignable attribute pips',max_attribute_pips:'Max attribute (pips)',free_skill_pips:'Assignable skill pips',max_allocated_skill_pips:'Max free pips per skill',fixed:'The 25 starting skill slots are fixed: each attribute has four general and one combat skill. Names, descriptions and icons are editable.',language:'Dictionary',preview:'Preview',loading:'Loading…'}
@@ -82,7 +81,7 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
     <div className="ed-roster-list sk-roster">{loading?<p>{t.loading}</p>:group.map(g=><div key={g.attr} className="sk-group">
      <div className="sk-group-name">{l==='hu'?attrsHu[g.attr]:attrsEn[g.attr]}</div>
      {g.items.map(s=><button type="button" className={'ed-record '+(selected===s.id?'selected':'')} onClick={()=>{pick(s);setTab('skills');}} key={s.id}>
-      <span className="ed-thumbnail">{s.icon_path?<img alt="" loading="lazy" src={pathToUrl(s.icon_path)||''}/>:<span>◈</span>}</span>
+      <span className="ed-thumbnail"><SkillArt slug={s.slug} path={s.icon_path}/></span>
       <span className="ed-record-name"><strong>{trans(s)}</strong><small>{s.is_combat?t.combat:t.general}</small></span>
      </button>)}
     </div>)}</div>
