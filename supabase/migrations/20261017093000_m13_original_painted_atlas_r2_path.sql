@@ -7,3 +7,6 @@ UPDATE public.game_skills
  SET icon_path = 'hatarvilag/art/game-atlas-v3.avif'
  WHERE icon_path = 'hatarvilag/skills/story-atlas.webp'
     OR icon_path = 'hatarvilag/skills/' || slug || '.jpg';
+
+UPDATE public.game_starter_ships SET image_path = 'hatarvilag/art/game-atlas-v3.avif'
+ WHERE image_path = 'hatarvilag/skills/story-atlas.webp' OR image_path IS NULL;
