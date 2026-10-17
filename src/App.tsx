@@ -7,6 +7,8 @@ import SkillEditor from './SkillEditor';
 import GameplayEditor from './GameplayEditor';
 import SectorEditor from './SectorEditor';
 import CharacterPage from './CharacterPage';
+import ToastViewport from './components/ToastViewport';
+import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
 type Page='dashboard'|'editor'|'skills'|'gameplay'|'sector'|'admin';
@@ -34,6 +36,8 @@ function App(){
  const [message,setMessage]=useState('');
  const [rows,setRows]=useState<RoleRow[]>([]);
  const [rosterError,setRosterError]=useState('');
+ useEffect(()=>{if(error)notify(error,'error');},[error]);
+ useEffect(()=>{if(message)notify(message,'success');},[message]);
 
  const chooseLocale=(next:Locale)=>{
   setLocale(next);rememberLocale(next);
@@ -144,8 +148,6 @@ function App(){
       {mode!=='change'&&<label>{t('email')}<input required type="email" autoComplete="email" placeholder="nev@pelda.hu" value={email} onChange={e=>setEmail(e.target.value)}/></label>}
       {mode!=='recover'&&<label>{t('password')}<span className="password-field"><input required minLength={mode==='register'?8:undefined} type={showPassword?'text':'password'} autoComplete={mode==='login'?'current-password':'new-password'} value={password} onChange={e=>setPassword(e.target.value)}/><button type="button" onClick={()=>setShowPassword(!showPassword)} aria-label={t('password')}>◉</button></span></label>}
       {(mode==='register'||mode==='change')&&<label>{t('repeat')}<input required autoComplete="new-password" type="password" value={confirm} onChange={e=>setConfirm(e.target.value)}/></label>}
-      {error&&<div className="notice error" role="alert">{error}</div>}
-      {message&&<div className="notice success" role="status">{message}</div>}
       <button className="action" type="submit" disabled={busy}>{busy?t('working'):mode==='login'?t('login'):mode==='register'?t('create'):mode==='change'?t('change'):t('send')}</button>
       {mode==='login'?<><button className="link" type="button" onClick={()=>resetMode('recover')}>{t('forgot')}</button><button type="button" className="alternate" onClick={()=>resetMode('register')}>{t('register')}　›</button></>
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
@@ -169,6 +171,7 @@ function App(){
      </main>}
   </div>
   <footer className="status"><span>▮▮▮▮▯</span>{t('footer')}</footer>
+  <ToastViewport/>
  </div>;
 }
 export default App;
