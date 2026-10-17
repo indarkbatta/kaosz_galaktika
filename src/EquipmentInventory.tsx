@@ -18,11 +18,11 @@ const captainSlots:Slot[]=[
  {key:'backpack',hu:'Hátizsák',en:'Backpack'},{key:'relic',hu:'Relikvia',en:'Relic'}];
 const crewSlots:Slot[]=[{key:'armor',hu:'Páncélzat',en:'Armor'},{key:'weapon',hu:'Fegyverzet',en:'Weapon'},{key:'utility',hu:'Utility',en:'Utility'}];
 const assetUrl=(p:string|null|undefined)=>p&&/^hatarvilag\/items\/[a-z0-9_/-]+\.(webp|avif|png)$/.test(p)?'https://assets.voidnoir.net/'+p:undefined;
-function ItemPicture({item}:{item:Item|undefined}){
+function ItemPicture({item,showPlaceholder=true}:{item:Item|undefined;showPlaceholder?:boolean}){
  const [failed,setFailed]=useState(false);
  useEffect(()=>setFailed(false),[item?.id,item?.image_path]);
  const src=assetUrl(item?.image_path);
- return <span className="eq-art">{src&&!failed?<img src={src} alt="" draggable={false} onError={()=>setFailed(true)}/>:<span className="eq-no-art" aria-hidden="true">◇</span>}</span>;
+ return <span className="eq-art">{src&&!failed?<img src={src} alt="" draggable={false} onError={()=>setFailed(true)}/>:showPlaceholder?<span className="eq-no-art" aria-hidden="true">◇</span>:null}</span>;
 }
 function DollSilhouette({crew}:{crew:boolean}){
  return <svg className="eq-figure" viewBox="0 0 190 440" preserveAspectRatio="xMidYMid meet" role="img" aria-label={crew?'Legénységi felszerelés sziluettje':'Kapitány felszerelési sziluettje'}>
@@ -173,12 +173,12 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
      {Array.from({length:Math.min(30,cap-displayPage*30)},(_,index)=>{
       const row=positive[index+displayPage*30],item=row&&itemById(row.item_id);
       const canEquip=!!item&&!!selected&&fits(item,selected.slot,selected.crewId);
-      return <button type="button" key={index} disabled={busy||!row} className={'eq-cell '+(item?'filled ':'')+(item?.rarity||'')+(canEquip?' equippable':'')}
+      return <button type="button" key={index} disabled={busy} className={'eq-cell '+(item?'filled ':'')+(item?.rarity||'')+(canEquip?' equippable':'')}
        draggable={!!row&&!busy} onDragStart={e=>row&&startDrag(e,{kind:'stock',itemId:row.item_id})}
        onDragEnd={clearDrag}
        onClick={()=>{if(row&&canEquip&&selected)equip(selected.slot,row.item_id,selected.crewId);}}
        title={item?name(item):''} aria-label={item?name(item)+' ×'+row.quantity:tr('Üres hely','Empty slot')}>
-       <ItemPicture item={item}/>{row&&<small className="eq-quantity">{row.quantity}</small>}
+       <ItemPicture item={item} showPlaceholder={false}/>{row&&<small className="eq-quantity">{row.quantity}</small>}
       </button>;
      })}
     </div>
