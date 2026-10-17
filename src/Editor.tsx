@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useMemo,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import './editor.css';
+import {EditorFrame,EditorTabs} from './components/EditorTemplate';
 
 type Attr = 'body'|'mind'|'soul'|'morale'|'social';
 type Kind = 'species'|'classes';
@@ -181,7 +182,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
  const translationFields:(keyof TranslationBody)[]=kind==='species'?['name','description','passives']:['name','description','starting_equipment','traits','gameplay_role'];
  const fieldLabels:Record<keyof TranslationBody,string>={name:t('name'),description:t('description'),passives:t('passives'),
    starting_equipment:t('equipment'),traits:t('traits'),gameplay_role:t('role')};
- return <div className="ed-layout"><div className="ed-shell">
+ return <EditorFrame>
    <nav className="ed-nav" aria-label={t('title')}>
      <h2>{t('title')}</h2>
      <button type="button" onClick={()=>navigate(onBack)}>⌂　{t('back')}</button>
@@ -205,10 +206,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
      <header className="ed-editor-head"><strong>{form.id?form.translations[l]?.name||form.translations.hu?.name||form.slug:t('create')}</strong>
        <span>{kind==='species'?t('species'):t('classes')}</span>
      </header>
-     <nav className="ed-tabs" aria-label={t('title')}>
-       {(['general','skills','dictionary'] as Tab[]).map(x=>
-         <button type="button" key={x} className={tab===x?'active':''} onClick={()=>setTab(x)}>{t(x)}</button>)}
-     </nav>
+     <EditorTabs label={t('title')} items={(['general','skills','dictionary'] as Tab[]).map(id=>({id,name:t(id)}))} selected={tab} onSelect={id=>setTab(id as Tab)}/>
      {error&&<div className="ed-feedback ed-error" role="alert">{error}</div>}
      {message&&<div className="ed-feedback ed-success" role="status">{message}</div>}
      <form className="ed-form" id="ed-form" onSubmit={save}>
@@ -286,5 +284,5 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
        <button type="button" className="ed-danger" onClick={()=>{if(modal==='delete'){void remove();}else {setModal(null);setDirty(false);pending.current?.();pending.current=null;}}}>{modal==='delete'?t('delete'):t('discard')}</button>
      </div>
    </div></div>}
- </div></div>;
+ </EditorFrame>;
 }
