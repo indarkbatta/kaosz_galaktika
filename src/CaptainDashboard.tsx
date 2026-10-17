@@ -25,7 +25,7 @@ type Result={action_id:string;dice:number[];roll_total:number;target_number:numb
 export type GameCaptain={id:string;captain_name:string;species_id:string;class_id:string;starter_ship_id:string;attribute_pips:Record<string,number>;skill_bonus_pips:Record<string,number>};
 const attributeNames={hu:{body:'Test',mind:'Elme',soul:'Lélek',morale:'Morál',social:'Szociális'},en:{body:'Body',mind:'Mind',soul:'Soul',morale:'Morale',social:'Social'}};
 export default function CaptainDashboard({captain,species,classes,ships,skills,crew,locale,isEditor,onReset}:{
- captain:GameCaptain;species:Portrait[];classes:Portrait[];ships:Ship[];skills:Skill[];crew:{position:string;name:string}[];locale:string;isEditor:boolean;onReset:()=>void
+ captain:GameCaptain;species:Portrait[];classes:Portrait[];ships:Ship[];skills:Skill[];crew:CrewMember[];locale:string;isEditor:boolean;onReset:()=>void
 }){
  const en=locale==='en',lang=en?'en':'hu',tr=(hu:string,eng:string)=>en?eng:hu;
  const local=(x:I18n[]|undefined)=>x?.find(y=>y.locale===lang)||x?.find(y=>y.locale==='hu');
