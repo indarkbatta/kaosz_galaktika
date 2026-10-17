@@ -14,6 +14,7 @@ type Action={id:string;slug:string;energy_cost:number;target_number:number;skill
 type Progress={level:number;xp_total:number;energy:number;energy_at:string;upgrade_points:number};
 type Rules={energy_max:number;energy_regen_seconds:number;xp_level_base:number;skill_points_per_level:number};
 type Log={id:number;action_id:string;performed_at:string;roll_total:number;target_number:number;succeeded:boolean;xp_awarded:number};
+type TravelLog={id:number;origin_id:string;destination_id:string;energy_spent:number;traveled_at:string};
 type Result={action_id:string;dice:number[];roll_total:number;target_number:number;succeeded:boolean;xp_awarded:number;level_up:boolean;pip_bonus:number};
 export type GameCaptain={id:string;captain_name:string;species_id:string;class_id:string;starter_ship_id:string;attribute_pips:Record<string,number>;skill_bonus_pips:Record<string,number>};
 const attributeNames={hu:{body:'Test',mind:'Elme',soul:'Lélek',morale:'Morál',social:'Szociális'},en:{body:'Body',mind:'Mind',soul:'Soul',morale:'Morale',social:'Social'}};
@@ -23,7 +24,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const en=locale==='en',lang=en?'en':'hu',tr=(hu:string,eng:string)=>en?eng:hu;
  const local=(x:I18n[]|undefined)=>x?.find(y=>y.locale===lang)||x?.find(y=>y.locale==='hu');
  const [progress,setProgress]=useState<Progress|null>(null),[rules,setRules]=useState<Rules|null>(null);
- const [actions,setActions]=useState<Action[]>([]),[logs,setLogs]=useState<Log[]>([]);
+ const [actions,setActions]=useState<Action[]>([]),[logs,setLogs]=useState<Log[]>([]),[travelLogs,setTravelLogs]=useState<TravelLog[]>([]);
  const [locations,setLocations]=useState<SectorLocation[]>([]),[routes,setRoutes]=useState<SectorRoute[]>([]);
  const [position,setPosition]=useState(''),[discoveries,setDiscoveries]=useState<SectorDiscovery[]>([]);
  const [placements,setPlacements]=useState<{location_id:string;action_id:string}[]>([]);
@@ -33,7 +34,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [error,setError]=useState(''),[result,setResult]=useState<Result|null>(null),[busy,setBusy]=useState(false);
  const [time,setTime]=useState(Date.now()),[confirmReset,setConfirmReset]=useState(false),[resetWord,setResetWord]=useState('');
  const refresh=useCallback(async()=>{
-  const [p,r,a,l,u,pos,dis,loc,rou,placement]=await Promise.all([
+  const [p,r,a,l,u,pos,dis,loc,rou,placement,travelHistory]=await Promise.all([
     supabase.from('character_progress').select('level,xp_total,energy,energy_at,upgrade_points').eq('character_id',captain.id).single(),
     supabase.from('gameplay_rules').select('energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
     supabase.from('game_actions').select('id,slug,energy_cost,target_number,skill_id,game_actions_i18n(locale,name,description,success_message,failure_message)').eq('is_published',true).order('sort_order'),
@@ -43,14 +44,15 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     supabase.from('character_location_discoveries').select('location_id,discovered_at').eq('character_id',captain.id),
     supabase.from('game_locations').select('id,slug,kind,x,y,is_published,game_locations_i18n(locale,name,description)').eq('is_published',true),
     supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published').eq('is_published',true),
-    supabase.from('game_location_actions').select('location_id,action_id')
+    supabase.from('game_location_actions').select('location_id,action_id'),
+    supabase.from('character_travel_log').select('id,origin_id,destination_id,energy_spent,traveled_at').eq('character_id',captain.id).order('id',{ascending:false}).limit(8)
   ]);
-  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error;
+  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error;
   if(problem){setError(problem.message);return;}
   setProgress(p.data as Progress);setRules(r.data as Rules);setActions(a.data as Action[]);setLogs(l.data as Log[]);setUpgrades(u.data||[]);
   setPosition(pos.data?.location_id||'');setDiscoveries((dis.data||[]) as SectorDiscovery[]);
   setLocations((loc.data||[]) as unknown as SectorLocation[]);setRoutes((rou.data||[]) as SectorRoute[]);
-  setPlacements(placement.data||[]);
+  setPlacements(placement.data||[]);setTravelLogs((travelHistory.data||[]) as TravelLog[]);
  },[captain.id]);
  useEffect(()=>{void refresh();},[refresh]);
  useEffect(()=>{const interval=setInterval(()=>setTime(Date.now()),10000);return()=>clearInterval(interval);},[]);
@@ -88,6 +90,11 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   else{await refresh();setTime(Date.now());setTravelNotice(tr('Megérkeztél a célpontra.','Arrived at destination.'));}
   setBusy(false);
  };
+ const siteName=(id:string)=>{const l=locations.find(x=>x.id===id);return l?.game_locations_i18n.find(x=>x.locale===lang)?.name||l?.game_locations_i18n.find(x=>x.locale==='hu')?.name||'—';};
+ const timeline=[
+  ...logs.map(x=>({key:'act'+x.id,at:x.performed_at,title:local(actions.find(a=>a.id===x.action_id)?.game_actions_i18n)?.name||'—',detail:(x.succeeded?tr('Siker','Success'):tr('Sikertelen','Failed'))+' · '+x.roll_total+'/'+x.target_number+' · +'+x.xp_awarded+' XP'})),
+  ...travelLogs.map(x=>({key:'travel'+x.id,at:x.traveled_at,title:tr('Utazás','Travel')+' → '+siteName(x.destination_id),detail:siteName(x.origin_id)+' · ⚡ '+x.energy_spent}))
+ ].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,9);
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
  return <section className="cmd-shell">
   <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
@@ -119,7 +126,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     <div className="cmd-skills">{skills.filter(s=>s.attribute===group).map(s=><div key={s.id}><SkillArt slug={s.slug} path={s.icon_path}/><span>{local(s.game_skills_i18n)?.name}</span><strong>{toDice(pool(s))}</strong><button title={tr('Skill fejlesztése','Upgrade skill')} disabled={busy||!progress?.upgrade_points||(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0)>=12} onClick={()=>void upgrade(s.id)}><LucidePlus/></button></div>)}</div>
    </>}
    {tab==='ship'&&<><div className="cmd-title"><h2>{tr('HAJÓ ÉS LEGÉNYSÉG','SHIP AND CREW')}</h2></div><div className="cmd-ship"><ShipArt slug={ship?.slug||'vagabond'}/><div><h2>{local(ship?.game_starter_ships_i18n)?.name}</h2><p>{local(ship?.game_starter_ships_i18n)?.description}</p><p>HP {ship?.hull} · {tr('Raktér','Cargo')} {ship?.cargo} · {tr('Sebesség','Speed')} {ship?.speed}</p><h3>{tr('Legénység','Crew')}</h3>{crew.map(c=><p key={c.position}>{c.position==='pilot'?tr('Pilóta','Pilot'):tr('Navigátor','Navigator')}: {c.name}</p>)}</div></div></>}
-   {tab==='log'&&<><div className="cmd-title"><h2>{tr('ESEMÉNYNAPLÓ','ACTIVITY LOG')}</h2></div><div className="cmd-log">{logs.length?logs.map(x=><div key={x.id}><small>{new Date(x.performed_at).toLocaleString(en?'en-GB':'hu-HU')}</small><strong>{local(actions.find(a=>a.id===x.action_id)?.game_actions_i18n)?.name||'—'}</strong><span>{x.succeeded?tr('Siker','Success'):tr('Sikertelen','Failed')} · {x.roll_total}/{x.target_number} · +{x.xp_awarded} XP</span></div>):<p>{tr('Még nincs végrehajtott akció.','No actions yet.')}</p>}</div></>}
+   {tab==='log'&&<><div className="cmd-title"><h2>{tr('ESEMÉNYNAPLÓ','ACTIVITY LOG')}</h2></div><div className="cmd-log">{timeline.length?timeline.map(x=><div key={x.key}><small>{new Date(x.at).toLocaleString(en?'en-GB':'hu-HU')}</small><strong>{x.title}</strong><span>{x.detail}</span></div>):<p>{tr('Még nincs végrehajtott akció vagy utazás.','No actions or travel yet.')}</p>}</div></>}
    {error&&<p className="cmd-error" role="alert">{error}</p>}
   </main>
   <footer className="cmd-footer"><span>SPACE D6 FREE · {tr('SZERVEROLDALI JÁTÉKMOTOR','SERVER-AUTHORITATIVE GAME ENGINE')}</span>
