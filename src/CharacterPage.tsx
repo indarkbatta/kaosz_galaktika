@@ -20,7 +20,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
  const [species,setSpecies]=useState<Base[]>([]),[classes,setClasses]=useState<Base[]>([]);
  const [ships,setShips]=useState<Ship[]>([]),[skills,setSkills]=useState<Skill[]>([]);
  const [rules,setRules]=useState<Rules|null>(null),[captain,setCaptain]=useState<Captain|null>(null);
- const [crew,setCrew]=useState<{position:string;name:string}[]>([]);
+ const [crew,setCrew]=useState<{id:string;position:string;name:string}[]>([]);
  const [speciesId,setSpeciesId]=useState(''),[classId,setClassId]=useState(''),[shipId,setShipId]=useState('');
  const [name,setName]=useState(''),[attr,setAttr]=useState<Record<string,number>>({}),[skillPts,setSkillPts]=useState<Record<string,number>>({});
  const [step,setStep]=useState(0),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
@@ -41,7 +41,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   setSpeciesId(s.data?.[0]?.id||'');setClassId(c.data?.[0]?.id||'');setShipId(sh.data?.[0]?.id||'');
   if(ch.data){
    setCaptain(ch.data as Captain);
-   const cr=await supabase.from('character_crew').select('position,name').eq('character_id',ch.data.id);
+   const cr=await supabase.from('character_crew').select('id,position,name').eq('character_id',ch.data.id);
    if(active&&!cr.error)setCrew(cr.data||[]);
   }
   setLoading(false);
@@ -71,7 +71,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   });
   if(error){setError(error.message);notify(error.message,'error');}else{
    const {data}=await supabase.from('characters').select('id,captain_name,species_id,class_id,starter_ship_id,attribute_pips,skill_bonus_pips').single();
-   if(data){setCaptain(data as Captain);const cr=await supabase.from('character_crew').select('position,name').eq('character_id',data.id);if(!cr.error)setCrew(cr.data||[]);}
+   if(data){setCaptain(data as Captain);const cr=await supabase.from('character_crew').select('id,position,name').eq('character_id',data.id);if(!cr.error)setCrew(cr.data||[]);}
   }
   setBusy(false);
  };
