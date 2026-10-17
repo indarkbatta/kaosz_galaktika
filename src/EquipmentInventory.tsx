@@ -47,11 +47,23 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  const avail=(slot:string)=>items.filter(i=>i.equip_owner===owner&&i.equip_slot===slot&&
  (stock.find(row=>row.item_id===i.id)?.quantity||0)>0);
  async function setEquipment(slot:string,itemId:string|null,memberId:string|null){
-  if(busy)return;setBusy(true);
-  const r=await supabase.rpc('set_equipment',{p_slot:slot,p_item:itemId,p_crew:memberId});
-  if(r.error)notify(r.error.message,'error');
-  else{notify(itemId?tr('Tárgy felszerelve.','Item equipped.'):tr('Tárgy levéve.','Item unequipped.'),'success');await refresh();await onChanged();setSelected(null);}
-  setBusy(false);
+  if(busy)return;
+  // UI rejects accidental incompatible drops; the RPC independently revalidates ownership and stock.
+  if(itemId){
+   const it=items.find(x=>x.id===itemId);
+   if(!it||it.equip_owner!==(memberId?'crew':'captain')||it.equip_slot!==slot){
+    notify(tr('Ez a tárgy nem illik a kiválasztott helyre.','That item does not fit this slot.'),'error');return;
+   }
+  }
+  setBusy(true);
+  try{
+   const r=await supabase.rpc('set_equipment',{p_slot:slot,p_item:itemId,p_crew:memberId});
+   if(r.error){notify(r.error.message,'error');return;}
+   if((r.data as {unchanged?:boolean}|null)?.unchanged){setSelected(null);return;}
+   notify(itemId?tr('Tárgy felszerelve.','Item equipped.'):tr('Tárgy levéve.','Item unequipped.'),'success');
+   await refresh();await onChanged();setSelected(null);
+  }catch(error){notify(error instanceof Error?error.message:String(error),'error');}
+  finally{setBusy(false);}
  }
  const currentName=target==='captain'?captainName:crew.find(c=>c.id===target)?.name||'—';
  const used=stock.filter(x=>x.quantity>0).length;
@@ -69,9 +81,9 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
        const active=selected?.slot===slot.key&&selected.crewId===crewId;
        return <button key={slot.key} type="button" className={'eq-slot '+(found?'occupied ':'')+(active?'active ':'')}
         title={item?name(item):en?slot.en:slot.hu}
-        onClick={()=>setSelected({slot:slot.key,crewId})}
+        onClick={()=>setSelected(active?null:{slot:slot.key,crewId})}
         onDragOver={e=>{if(dragged)e.preventDefault();}}
-        onDrop={e=>{e.preventDefault();if(dragged)void setEquipment(slot.key,dragged,crewId);setDragged(null);}}>
+        onDrop={e=>{e.preventDefault();const dropped=dragged||e.dataTransfer.getData('text/plain');if(dropped)void setEquipment(slot.key,dropped,crewId);setDragged(null);}}>
         <small>{en?slot.en:slot.hu}</small><ItemPicture item={item}/>{item&&<span className="eq-item-name">{name(item)}</span>}
        </button>})}
     </div>
@@ -83,9 +95,14 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
      <div>{avail(selected.slot).map(item=><button key={item.id} onClick={()=>void setEquipment(selected.slot,item.id,crewId)} disabled={busy}><ItemPicture item={item}/>{name(item)}</button>)}
      <button onClick={()=>void setEquipment(selected.slot,null,crewId)} disabled={busy}>{tr('LEVÉTEL','UNEQUIP')}</button></div></div>}
     <div className="eq-grid">{Array.from({length:Math.min(36,cap-displayPage*36)},(_,index)=>{const row=stock.filter(x=>x.quantity>0)[index+displayPage*36],item=items.find(i=>i.id===row?.item_id);
-     return <div key={index} className={'eq-cell '+(item?'filled ':'')+(item?.rarity||'')}
-      draggable={!!item} onDragStart={e=>{if(row){e.dataTransfer.setData('text/plain',row.item_id);setDragged(row.item_id);}}}
-      onDragEnd={()=>setDragged(null)} title={item?name(item):''}>
+     const canEquip=!!item&&!!selected&&item.equip_owner===(selected.crewId?'crew':'captain')&&item.equip_slot===selected.slot;
+     return <div key={index} className={'eq-cell '+(item?'filled ':'')+(canEquip?'equippable ':'')+(item?.rarity||'')}
+      draggable={!!item&&!busy} onDragStart={e=>{if(row){e.dataTransfer.setData('text/plain',row.item_id);setDragged(row.item_id);}}}
+      onDragEnd={()=>setDragged(null)}
+      role={canEquip?'button':undefined} tabIndex={canEquip?0:undefined}
+      onClick={()=>{if(canEquip&&row)void setEquipment(selected!.slot,row.item_id,selected!.crewId);}}
+      onKeyDown={e=>{if(canEquip&&row&&(e.key==='Enter'||e.key===' ')){e.preventDefault();void setEquipment(selected!.slot,row.item_id,selected!.crewId);}}}
+      title={item?name(item):''}>
       <ItemPicture item={item}/>{row&&<small>{row.quantity}</small>}
      </div>})}</div>
     <div className="eq-explain">{tr('Felszerelés: válassz slotot, majd tárgyat; vagy húzd az ikont a slotra.','Select a slot then an item, or drag an item onto the slot.')}</div>
