@@ -46,7 +46,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
  }
  useEffect(()=>{void load();},[]);
  const update=<T extends keyof Place>(key:T,value:Place[T])=>setDraft(p=>({...p,[key]:value}));
- const loc={name:'',description:'',...translations[language]};
+ const loc={name:translations[language]?.name||'',description:translations[language]?.description||''};
  const patchLang=(key:'name'|'description',value:string)=>setTranslations(v=>({...v,[language]:{...loc,[key]:value}}));
  const newPlace=()=>{choose({...blank},routes,placements);setTab('general');};
  async function save(event:FormEvent){event.preventDefault();if(busy)return;setBusy(true);setMessage('');
