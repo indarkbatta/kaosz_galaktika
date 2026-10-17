@@ -2,6 +2,7 @@ import {useCallback,useEffect,useMemo,useRef,useState,type FormEvent} from 'reac
 import {supabase} from './lib/supabase';
 import './editor.css';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {SkillArt} from './components/GameArt';
 
 type Attr = 'body'|'mind'|'soul'|'morale'|'social';
 type Kind = 'species'|'classes';
@@ -242,7 +243,7 @@ export default function Editor({locale,onBack,onSkills}:{locale:string;onBack:()
          <div className="ed-skill-groups">{skillGroups.map(g=><section className={'ed-skill-group ed-attr-'+g.attr} key={g.attr}>
            <h3>{attrNames[l][g.attr]} <span>{form.primary_attribute===g.attr?'+1D':form.secondary_attribute===g.attr?'+1':''}</span></h3>
            {g.skills.length===0?<p>{t('noSkill')}</p>:g.skills.map(s=><div className="ed-skill-row" key={s.id}>
-             <label htmlFor={'skill-'+s.id}>{s.icon_path&&<img className="ed-skill-icon" src={'https://assets.voidnoir.net/'+s.icon_path} alt="" loading="lazy"/>}{s.game_skills_i18n.find(x=>x.locale===l)?.name||s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug}
+             <label htmlFor={'skill-'+s.id}>{s.icon_path&&<SkillArt className="ed-skill-icon" slug={s.slug} path={s.icon_path}/>}{s.game_skills_i18n.find(x=>x.locale===l)?.name||s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug}
                {s.is_combat&&<span className="ed-combat">{t('combat')}</span>}</label>
              <select id={'skill-'+s.id} aria-label={t('bonusLabel')} value={form.bonuses[s.id]||0} onChange={e=>updateSkill(s.id,Number(e.target.value))}>
                {bonusOptions.map(pips=><option key={pips} value={pips}>{pips?asDice(pips):t('bonusNone')}</option>)}

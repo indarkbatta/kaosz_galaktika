@@ -102,3 +102,10 @@
 - Vercel Hobby: M1.2 verziót még nem telepítettük, a commitok automatikus buildje tiltva.
 - Cloudflare Workers AI napi ingyenes kerete a 25 ikon után elfogyott; ezért a három hajó új illusztrációja egyelőre hiányzik. Nem kapcsoltunk be fizetős opciót.
 - QA: self-hosted CI, majd felhasználóval valós böngészős CRUD / karaktergenerálási E2E teszt, továbbá képek méretre optimalizálása szükséges.
+
+## 2026-10-17 — Game art atlas bekötése
+- Cloudflare R2 új objektum: `voidnoir/hatarvilag/skills/story-atlas.webp` (640×896, 160170 B), 5×7 festett sci-fi jellegű kártyacsempe: 25 skill mikro-jelenet, 5 tulajdonságjelenet, 3 űrhajó-illusztrációs kompozit (+2 tartalék).
+- `src/components/GameArt.tsx` a közös atlaszból CSS background-position módszerrel rendereli a skill, tulajdonság és hajóképeket. A mikro-jelenetek a saját R2 assetjeinkből kompozitként készültek; új WoW-képet vagy idegen védett játékassetet nem használunk.
+- Minden skill `game_skills.icon_path` értékét az új atlasz kulcsára cseréljük, miközben a Skill Editorban különálló, saját `hatarvilag/skills/*.webp|jpg` képútvonal is megadható. A három hajó az atlasz saját csempéjét használja.
+- Ezek még első generációs kompozit hajóképek. A 256+ px méretű dedikált, festett hajóillusztrációkhoz további szabad képgenerálási keret kell, fizetős kvótát nem kapcsoltunk be.
+- App: fix karakterkészítő panel, nem weboldalszerű dashboard; kapitány az első lépés, 5 tulajdonság szerint váltott skillkártyák. A Vercel Hobby-on NINCS automatikus deploy.

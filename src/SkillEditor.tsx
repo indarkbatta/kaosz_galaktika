@@ -2,6 +2,7 @@ import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
 import './skill-editor.css';
+import {SkillArt} from './components/GameArt';
 type Attr='body'|'mind'|'soul'|'morale'|'social';
 type Locale={code:string;native_name:string};
 type Translation={locale:string;name:string;description:string};
@@ -92,10 +93,10 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
     {message&&<div className="ed-feedback ed-success" role="status">{message}</div>}
     <form className="ed-form" id="skills-editor-form" onSubmit={save}>
      {tab==='skills'&&active&&<div className="ed-tab-pane sk-editor-fields">
-       <div className="sk-icon-row"><div className="sk-large-icon">{icon?<img src={pathToUrl(icon)||''} alt={t.preview}/>:<span>◈</span>}</div>
+       <div className="sk-icon-row"><div className="sk-large-icon">{icon?<SkillArt slug={active.slug} path={icon}/>:<span>◈</span>}</div>
         <div><strong>{l==='hu'?attrsHu[active.attribute]:attrsEn[active.attribute]}</strong><p>{active.is_combat?t.combat:t.general} · {active.position}/5</p>
          <label>{t.icon}<input value={icon} onChange={e=>setIcon(e.target.value)} placeholder="hatarvilag/skills/example.jpg"/></label>
-         <div className="sk-gallery" aria-label={l==='hu'?'Elérhető skillikonok':'Available skill icons'}>{items.filter(s=>s.icon_path).map(s=><button type="button" key={s.id} className={icon===s.icon_path?'selected':''} title={trans(s)} aria-label={trans(s)} onClick={()=>setIcon(s.icon_path||'')}><img src={pathToUrl(s.icon_path||'')||''} alt="" loading="lazy"/></button>)}</div>
+         <div className="sk-gallery" aria-label={l==='hu'?'Elérhető skillikonok':'Available skill icons'}>{items.filter(s=>s.icon_path).map(s=><button type="button" key={s.id} className={active.slug===s.slug?'selected':''} title={trans(s)} aria-label={trans(s)} onClick={()=>setIcon(s.icon_path||'')}><SkillArt slug={s.slug} path={s.icon_path}/></button>)}</div>
         </div>
        </div>
        <p className="ed-tab-help">{t.fixed}</p>
