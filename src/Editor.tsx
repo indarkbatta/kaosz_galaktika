@@ -123,7 +123,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
    const picked=items.find(x=>x.id===keep)||items[0];
    setForm(picked?hydrate(picked,k):emptyForm());
    setDirty(false);setLoading(false);
- },[l]);
+ },[]);
  useEffect(()=>{void refresh(kind);},[kind,refresh]);
  const navigate=(fn:()=>void)=>{if(dirty){pending.current=fn;setModal('discard');}else fn();};
  const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{setKind(k);setTab('general');setMessage('');setError('');});};
@@ -133,7 +133,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
  const setTranslation=(lang:string,key:keyof TranslationBody,val:string)=>{setForm(prev=>({...prev,translations:{...prev.translations,[lang]:{...emptyTranslation(),...prev.translations[lang],[key]:val}}}));setDirty(true);setMessage('');};
  const updateSkill=(id:string,pips:number)=>{setForm(prev=>{const bonuses={...prev.bonuses};if(!pips)delete bonuses[id];else bonuses[id]=pips;return {...prev,bonuses};});setDirty(true);setMessage('');};
  const save=async(e:FormEvent)=>{e.preventDefault();if(busy)return;setError('');setMessage('');
-   if(!form.translations.hu?.name.trim()||!form.translations.en?.name.trim()){setTab('dictionary');setError(t('required'));return;}
+   if(!form.translations.hu?.name?.trim()||!form.translations.en?.name?.trim()){setTab('dictionary');setError(t('required'));return;}
    if(form.primary_attribute===form.secondary_attribute){setTab('general');setError(t('different'));return;}
    if(form.image_path.trim()&&!form.image_path.trim().startsWith('hatarvilag/')){setTab('general');setError(t('imageError'));return;}
    const slug=slugify(form.slug||form.translations.hu.name);
@@ -164,7 +164,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
    if(r.error){setError(r.error.message);return;}
    await refresh(kind);setMessage(t('deleted'));setTab('general');
  };
- const addLocale=async(e:FormEvent)=>{e.preventDefault();
+ const addLocale=async()=>{
    const code=languageForm.code.trim().toLowerCase();
    if(!/^[a-z]{2}$/.test(code)){setError(t('localeInvalid'));return;}
    if(!languageForm.native_name.trim()||!languageForm.name_en.trim()){setError(t('localeInvalid'));return;}
@@ -270,7 +270,7 @@ export default function Editor({locale,onBack}:{locale:string;onBack:()=>void}){
              <label>{t('newLangCode')}<input value={languageForm.code} onChange={e=>setLanguageForm(p=>({...p,code:e.target.value}))} maxLength={2}/></label>
              <label>{t('newLangName')}<input value={languageForm.native_name} onChange={e=>setLanguageForm(p=>({...p,native_name:e.target.value}))}/></label>
              <label>{t('newLangEnglish')}<input value={languageForm.name_en} onChange={e=>setLanguageForm(p=>({...p,name_en:e.target.value}))}/></label>
-             <button type="button" className="ed-submit" onClick={()=>void addLocale({preventDefault:()=>{}} as FormEvent)}>{t('add')}</button>
+             <button type="button" className="ed-submit" onClick={()=>void addLocale()}>{t('add')}</button>
            </div>}
          </div>
        </div>}
