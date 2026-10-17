@@ -78,6 +78,7 @@ export default function CharacterPage({locale}:{locale:string}){
    <div className="ch-summary-portraits">{[race,klass].map((v,i)=><div key={i}>{v?.image_path&&<img alt="" src={src(v.image_path)}/>}<strong>{v?localized(i===0?v.game_species_i18n:v.game_classes_i18n)?.name:''}</strong></div>)}</div>
    <div>{attributes.map(a=><div className="ch-stat" key={a}><span>{names[l][a]}</span><b>{toDice(captain.attribute_pips[a]||3)}</b></div>)}</div>
   </div>
+  <h3>{t(en,'Képességek','Skills')}</h3><div className="ch-skill-grid">{skills.map(s=><div className="ch-skill" key={s.id}><img src={src(s.icon_path)} alt="" loading="lazy"/><span>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</span><b>{toDice((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0))}</b></div>)}</div>
   <h3>{t(en,'Kezdő űrhajó és legénység','Starter ship & crew')}</h3><p>{ship?localized(ship.game_starter_ships_i18n)?.name:'—'} · {ship?.hull} HP / {ship?.cargo} cargo / {ship?.speed} speed</p>
   {crew.map(c=><p key={c.position}>{c.position==='pilot'?t(en,'Pilóta','Pilot'):t(en,'Navigátor','Navigator')}: {c.name}</p>)}
   <p className="ch-muted">{t(en,'A játék akciói és az energiaregeneráció a következő fejlesztési szakaszban érkeznek.','Gameplay actions and energy regeneration are coming in a future milestone.')}</p>
@@ -98,7 +99,7 @@ export default function CharacterPage({locale}:{locale:string}){
    {attributes.map(a=><div key={a} className="ch-stat"><span>{names[l][a]}</span><button onClick={()=>chooseStat(a,-1)} disabled={!(attr[a]||0)}>−</button><b>{toDice(currentStats[a]||3)}</b><button onClick={()=>chooseStat(a,1)} disabled={attrRemaining===0}>＋</button></div>)}</>}
   {step===4&&<><p className="ch-muted">{t(en,'Kiosztható skillpip-ek','Assignable skill pips')}: <b>{skillRemaining}</b></p>
     <div className="ch-skill-grid">{skills.map(s=><div key={s.id} className="ch-skill"><img src={src(s.icon_path)} alt=""/><span>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</span>
-    <button onClick={()=>chooseSkill(s.id,-1)} disabled={!(skillPts[s.id]||0)}>−</button><b>{toDice((skillPts[s.id]||0)+skillBonus(s.id))}</b><button onClick={()=>chooseSkill(s.id,1)} disabled={skillRemaining===0}>＋</button></div>)}</div></>}
+    <button onClick={()=>chooseSkill(s.id,-1)} disabled={!(skillPts[s.id]||0)}>−</button><b>{toDice((currentStats[s.attribute]||3)+(skillPts[s.id]||0)+skillBonus(s.id))}</b><button onClick={()=>chooseSkill(s.id,1)} disabled={skillRemaining===0}>＋</button></div>)}</div></>}
   {step===5&&<div className="ch-options">{ships.map(s=><button key={s.id} className={'ch-option '+(shipId===s.id?'active':'')} onClick={()=>setShipId(s.id)}>
     <div className="ch-ship-symbol">✦</div><strong>{localized(s.game_starter_ships_i18n)?.name||s.slug}</strong>
     <small>HP {s.hull} · {t(en,'Raktér','Cargo')} {s.cargo} · {t(en,'Sebesség','Speed')} {s.speed}</small>
