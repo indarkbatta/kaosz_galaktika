@@ -123,6 +123,10 @@ function App(){
    <strong className="brand">{t('brand')}</strong>
    <span className="head-sub">{t('explore')} <em>//</em> {t('command')} <em>//</em> {t('survive')}</span>
    <div className="spacer"/>{selector}
+   {user&&mode!=='change'&&<nav className="topbar-account-actions" aria-label={locale==='hu'?'Fiók menü':'Account menu'}>
+    {(role==='editor'||role==='admin')&&<button type="button" onClick={()=>setPage('editor')}>◈ {t('editor')}</button>}
+    <button type="button" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button>
+   </nav>}
   </header>
   <div className="scene">
    {(!user||page==='admin')&&<aside className="sidebar">
@@ -151,7 +155,7 @@ function App(){
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='dashboard'?<div className="ch-v2-mount"><div className="ch-v2-shortcuts">{(role==='editor'||role==='admin')&&<button onClick={()=>setPage('editor')}>◈ {t('editor')}</button>}<button onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>
+    :page==='dashboard'?<div className="ch-v2-mount"><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>
     :<main className="terminal in-game">
       <nav className="tabs">
        <button className="" onClick={()=>setPage('dashboard')}>{t('dashboard')}</button>
