@@ -3,7 +3,7 @@
 .ch-v2 *{box-sizing:border-box}.ch-v2 button{cursor:pointer;border-radius:0}.ch-v2 button:disabled{opacity:.32;cursor:default}
 .ch-v2-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 17px;background:#090e15;border-bottom:1px solid #43505b}
 .ch-v2-heading>div{display:flex;flex-direction:column;gap:5px}.ch-v2-heading small{color:#d47e61;font-size:10px;letter-spacing:.15em}.ch-v2-heading strong{font-size:22px;letter-spacing:.19em}
-.ch-head-actions{margin-right:210px;white-space:nowrap;color:#788c99;font-size:11px}
+.ch-head-actions{margin-right:0;white-space:nowrap;color:#788c99;font-size:11px}
 .ch-v2-steps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;padding:7px 14px;border-bottom:1px solid #4d5862;background:#090e14}
 .ch-v2-steps button{border:1px solid #42505b;background:#121d26;color:#c5d0d9;padding:7px 2px;font-size:11px;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;text-transform:uppercase}
 .ch-v2-steps button b{border-radius:50%;background:#293947;color:#ddd;font-size:10px;width:19px;height:19px;display:grid;place-items:center}
