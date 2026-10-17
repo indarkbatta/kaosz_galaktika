@@ -16,7 +16,7 @@ const tx={
  hu:{title:'Skill Editor',back:'Vissza',skills:'Skillek',rules:'Szabályok',description:'Képesség leírása',name:'Név',icon:'Ikon R2 útvonala',slot:'Hozzárendelés',combat:'Harci skill',general:'Általános skill',save:'Mentés',saved:'Mentve.',error:'Mentési hiba.',needNames:'Magyar és angol név kötelező.',iconError:'Csak a hatarvilag/skills/ mappa fájljai használhatók.',noIcon:'Nincs ikon',rulesIntro:'Ezekből az értékekből számítja ki a szerver az új kapitány induló statisztikáit.',base_attribute_pips:'Tulajdonság alap (pip)',free_attribute_pips:'Kiosztható tulajdonságpontok',max_attribute_pips:'Maximum tulajdonság (pip)',free_skill_pips:'Kiosztható skillpontok',max_allocated_skill_pips:'Maximum szabad skillpont / skill',fixed:'A 25 kezdő képesség helye rögzített: tulajdonságonként 4 normál + 1 harci. A nevük, leírásuk és ikonjuk szerkeszthető.',language:'Szótár',preview:'Előnézet',loading:'Betöltés…'},
  en:{title:'Skill Editor',back:'Back',skills:'Skills',rules:'Rules',description:'Skill description',name:'Name',icon:'R2 icon key',slot:'Assignment',combat:'Combat skill',general:'General skill',save:'Save',saved:'Saved.',error:'Could not save.',needNames:'Hungarian and English names are required.',iconError:'Only objects inside hatarvilag/skills/ are supported.',noIcon:'No icon',rulesIntro:'These settings control server-side initial captain generation.',base_attribute_pips:'Base attribute (pips)',free_attribute_pips:'Assignable attribute pips',max_attribute_pips:'Max attribute (pips)',free_skill_pips:'Assignable skill pips',max_allocated_skill_pips:'Max free pips per skill',fixed:'The 25 starting skill slots are fixed: each attribute has four general and one combat skill. Names, descriptions and icons are editable.',language:'Dictionary',preview:'Preview',loading:'Loading…'}
 };
-const fields:(keyof Rules)[]=['base_attribute_pips','free_attribute_pips','max_attribute_pips','free_skill_pips','max_allocated_skill_pips'];
+const fields:(Exclude<keyof Rules,'id'>)[]=['base_attribute_pips','free_attribute_pips','max_attribute_pips','free_skill_pips','max_allocated_skill_pips'];
 export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>void}){
  const l=locale==='en'?'en':'hu',t=tx[l];
  const [items,setItems]=useState<Skill[]>([]);
@@ -70,7 +70,7 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
     await read(active?.id);setMessage(t.saved);
    }catch(e){setError(e instanceof Error?e.message:t.error);}finally{setBusy(false);}
  };
- const curr={name:'',description:'',...names[lang]};
+ const curr={name:names[lang]?.name||'',description:names[lang]?.description||''};
  return <EditorFrame>
    <nav className="ed-nav"><h2>{t.title}</h2><button type="button" onClick={onBack}>⌂　{t.back}</button>
     <button type="button" className={tab==='skills'?'active':''} onClick={()=>setTab('skills')}>◈　{t.skills}</button>
