@@ -119,3 +119,16 @@
 - **Kódkomponensek:** `src/CharacterPage.tsx`, `src/character-v2.css`, `src/components/GameArt.tsx`, `src/components/game-art.css`, az `src/App.tsx` különálló, editoroktól független játékos UI-ra irányít. Szerkesztőkben a grafikus SkillArt komponens az új atlaszból dolgozik.
 - **Minőségkorlát:** az atlasz 128×128-as csempéi jelenleg első generációs, kézzel szerkesztett kompozitok. A három hajó nagy képernyős nagyfelbontású önálló illusztrációval később helyettesíthető. A frontend maga teljes, de pixelpontos, bejelentkezett böngészős E2E ellenőrzése még hátravan.
 - **CI:** a Windowsos GitHub self-hosted runner sikeresen fordította az m1.3-as verziót (run `39012761643`). Vercel Hobby: az automatikus deploy változatlanul tiltva van; a commitok önmagukban NEM publikálnak.
+
+## M1.3 ART REPLACEMENT — saját generálás, Cloudflare kizárólag tárhely (2026-10-17, aktuális forrás)
+**Ez a szakasz felülírja a fentebb említett korábbi `hatarvilag/skills/story-atlas.webp` hivatkozásokat. Az az atlasz legacy.**
+- A grafikai fájlok az asszisztens saját képgenerálásával készültek; NEM Cloudflare Workers AI generált grafika. A Cloudflare itt csak R2 objektumtár.
+- Jelenleg aktív R2 kép: `voidnoir/hatarvilag/art/game-atlas-v3.avif`, public read URL: `https://assets.voidnoir.net/hatarvilag/art/game-atlas-v3.avif`.
+- Tényleges R2 ellenőrzés: 480x500 AVIF, 6893 byte, ETag/MD5 `ccc0485bf2bfe5417222255a13ccc488`; korábbi képből generált 25 narratív skilljelenet, 5 festett tulajdonságportré, 3 hajófestmény; saját készítésű, nem WoW asset.
+- Atlasz kompozíció: 0–24: 5x5 db 64x64 képszelet (0<=x<320, 0<=y<320); 25–29: 5 db 80x80 attribútum (x=0,80,...320, y=320); 30–32: 3 db 160x100 űrhajó (x=0,160,320, y=400). `GameArt.tsx` tile(x,y,w,h) precíz háttérpozícióval vágja ki őket.
+- Az aktív art-ot minden játékképernyő a `SkillArt`, `AttributeArt`, `ShipArt` komponenseken keresztül használja; a skill editor ikon galériája és faj/kaszt-editor skill-bónusz listája is.
+- Supabase: mind a 25 `game_skills.icon_path` és mind a 3 `game_starter_ships.image_path` az új atlaszra mutat. SQL migráció: `20261017093000_m13_original_painted_atlas_r2_path.sql`; a skill ikonmező AVIF-et és art/ útvonalat is támogat, editor személyre szabott képe továbbra is beállítható.
+- 10 köztes átviteli chunkot eltávolítottunk az R2-ből, a kész atlasz megmaradt. Számlázható AI modell futtatását a Cloudflare-en NEM végeztük ebben a körben.
+- UI UX: kapitány → faj → kaszt → tulajdonságok → skillek → hajó → véglegesítés; tulajdonság szerinti skill panel; fix alkalmazás-magasság és scroll nélküli nézet, nem régi széthúzott dashboard.
+- M1.3 CI: self-hosted `tsc --noEmit && vite build` sikeresen ellenőrizve; a legutolsó dokumentációs/migrációs commit build eredményét mindig ellenőrizni kell.
+- Vercel: HOBBY, korábbi elv érvényben — nincs automatikus deploy; az aktuális új művészeti irány csak a GitHub/DB/R2 forrásokban van, publikálást külön felhasználói kérésre végezzünk.
