@@ -7,6 +7,7 @@ import {attributes,toDice} from './lib/d6';
 import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery} from './SectorMap';
 import Cantina,{crewPositionName,type CrewMember} from './Cantina';
 import CraftingPanel from './CraftingPanel';
+import EquipmentInventory from './EquipmentInventory';
 import './captain-dashboard.css';
 
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
@@ -54,7 +55,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     supabase.from('game_location_actions').select('location_id,action_id'),
     supabase.from('character_travel_log').select('id,origin_id,destination_id,energy_spent,traveled_at').eq('character_id',captain.id).order('id',{ascending:false}).limit(8),
     supabase.from('character_inventory').select('item_id,quantity,game_items(slug,rarity,category,game_items_i18n(locale,name,description))').eq('character_id',captain.id),
-    supabase.from('character_crew').select('position,name,specialty,aptitude,species_slug').eq('character_id',captain.id)
+    supabase.from('character_crew').select('id,position,name,specialty,aptitude,species_slug').eq('character_id',captain.id)
   ]);
   const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error||inv.error||crewData.error;
   if(problem){notify(problem.message,'error');return;}
@@ -95,6 +96,12 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   }
   setBusy(false);
  };
+ const refill=async()=>{
+  if(busy||!isEditor)return;setBusy(true);
+  const r=await supabase.rpc('debug_refill_energy');
+  if(r.error)notify(r.error.message,'error');else{await refresh();setTime(Date.now());notify(tr('Energia azonnal feltöltve (teszt).','Energy instantly refilled (test).'),'success');}
+  setBusy(false);
+ };
  const upgrade=async(id:string)=>{
   if(busy||!progress?.upgrade_points)return;setBusy(true);
   const r=await supabase.rpc('upgrade_captain_skill',{p_skill:id});
@@ -130,7 +137,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
-   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><strong>{energy} / {rules?.energy_max||100}</strong></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||100))+'%'}}/></div><small>{energy===(rules?.energy_max||100)?tr('Feltöltve','Fully charged'):tr('Következő +1','Next +1')+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
+   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||100}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}>⚡</button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||100))+'%'}}/></div><small>{energy===(rules?.energy_max||100)?tr('Feltöltve','Fully charged'):tr('Következő +1','Next +1')+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
    <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
    <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||'vagabond'}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>
@@ -155,7 +162,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    {tab==='ship'&&<><div className="cmd-title"><h2>{tr('HAJÓ ÉS LEGÉNYSÉG','SHIP AND CREW')}</h2></div><div className="cmd-ship"><ShipArt slug={ship?.slug||'vagabond'}/><div><h2>{local(ship?.game_starter_ships_i18n)?.name}</h2><p>{local(ship?.game_starter_ships_i18n)?.description}</p><p>HP {ship?.hull} · {tr('Raktér','Cargo')} {ship?.cargo} · {tr('Sebesség','Speed')} {ship?.speed}</p><h3>{tr('Legénység','Crew')}</h3>{activeCrew.map(c=><p key={c.position}>{crewPositionName(c.position,en)}: {c.name} {c.aptitude?' ◆'+c.aptitude:''}</p>)}</div></div></>}
    {tab==='cantina'&&<><div className="cmd-title"><h2>{tr('HATÁRVIDÉKI KANTIN // TOBORZÁS','FRONTIER CANTINA // RECRUITMENT')}</h2><small>⚡ {energy}</small></div><Cantina locale={locale} atStation={here?.slug==='frontier_station'} crew={activeCrew} energy={energy} onChanged={refresh}/></>}
    {tab==='inventory'&&<><div className="cmd-title"><h2>{tr('RAKTÉR ÉS GYÁRTÁS','CARGO AND CRAFTING')}</h2><div className="cmd-cargo-tabs"><button className={cargoView==='stock'?'active':''} onClick={()=>setCargoView('stock')}>{tr('KÉSZLET','INVENTORY')}</button><button className={cargoView==='craft'?'active':''} onClick={()=>setCargoView('craft')}>{tr('GYÁRTÁS','CRAFTING')}</button></div></div>
-    {cargoView==='stock'?<div className="cmd-inventory">{inventory.length?inventory.map(row=><article key={row.item_id} className="cmd-inventory-item"><div className="cmd-inventory-emblem">{({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[row.game_items?.category]||'◆'}</div><div><small>{row.game_items?.rarity?.toUpperCase()}</small><strong>{local(row.game_items?.game_items_i18n)?.name||row.game_items?.slug}</strong><p>{local(row.game_items?.game_items_i18n)?.description}</p></div><b>×{row.quantity}</b></article>):<p className="cmd-empty">{tr('A raktér üres. A sikeres akciók során gyűjthetsz erőforrásokat.','Cargo is empty. Successful actions can award resources.')}</p>}</div>:<CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/>}
+    {cargoView==='stock'?<EquipmentInventory characterId={captain.id} captainName={captain.captain_name} locale={locale} crew={activeCrew} onChanged={refresh}/>:<CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/>}
    </>}
    {tab==='log'&&<><div className="cmd-title"><h2>{tr('ESEMÉNYNAPLÓ','ACTIVITY LOG')}</h2></div><div className="cmd-log">{timeline.length?timeline.map(x=><div key={x.key}><small>{new Date(x.at).toLocaleString(en?'en-GB':'hu-HU')}</small><strong>{x.title}</strong><span>{x.detail}</span></div>):<p>{tr('Még nincs végrehajtott akció vagy utazás.','No actions or travel yet.')}</p>}</div></>}
   </main>
