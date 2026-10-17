@@ -13,7 +13,7 @@ type Action={id:string;slug:string;energy_cost:number;target_number:number;skill
 type Progress={level:number;xp_total:number;energy:number;energy_at:string;upgrade_points:number};
 type Rules={energy_max:number;energy_regen_seconds:number;xp_level_base:number;skill_points_per_level:number};
 type Log={id:number;action_id:string;performed_at:string;roll_total:number;target_number:number;succeeded:boolean;xp_awarded:number};
-type Result={dice:number[];roll_total:number;target_number:number;succeeded:boolean;xp_awarded:number;level_up:boolean;pip_bonus:number};
+type Result={action_id:string;dice:number[];roll_total:number;target_number:number;succeeded:boolean;xp_awarded:number;level_up:boolean;pip_bonus:number};
 export type GameCaptain={id:string;captain_name:string;species_id:string;class_id:string;starter_ship_id:string;attribute_pips:Record<string,number>;skill_bonus_pips:Record<string,number>};
 const attributeNames={hu:{body:'Test',mind:'Elme',soul:'Lélek',morale:'Morál',social:'Szociális'},en:{body:'Body',mind:'Mind',soul:'Soul',morale:'Morale',social:'Social'}};
 export default function CaptainDashboard({captain,species,classes,ships,skills,crew,locale,isEditor,onReset}:{
@@ -83,7 +83,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
      <h3>{local(a.game_actions_i18n)?.name||a.slug}</h3><p>{local(a.game_actions_i18n)?.description}</p>
      <footer><small>⚡{a.energy_cost} · TN {a.target_number}</small><button disabled={busy||!progress||energy<a.energy_cost} onClick={()=>void doAction(a)}>{tr('Végrehajtás','Perform')} →</button></footer>
     </article>})}</div>
-    <div className="cmd-result" role="status">{result?<><strong>{result.succeeded?tr('SIKER','SUCCESS'):tr('SIKERTELEN','FAILED')}</strong><span>{tr('Dobás','Roll')}: {result.dice.join(' + ')}{result.pip_bonus?' + '+result.pip_bonus:''} = {result.roll_total} / TN {result.target_number} · +{result.xp_awarded} XP {result.level_up?' · '+tr('SZINTLÉPÉS!','LEVEL UP!'):''}</span></>:<span>{tr('Az energia a szerveren, kijelentkezés alatt is regenerálódik.','Energy regenerates on the server, even while offline.')}</span>}</div>
+    <div className="cmd-result" role="status">{result?<><strong>{result.succeeded?tr('SIKER','SUCCESS'):tr('SIKERTELEN','FAILED')}</strong><span>{local(actions.find(a=>a.id===result.action_id)?.game_actions_i18n)?.[result.succeeded?'success_message':'failure_message']} · {tr('Dobás','Roll')}: {result.dice.join(' + ')}{result.pip_bonus?' + '+result.pip_bonus:''} = {result.roll_total} / TN {result.target_number} · +{result.xp_awarded} XP {result.level_up?' · '+tr('SZINTLÉPÉS!','LEVEL UP!'):''}</span></>:<span>{tr('Az energia a szerveren, kijelentkezés alatt is regenerálódik.','Energy regenerates on the server, even while offline.')}</span>}</div>
    </>}
    {tab==='character'&&<><div className="cmd-title"><h2>{tr('KARAKTERFEJLŐDÉS','CHARACTER PROGRESSION')}</h2><small>{tr('Szabad pontok','Free points')}: {progress?.upgrade_points||0}</small></div>
     <div className="cmd-attributes">{attributes.map(a=><div key={a}><AttributeArt attribute={a}/><b>{attributeNames[lang][a]}</b><span>{toDice(captain.attribute_pips[a]||3)}</span></div>)}</div>
