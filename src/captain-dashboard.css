@@ -48,3 +48,9 @@
 .cmd-cargo-tabs button{background:#15202b;border:1px solid #485d6c;color:#d4dce4;padding:6px 11px;font-size:10px}
 .cmd-cargo-tabs button.active{background:#6a3024;border-color:#d67753;color:#fff}
 @media(max-width:760px){.cmd-head nav{grid-template-columns:repeat(7,minmax(0,1fr))}.cmd-head nav button{font-size:9px;padding:5px 1px}.cmd-cargo-tabs button{padding:4px 5px;font-size:9px}}
+
+/* Editor-only quick refill. Fits next to energy number without overlay. */
+.cmd-energy-value{display:inline-flex;align-items:center;gap:7px;min-width:0}
+.cmd-energy-value strong{white-space:nowrap}
+.cmd-debug-refill{display:grid;place-items:center;min-width:27px;height:27px;background:#4c2a1c;border:1px solid #e78b4c;color:#ffc67e;font-size:16px;line-height:1;cursor:pointer;padding:2px}
+.cmd-debug-refill:hover{background:#8c4524}.cmd-debug-refill:disabled{opacity:.35}
