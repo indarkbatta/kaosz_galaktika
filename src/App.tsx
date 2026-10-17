@@ -3,9 +3,11 @@ import type {User} from '@supabase/supabase-js';
 import {supabase,type Role} from './lib/supabase';
 import {dictionaries,rememberLocale,storedLocale,type Locale,type Key} from './i18n';
 import Editor from './Editor';
+import SkillEditor from './SkillEditor';
+import CharacterPage from './CharacterPage';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'admin';
+type Page='dashboard'|'editor'|'skills'|'admin';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
@@ -121,7 +123,7 @@ function App(){
    <div className="spacer"/>{selector}
   </header>
   <div className="scene">
-   {page!=='editor'&&<aside className="sidebar">
+   {page!=='editor'&&page!=='skills'&&<aside className="sidebar">
     <section><h2>{t('status')}</h2><p><span className="dot"/> {t('ready')}</p></section>
     <section><h2>{t('notice')}</h2><p>{t('noticeBody')}</p><span className="signal">⌁　◈　⌁</span></section>
    </aside>}
@@ -143,7 +145,8 @@ function App(){
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>
     </main>
-    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')}/>
+    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')}/>
+    :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onBack={()=>setPage('editor')}/>
     :<main className="terminal in-game">
       <nav className="tabs">
        <button className={page==='dashboard'?'active':''} onClick={()=>setPage('dashboard')}>{t('dashboard')}</button>
@@ -151,7 +154,7 @@ function App(){
        {role==='admin'&&<button className={page==='admin'?'active':''} onClick={()=>setPage('admin')}>{t('admin')}</button>}
        <button className="logout" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button>
       </nav>
-      {page==='dashboard'&&<section className="content"><small>COMMAND / 01</small><h2>{t('welcome')}, {profile?.display_name||user.email?.split('@')[0]}.</h2><div className="stats"><div><span>{t('role')}</span><strong>{t(role)}</strong></div><div><span>{t('email')}</span><strong>{user.email}</strong></div></div><p className="dim">{t('description')}</p><div className="settings"><strong>{t('settings')}</strong>{selector}</div></section>}
+      {page==='dashboard'&&<section className="content"><small>COMMAND / 01</small><h2>{t('welcome')}, {profile?.display_name||user.email?.split('@')[0]}.</h2><div className="stats"><div><span>{t('role')}</span><strong>{t(role)}</strong></div><div><span>{t('email')}</span><strong>{user.email}</strong></div></div><CharacterPage locale={locale}/><div className="settings"><strong>{t('settings')}</strong>{selector}</div></section>}
 
       {page==='admin'&&role==='admin'&&<section className="content"><small>ACCESS / 03</small><h2>{t('users')}</h2><p className="dim">{t('adminText')}</p>{rosterError&&<p role="alert">{rosterError}</p>}{rows.length===0?<p>{t('noUsers')}</p>:rows.map(r=><div className="role-row" key={r.user_id}><code>{r.user_id.slice(0,12)}…</code><strong>{t(r.role)}</strong></div>)}</section>}
       {(page==='admin'&&role!=='admin'||page==='editor'&&role==='user')&&<p>{t('noAccess')}</p>}
