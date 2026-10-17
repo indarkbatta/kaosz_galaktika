@@ -2,6 +2,7 @@ import {useEffect,useMemo,useState} from 'react';
 import {supabase} from './lib/supabase';
 import {attributes,calculateAttributes,remainingPoints,toDice,type Attribute} from './lib/d6';
 import './character.css';
+import './character-v2.css';
 type Base={id:string;slug:string;image_path:string|null;primary_attribute:Attribute;secondary_attribute:Attribute;game_species_i18n?:{locale:string;name:string;description:string}[];game_classes_i18n?:{locale:string;name:string;description:string}[];game_species_skill_bonuses?:{skill_id:string;bonus_pips:number}[];game_classes_skill_bonuses?:{skill_id:string;bonus_pips:number}[]};
 type Ship={id:string;slug:string;image_path:string|null;hull:number;cargo:number;speed:number;game_starter_ships_i18n:{locale:string;name:string;description:string}[]};
 type Skill={id:string;attribute:Attribute;slug:string;icon_path:string|null;game_skills_i18n:{locale:string;name:string}[]};
