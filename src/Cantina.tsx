@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './cantina.css';
-export type CrewMember={position:string;name:string;specialty?:string|null;aptitude?:number;species_slug?:string|null};
+export type CrewMember={id:string;position:string;name:string;specialty?:string|null;aptitude?:number;species_slug?:string|null};
 type Applicant={id:string;name:string;specialty:string;aptitude:number;species_slug:string;portrait_path:string|null};
 type Roster={candidates:Applicant[];expires_at:string;hire_energy_cost:number;replace_energy_cost:number};
 export const CREW_POSITIONS=['pilot','navigator','engineer','security','medic'] as const;
