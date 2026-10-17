@@ -3,6 +3,7 @@ import {supabase} from './lib/supabase';
 import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
 import {LucidePlus} from './components/LucideSigns';
 import {attributes,toDice} from './lib/d6';
+import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery} from './SectorMap';
 import './captain-dashboard.css';
 
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
@@ -23,21 +24,33 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const local=(x:I18n[]|undefined)=>x?.find(y=>y.locale===lang)||x?.find(y=>y.locale==='hu');
  const [progress,setProgress]=useState<Progress|null>(null),[rules,setRules]=useState<Rules|null>(null);
  const [actions,setActions]=useState<Action[]>([]),[logs,setLogs]=useState<Log[]>([]);
+ const [locations,setLocations]=useState<SectorLocation[]>([]),[routes,setRoutes]=useState<SectorRoute[]>([]);
+ const [position,setPosition]=useState(''),[discoveries,setDiscoveries]=useState<SectorDiscovery[]>([]);
+ const [placements,setPlacements]=useState<{location_id:string;action_id:string}[]>([]);
+ const [travelNotice,setTravelNotice]=useState('');
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
- const [tab,setTab]=useState<'bridge'|'character'|'ship'|'log'>('bridge'),[group,setGroup]=useState('body');
+ const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'log'>('bridge'),[group,setGroup]=useState('body');
  const [error,setError]=useState(''),[result,setResult]=useState<Result|null>(null),[busy,setBusy]=useState(false);
  const [time,setTime]=useState(Date.now()),[confirmReset,setConfirmReset]=useState(false),[resetWord,setResetWord]=useState('');
  const refresh=useCallback(async()=>{
-  const [p,r,a,l,u]=await Promise.all([
+  const [p,r,a,l,u,pos,dis,loc,rou,placement]=await Promise.all([
     supabase.from('character_progress').select('level,xp_total,energy,energy_at,upgrade_points').eq('character_id',captain.id).single(),
     supabase.from('gameplay_rules').select('energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
     supabase.from('game_actions').select('id,slug,energy_cost,target_number,skill_id,game_actions_i18n(locale,name,description,success_message,failure_message)').eq('is_published',true).order('sort_order'),
     supabase.from('character_action_log').select('id,action_id,performed_at,roll_total,target_number,succeeded,xp_awarded').eq('character_id',captain.id).order('id',{ascending:false}).limit(10),
-    supabase.from('character_skill_upgrades').select('skill_id,bonus_pips').eq('character_id',captain.id)
+    supabase.from('character_skill_upgrades').select('skill_id,bonus_pips').eq('character_id',captain.id),
+    supabase.from('character_positions').select('location_id').eq('character_id',captain.id).single(),
+    supabase.from('character_location_discoveries').select('location_id,discovered_at').eq('character_id',captain.id),
+    supabase.from('game_locations').select('id,slug,kind,x,y,is_published,game_locations_i18n(locale,name,description)').eq('is_published',true),
+    supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published').eq('is_published',true),
+    supabase.from('game_location_actions').select('location_id,action_id')
   ]);
-  const problem=p.error||r.error||a.error||l.error||u.error;
+  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error;
   if(problem){setError(problem.message);return;}
   setProgress(p.data as Progress);setRules(r.data as Rules);setActions(a.data as Action[]);setLogs(l.data as Log[]);setUpgrades(u.data||[]);
+  setPosition(pos.data?.location_id||'');setDiscoveries((dis.data||[]) as SectorDiscovery[]);
+  setLocations((loc.data||[]) as unknown as SectorLocation[]);setRoutes((rou.data||[]) as SectorRoute[]);
+  setPlacements(placement.data||[]);
  },[captain.id]);
  useEffect(()=>{void refresh();},[refresh]);
  useEffect(()=>{const interval=setInterval(()=>setTime(Date.now()),10000);return()=>clearInterval(interval);},[]);
@@ -65,10 +78,20 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   const r=await supabase.rpc('reset_test_captain',{p_confirmation:'RESET'});
   if(r.error){setError(r.error.message);setBusy(false);}else onReset();
  };
+ const here=locations.find(x=>x.id===position);
+ const hereName=here?.game_locations_i18n.find(x=>x.locale===lang)?.name||here?.game_locations_i18n.find(x=>x.locale==='hu')?.name||'—';
+ const localActions=actions.filter(a=>placements.some(x=>x.location_id===position&&x.action_id===a.id));
+ const travel=async(destination:string)=>{
+  if(busy||!position)return;setBusy(true);setError('');setTravelNotice('');setResult(null);
+  const res=await supabase.rpc('travel_to_location',{p_target:destination});
+  if(res.error)setError(res.error.message);
+  else{await refresh();setTime(Date.now());setTravelNotice(tr('Megérkeztél a célpontra.','Arrived at destination.'));}
+  setBusy(false);
+ };
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
  return <section className="cmd-shell">
   <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
-   <nav>{(['bridge','character','ship','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),log:tr('Napló','Log')})[k]}</button>)}</nav>
+   <nav>{(['bridge','map','character','ship','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),log:tr('Napló','Log')})[k]}</button>)}</nav>
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
@@ -77,13 +100,18 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||'vagabond'}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>
   <main className="cmd-body">
-   {tab==='bridge'&&<><div className="cmd-title"><h2>{tr('ELÉRHETŐ TEVÉKENYSÉGEK','AVAILABLE ACTIVITIES')}</h2><small>{tr('Határvidéki állomás','Frontier Station')}</small></div>
-    <div className="cmd-actions">{actions.map(a=>{const s=skills.find(x=>x.id===a.skill_id);return <article key={a.id} className="cmd-action">
+   {tab==='bridge'&&<><div className="cmd-title"><h2>{tr('ELÉRHETŐ TEVÉKENYSÉGEK','AVAILABLE ACTIVITIES')}</h2><small>{hereName}</small></div>
+    <div className="cmd-actions location-scoped">{localActions.map(a=>{const s=skills.find(x=>x.id===a.skill_id);return <article key={a.id} className="cmd-action">
      <div className="cmd-action-art">{s&&<SkillArt slug={s.slug} path={s.icon_path}/>}</div>
      <h3>{local(a.game_actions_i18n)?.name||a.slug}</h3><p>{local(a.game_actions_i18n)?.description}</p>
      <footer><small>⚡{a.energy_cost} · TN {a.target_number}</small><button disabled={busy||!progress||energy<a.energy_cost} onClick={()=>void doAction(a)}>{tr('Végrehajtás','Perform')} →</button></footer>
     </article>})}</div>
+    {localActions.length===0&&<p className="cmd-empty">{tr('Itt nincs elérhető akció. Nyisd meg a szektortérképet és indulj tovább!','No actions available here. Open the sector map and travel onward!')}</p>}
     <div className="cmd-result" role="status">{result?<><strong>{result.succeeded?tr('SIKER','SUCCESS'):tr('SIKERTELEN','FAILED')}</strong><span>{local(actions.find(a=>a.id===result.action_id)?.game_actions_i18n)?.[result.succeeded?'success_message':'failure_message']} · {tr('Dobás','Roll')}: {result.dice.join(' + ')}{result.pip_bonus?' + '+result.pip_bonus:''} = {result.roll_total} / TN {result.target_number} · +{result.xp_awarded} XP {result.level_up?' · '+tr('SZINTLÉPÉS!','LEVEL UP!'):''}</span></>:<span>{tr('Az energia a szerveren, kijelentkezés alatt is regenerálódik.','Energy regenerates on the server, even while offline.')}</span>}</div>
+   </>}
+   {tab==='map'&&<><div className="cmd-title"><h2>{tr('SZAKASZTÉRKÉP // SX-001','SECTOR MAP // SX-001')}</h2><small>{hereName}</small></div>
+    <SectorMap locale={locale} locations={locations} routes={routes} discovered={discoveries} currentId={position} energy={energy} busy={busy} onTravel={destination=>void travel(destination)}/>
+    {(travelNotice||error)&&<div className={'cmd-map-notice '+(error?'cmd-error':'')} role="status">{error||travelNotice}</div>}
    </>}
    {tab==='character'&&<><div className="cmd-title"><h2>{tr('KARAKTERFEJLŐDÉS','CHARACTER PROGRESSION')}</h2><small>{tr('Szabad pontok','Free points')}: {progress?.upgrade_points||0}</small></div>
     <div className="cmd-attributes">{attributes.map(a=><div key={a}><AttributeArt attribute={a}/><b>{attributeNames[lang][a]}</b><span>{toDice(captain.attribute_pips[a]||3)}</span></div>)}</div>
