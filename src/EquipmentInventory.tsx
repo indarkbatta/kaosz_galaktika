@@ -26,7 +26,7 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  const [items,setItems]=useState<Item[]>([]),[stock,setStock]=useState<Stock[]>([]),[equipped,setEquipped]=useState<Equipped[]>([]);
  const [target,setTarget]=useState<string>('captain'),[busy,setBusy]=useState(false),[cap,setCap]=useState(24);
  const [selected,setSelected]=useState<{slot:string;crewId:string|null}|null>(null);
- const [dragged,setDragged]=useState<string|null>(null);
+ const [dragged,setDragged]=useState<string|null>(null),[page,setPage]=useState(0);
  const name=(item:Item|undefined)=>item?.game_items_i18n.find(x=>x.locale===locale)?.name||item?.game_items_i18n.find(x=>x.locale==='hu')?.name||item?.slug||'—';
  const refresh=useCallback(async()=>{
   const [i,st,eq,capacity]=await Promise.all([
@@ -55,6 +55,8 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  }
  const currentName=target==='captain'?captainName:crew.find(c=>c.id===target)?.name||'—';
  const used=stock.filter(x=>x.quantity>0).length;
+ const pages=Math.max(1,Math.ceil(cap/36));
+ const displayPage=Math.min(page,pages-1);
  return <section className="eq-root">
   <div className="eq-tabs"><button className={target==='captain'?'active':''} onClick={()=>{setTarget('captain');setSelected(null);}}>{tr('KAPITÁNY','CAPTAIN')}</button>
    {crew.map(c=><button key={c.id} className={target===c.id?'active':''} onClick={()=>{setTarget(c.id);setSelected(null);}}>{c.name}</button>)}
@@ -76,11 +78,11 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
     <p>{crewId?tr('Csak legénységi tárgyak helyezhetők ide.','Only crew equipment can be assigned here.'):tr('Hátizsák: +12 vagy a tárgyon megadott tárolóhely.','Backpack provides bonus storage slots.')}</p>
    </div>
    <div className="eq-backpack">
-    <header><strong>{tr('TÁRGYKÉSZLET','ITEM STASH')}</strong><span>{used} / {cap} {tr('tárgyhely','slots')}</span></header>
+    <header><strong>{tr('TÁRGYKÉSZLET','ITEM STASH')}</strong><span>{used} / {cap} {tr('tárgyhely','slots')}</span>{pages>1&&<nav className="eq-pager"><button disabled={displayPage===0} onClick={()=>setPage(x=>Math.max(0,x-1))}>‹</button><span>{displayPage+1}/{pages}</span><button disabled={displayPage>=pages-1} onClick={()=>setPage(x=>Math.min(pages-1,x+1))}>›</button></nav>}</header>
     {selected&&<div className="eq-picker"><span>{tr('Felszerelési hely','Slot')}: {slots.find(x=>x.key===selected.slot)?.[en?'en':'hu']}</span>
      <div>{avail(selected.slot).map(item=><button key={item.id} onClick={()=>void setEquipment(selected.slot,item.id,crewId)} disabled={busy}><ItemPicture item={item}/>{name(item)}</button>)}
      <button onClick={()=>void setEquipment(selected.slot,null,crewId)} disabled={busy}>{tr('LEVÉTEL','UNEQUIP')}</button></div></div>}
-    <div className="eq-grid">{Array.from({length:cap},(_,index)=>{const row=stock.filter(x=>x.quantity>0)[index],item=items.find(i=>i.id===row?.item_id);
+    <div className="eq-grid">{Array.from({length:Math.min(36,cap-displayPage*36)},(_,index)=>{const row=stock.filter(x=>x.quantity>0)[index+displayPage*36],item=items.find(i=>i.id===row?.item_id);
      return <div key={index} className={'eq-cell '+(item?'filled ':'')+(item?.rarity||'')}
       draggable={!!item} onDragStart={e=>{if(row){e.dataTransfer.setData('text/plain',row.item_id);setDragged(row.item_id);}}}
       onDragEnd={()=>setDragged(null)} title={item?name(item):''}>
