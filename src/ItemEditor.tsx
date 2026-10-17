@@ -6,11 +6,11 @@ import {LucidePlus,LucideMinus} from './components/LucideSigns';
 import './item-editor.css';
 
 type I18n={locale:string;name:string;description:string};
-type Item={id:string;slug:string;category:string;rarity:string;is_published:boolean;game_items_i18n:I18n[]};
+type Item={id:string;slug:string;category:string;rarity:string;is_published:boolean;image_path:string|null;equip_owner:string|null;equip_slot:string|null;capacity_bonus:number;game_items_i18n:I18n[]};
 type Ingredient={item_id:string;quantity:number};
 type RecipeRow={output_item_id:string;ingredient_item_id:string;quantity:number};
 type Lang={code:string;native_name:string};
-const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published:false,game_items_i18n:[]};
+const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published:false,image_path:null,equip_owner:null,equip_slot:null,capacity_bonus:0,game_items_i18n:[]};
 export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>void}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [items,setItems]=useState<Item[]>([]),[recipes,setRecipes]=useState<RecipeRow[]>([]);
@@ -28,7 +28,7 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
  }
  async function load(id?:string){
   const [i,r,l]=await Promise.all([
-   supabase.from('game_items').select('id,slug,category,rarity,is_published,game_items_i18n(locale,name,description)').order('slug'),
+   supabase.from('game_items').select('id,slug,category,rarity,is_published,image_path,equip_owner,equip_slot,capacity_bonus,game_items_i18n(locale,name,description)').order('slug'),
    supabase.from('game_item_recipes').select('output_item_id,ingredient_item_id,quantity'),
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order')
   ]);
@@ -59,7 +59,12 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
   const r=await supabase.rpc('save_game_item',{p_id:draft.id||null,p_slug:draft.slug,p_category:draft.category,p_rarity:draft.rarity,
     p_published:draft.is_published,p_translations:values,p_ingredients:ingredients});
   if(r.error)notify(r.error.message,'error');
-  else{notify(tr('Tárgy és recept mentve.','Item and recipe saved.'),'success');await load((r.data as {id:string}).id);}
+  else{
+   const id=(r.data as {id:string}).id;
+   const meta=await supabase.rpc('set_item_presentation',{p_item:id,p_image_path:draft.image_path||null,p_equip_owner:draft.equip_owner,p_equip_slot:draft.equip_slot,p_bonus:draft.capacity_bonus});
+   if(meta.error)notify(meta.error.message,'error');else notify(tr('Tárgy, kép és felszerelési slot mentve.','Item, artwork and slot saved.'),'success');
+   await load(id);
+  }
   setBusy(false);
  }
  return <EditorFrame>
@@ -84,6 +89,12 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
      <div className="item-editor-fields"><label>{tr('Kategória','Category')}<select value={draft.category} onChange={e=>{const category=e.target.value;setDraft(x=>({...x,category}));if(category==='material')setIngredients([]);}}>
       {(['material','data','trade','equipment','consumable'] as const).map(x=><option key={x} value={x}>{{material:tr('Alapanyag','Raw material'),data:tr('Adat','Data'),trade:tr('Kereskedelmi','Trade'),equipment:tr('Felszerelés','Equipment'),consumable:tr('Fogyóeszköz','Consumable')}[x]}</option>)}
      </select></label><label>{tr('Ritkaság','Rarity')}<select value={draft.rarity} onChange={e=>setDraft(x=>({...x,rarity:e.target.value}))}>{['common','uncommon','rare','epic'].map(x=><option value={x} key={x}>{x}</option>)}</select></label></div>
+     <div className="item-presentation"><div className="item-presentation-art">{draft.image_path?<img src={'https://assets.voidnoir.net/'+draft.image_path} alt=""/>:<span>◈</span>}</div><label>{tr('Cloudflare R2 kép útvonala','Cloudflare R2 image path')}<input value={draft.image_path||''} placeholder="hatarvilag/items/item-v2.webp" onChange={e=>setDraft(x=>({...x,image_path:e.target.value||null}))}/></label></div>
+     <div className="item-editor-fields"><label>{tr('Felszerelés tulajdonosa','Equipment owner')}<select value={draft.equip_owner||''} onChange={e=>setDraft(x=>({...x,equip_owner:e.target.value||null,equip_slot:null,capacity_bonus:0}))}><option value="">{tr('Nem felszerelhető','Not equippable')}</option><option value="captain">{tr('Kapitány','Captain')}</option><option value="crew">{tr('Legénység','Crew')}</option></select></label>
+     {draft.equip_owner&&<label>{tr('Felszerelési hely','Equipment slot')}<select value={draft.equip_slot||''} onChange={e=>setDraft(x=>({...x,equip_slot:e.target.value||null,capacity_bonus:e.target.value==='backpack'?x.capacity_bonus:0}))}><option value="">{tr('Válassz helyet','Choose slot')}</option>
+      {(draft.equip_owner==='captain'?['main_weapon','sidearm','body_armor','utility1','utility2','belt','backpack','relic']:['armor','weapon','utility']).map(slot=><option key={slot} value={slot}>{slot.replaceAll('_',' ')}</option>)}</select></label>}
+     </div>
+     {draft.equip_slot==='backpack'&&<label>{tr('Plusz inventárhelyek','Bonus inventory slots')}<input type="number" min="0" max="100" value={draft.capacity_bonus} onChange={e=>setDraft(x=>({...x,capacity_bonus:Number(e.target.value)}))}/></label>}
      <label className="item-editor-checkbox"><input type="checkbox" checked={draft.is_published} onChange={e=>setDraft(x=>({...x,is_published:e.target.checked}))}/>{tr('Publikált','Published')}</label>
      <p>{tr('Az új alapanyagok mentés után automatikusan bekerülnek a receptválasztóba.','New raw materials automatically appear in the recipe selector after saving.')}</p>
     </>}
