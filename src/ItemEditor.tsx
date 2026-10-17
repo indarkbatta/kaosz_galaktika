@@ -77,7 +77,7 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
   </nav>
   <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Tárgyak','Items')} ({items.length})</strong><button type="button" onClick={newItem} title={tr('Új tárgy','New item')}><LucidePlus/></button></div>
    <div className="ed-roster-list">{items.map(item=><button type="button" className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>choose(item,recipes)}>
-    <span className="ed-thumbnail item-editor-symbol">{({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>
+    <span className="ed-thumbnail item-editor-symbol">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>
     <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {item.category}</small></span></button>)}</div>
   </aside>
   <section className="ed-editor">
