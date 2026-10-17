@@ -232,3 +232,31 @@
 - Database QA using BEGIN/ROLLBACK: editor refill RPC; backpack 24→36→24 capacity; main/captain/crew equips and unequips; mismatched captain/crew items rejected; authenticated role has no equipment INSERT/UPDATE grants, anon has no refill EXECUTE. All test modifications were rolled back.
 - Next progression: persist item effects (attribute/skill modifiers), expand captain backpack weight/grid semantics and portrait artwork, add more uniquely rendered item scenes and item rarity affordances. Equipment currently manages ownership and slotting, without damage bonuses yet.
 - Vercel Hobby: deploy ONE production build only after current HEAD self-hosted runner succeeds; logged-in browser E2E still recommended.
+
+
+## M5.4 stabilizálás — 2026-10-17
+
+**GitHub kód-HEAD:** c0f7ce5cb48bffab1efc145a221bdd2523098982.
+**Self-hosted GitHub Actions:** run 39034022059 — SUCCESS (npm run build).
+**Supabase migration:** m62_equipment_inventory_stabilization, migrációs DB-verzió 20261017124714, forrás: supabase/migrations/20261017144500_m62_equipment_inventory_stabilization.sql — alkalmazva.
+**Vercel:** az előző 70f57ec95a30 production READY; az M62 és az új frontend NINCS publikálva. A projektben tiltva van az automatikus GitHub→Vercel deployment.
+
+### Javítások
+- Az inventory kapacitásellenőrzése az összes INSERT és quantity UPDATE után, elhalasztott (commit előtti) constraint triggerrel a végleges állapotot ellenőrzi. Így a 0→pozitív stack újraaktiválása sem kerüli meg a 24/36 slotkorlátot, de a hátizsákcsere tranzakciójának köztes állapota nem okoz téves elutasítást.
+- A private.set_equipment_impl csak a teljes felszereléscsere végén ellenőrzi a kapacitást; a célitem levonását, a régi equipment visszarakását és az új hátizsák kapacitását együtt számolja.
+- A legénységi csere akkor is visszaadja az equipmentet a raktérbe, ha az új jelölt neve megegyezik a régivel. A crew/character tulajdonjogot adatbázis-szintű összetett idegen kulcs is erősíti.
+- A public.get_inventory_capacity() már SECURITY INVOKER; megszűnt az ehhez kapcsolódó Supabase security-definer figyelmeztetés.
+- public.save_game_item_full(...) atomikus RPC: itemadatok, HU/EN fordítások, recept, publikálás, képútvonal és felszerelési slot egy műveletben mentődnek. Meglévő, eredetileg recept nélküli equipment is szerkeszthető, miközben új craftolható equipmenthez továbbra is kell recept.
+- Az EquipmentInventory kompatibilis inventory-ikonokra kattintva vagy drag-and-droppal is felszerel; a UI az inkompatibilis dropot jelzi, a szerver önállóan validál. Aszinkron mentés esetén a busy-state try/finally kezelést kapott.
+
+### QA
+- Élő adatbázison, rollbackelt teszttranzakciókban: kapitányi felszerelés/levétel; hibás captain/crew kompatibilitás elutasítása; +12/-12 backpack slot; azonos nevű recruit equipment-return; recept nélküli gyári equipment szerkesztése az atomi RPC-vel.
+- Külön teszt: hátizsákcsere 29 pozitív stack mellett sikeres (átmenetileg 24-es kapacitás ellenére); 0-ról 1-re növeléssel létrehozott 25. stack 24 slotos raktérnél elutasítva. Az összes tesztbeszúrás visszagörgetve.
+- Jogosulatlan felhasználó equipment és item editor RPC-hívása elutasítva; az authenticated kliens közvetlen inventory/equipment módosító adatjogai hiányoznak.
+- Cloudflare voidnoir/hatarvilag/items/: az adatbázis 20 képútvonalának mindegyike létezik R2-ben, image/webp metaadattal. **Nem 20 különálló kép:** a captain_toolkit-v2.webp és crew_utility-v2.webp tartalma (ETag) azonos, a legénységi utilityhez önálló ábrázolás később szükséges.
+
+### Nyitott
+- Valós bejelentkezett browser E2E (különböző monitor- és mobilméretek; drag-and-drop, tooltip, picker, energia debug, képmegjelenés) **nem történt meg**. A sikeres TypeScript/Vite build ezt nem pótolja.
+- Párhuzamos crafting/equipment/loot konkurenciatesztek és item-metaadatok visszamenőleges változtatásának (pl. felszerelt backpack kapacitáscsökkenése) végleges termékszabályai további munkát igényelnek.
+- auth_leaked_password_protection továbbra is Supabase Auth konfigurációs figyelmeztetés; ez nem az equipment fejlesztés része.
+- M5.5 adatvezérelt item-statok és harci módosítók még **nincsenek bevezetve**. Ezeket csak M5.4 valódi böngészős QA után kezdjük el.
