@@ -6,12 +6,13 @@ import Editor from './Editor';
 import SkillEditor from './SkillEditor';
 import GameplayEditor from './GameplayEditor';
 import SectorEditor from './SectorEditor';
+import ItemEditor from './ItemEditor';
 import CharacterPage from './CharacterPage';
 import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'skills'|'gameplay'|'sector'|'admin';
+type Page='dashboard'|'editor'|'skills'|'gameplay'|'sector'|'items'|'admin';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
@@ -153,10 +154,11 @@ function App(){
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>
     </main>
-    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')} onGameplay={()=>setPage('gameplay')} onSector={()=>setPage('sector')}/>
+    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')} onGameplay={()=>setPage('gameplay')} onSector={()=>setPage('sector')} onItems={()=>setPage('items')}/>
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onBack={()=>setPage('editor')}/>
+    :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='dashboard'?<div className="ch-v2-mount"><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>
     :<main className="terminal in-game">
       <nav className="tabs">
