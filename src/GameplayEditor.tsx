@@ -63,7 +63,7 @@ export default function GameplayEditor({locale,onBack}:{locale:string;onBack:()=
    await load(edit?.id);notify(tr('Sikeresen mentve.','Saved.'),'success');
   }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba','Save error'),'error');}finally{setBusy(false);}
  }
- const patchLoot=(itemId:string,patch:Partial<LootConfig>)=>setLootRules(p=>({...p,[itemId]:{enabled:false,chance_percent:100,min_qty:1,max_qty:1,...p[itemId],...patch}}));
+ const patchLoot=(itemId:string,patch:Partial<LootConfig>)=>setLootRules(p=>({...p,[itemId]:{...(p[itemId]??{enabled:false,chance_percent:100,min_qty:1,max_qty:1}),...patch}}));
  const nr=(field:keyof Rules,number:number)=>setRules(prev=>({...prev,[field]:number}));
  const na=(field:keyof Action,value:string|number|boolean)=>setEdit(prev=>prev?{...prev,[field]:value}:prev);
  return <EditorFrame>
