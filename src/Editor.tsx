@@ -15,7 +15,7 @@ type CatalogRecord = {
   game_species_i18n?:Translation[];game_classes_i18n?:Translation[];
   game_species_skill_bonuses?:BonusRow[];game_classes_skill_bonuses?:BonusRow[];
 };
-type Skill = {id:string;slug:string;attribute:Attr;is_combat:boolean;position:number;game_skills_i18n:{locale:string;name:string}[]};
+type Skill = {id:string;slug:string;attribute:Attr;is_combat:boolean;icon_path:string|null;position:number;game_skills_i18n:{locale:string;name:string}[]};
 type TranslationBody = {name:string;description:string;passives:string;starting_equipment:string;traits:string;gameplay_role:string};
 type FormBody = {
   id?:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string;is_published:boolean;
@@ -110,7 +110,7 @@ export default function Editor({locale,onBack,onSkills}:{locale:string;onBack:()
    const other=k==='species'?'classes':'species';
    const [cat,sk,lang,otherCount]=await Promise.all([
      supabase.from(table(k)).select(editorSelect(k)).order('created_at'),
-     supabase.from('game_skills').select('id,slug,attribute,is_combat,position,game_skills_i18n(locale,name)').order('attribute').order('position'),
+     supabase.from('game_skills').select('id,slug,attribute,is_combat,position,icon_path,game_skills_i18n(locale,name)').order('attribute').order('position'),
      supabase.from('game_locales').select('code,native_name,name_en,is_enabled,sort_order').eq('is_enabled',true).order('sort_order'),
      supabase.from(table(other)).select('id',{head:true,count:'exact'})
    ]);
@@ -242,7 +242,7 @@ export default function Editor({locale,onBack,onSkills}:{locale:string;onBack:()
          <div className="ed-skill-groups">{skillGroups.map(g=><section className={'ed-skill-group ed-attr-'+g.attr} key={g.attr}>
            <h3>{attrNames[l][g.attr]} <span>{form.primary_attribute===g.attr?'+1D':form.secondary_attribute===g.attr?'+1':''}</span></h3>
            {g.skills.length===0?<p>{t('noSkill')}</p>:g.skills.map(s=><div className="ed-skill-row" key={s.id}>
-             <label htmlFor={'skill-'+s.id}>{s.game_skills_i18n.find(x=>x.locale===l)?.name||s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug}
+             <label htmlFor={'skill-'+s.id}>{s.icon_path&&<img className="ed-skill-icon" src={'https://assets.voidnoir.net/'+s.icon_path} alt="" loading="lazy"/>}{s.game_skills_i18n.find(x=>x.locale===l)?.name||s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug}
                {s.is_combat&&<span className="ed-combat">{t('combat')}</span>}</label>
              <select id={'skill-'+s.id} aria-label={t('bonusLabel')} value={form.bonuses[s.id]||0} onChange={e=>updateSkill(s.id,Number(e.target.value))}>
                {bonusOptions.map(pips=><option key={pips} value={pips}>{pips?asDice(pips):t('bonusNone')}</option>)}
