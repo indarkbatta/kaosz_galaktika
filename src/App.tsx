@@ -147,7 +147,7 @@ function App(){
     </main>
     :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')}/>
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='dashboard'?<div className="ch-v2-mount"><div className="ch-v2-shortcuts">{(role==='editor'||role==='admin')&&<button onClick={()=>setPage('editor')}>◈ {t('editor')}</button>}<button onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div><CharacterPage locale={locale}/></div>
+    :page==='dashboard'?<div className="ch-v2-mount"><div className="ch-v2-shortcuts">{(role==='editor'||role==='admin')&&<button onClick={()=>setPage('editor')}>◈ {t('editor')}</button>}<button onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>
     :<main className="terminal in-game">
       <nav className="tabs">
        <button className="" onClick={()=>setPage('dashboard')}>{t('dashboard')}</button>
