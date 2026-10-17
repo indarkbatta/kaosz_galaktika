@@ -91,7 +91,7 @@ function editorSelect(k:Kind){
  const trans=k==='species'?'game_species_i18n(locale,name,description,passives)':'game_classes_i18n(locale,name,description,starting_equipment,traits,gameplay_role)';
  return '*, '+trans+', '+bonusTable(k)+'(skill_id,bonus_pips)';
 }
-export default function Editor({locale,onBack,onSkills}:{locale:string;onBack:()=>void;onSkills:()=>void}){
+export default function Editor({locale,onBack,onSkills,onGameplay}:{locale:string;onBack:()=>void;onSkills:()=>void;onGameplay:()=>void}){
  const l=locale==='en'?'en':'hu',dict=ui[l],t=(key:UiKey)=>dict[key];
  const [kind,setKind]=useState<Kind>('species'),[tab,setTab]=useState<Tab>('general');
  const [records,setRecords]=useState<CatalogRecord[]>([]);
@@ -187,7 +187,8 @@ export default function Editor({locale,onBack,onSkills}:{locale:string;onBack:()
    <nav className="ed-nav" aria-label={t('title')}>
      <h2>{t('title')}</h2>
      <button type="button" onClick={()=>navigate(onBack)}>⌂　{t('back')}</button>
-     <button type="button" onClick={()=>navigate(onSkills)}>✧　{l==='hu'?'Skill Editor':'Skill Editor'}</button>
+     <button type="button" onClick={()=>navigate(onSkills)}>✧　Skill Editor</button>
+     <button type="button" onClick={()=>navigate(onGameplay)}>⚙　{l==='hu'?'Akció- és szabályeditor':'Actions & Rules'}</button>
      <button type="button" className={kind==='species'?'active':''} onClick={()=>chooseKind('species')}>◈　{t('species')} <span>{counts.species}</span></button>
      <button type="button" className={kind==='classes'?'active':''} onClick={()=>chooseKind('classes')}>✥　{t('classes')} <span>{counts.classes}</span></button>
      <div className="ed-nav-bottom"><span className="ed-online"/> EDITOR <p>SPACE D6 FREE</p></div>
