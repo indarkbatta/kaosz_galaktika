@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useMemo,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
+import {notify} from './lib/toast';
 import './editor.css';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
 import {SkillArt} from './components/GameArt';
@@ -102,6 +103,8 @@ export default function Editor({locale,onBack,onSkills,onGameplay,onSector}:{loc
  const [form,setForm]=useState<FormBody>(emptyForm);
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[dirty,setDirty]=useState(false);
  const [error,setError]=useState(''),[message,setMessage]=useState('');
+ useEffect(()=>{if(error)notify(error,'error');},[error]);
+ useEffect(()=>{if(message)notify(message,'success');},[message]);
  const [modal,setModal]=useState<'delete'|'discard'|null>(null);
  const pending=useRef<(()=>void)|null>(null);
  const [languageForm,setLanguageForm]=useState({code:'',native_name:'',name_en:''});
@@ -211,8 +214,7 @@ export default function Editor({locale,onBack,onSkills,onGameplay,onSector}:{loc
        <span>{kind==='species'?t('species'):t('classes')}</span>
      </header>
      <EditorTabs label={t('title')} items={(['general','skills','dictionary'] as Tab[]).map(id=>({id,name:t(id)}))} selected={tab} onSelect={id=>setTab(id as Tab)}/>
-     {error&&<div className="ed-feedback ed-error" role="alert">{error}</div>}
-     {message&&<div className="ed-feedback ed-success" role="status">{message}</div>}
+
      <form className="ed-form" id="ed-form" onSubmit={save}>
        {tab==='general'&&<div className="ed-tab-pane">
          <div className="ed-general-grid">
