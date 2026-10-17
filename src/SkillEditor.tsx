@@ -60,7 +60,7 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
     }else{
       if(!active)throw new Error(t.error);
       if(!names.hu?.name?.trim()||!names.en?.name?.trim())throw new Error(t.needNames);
-      if(icon&&!/^hatarvilag\/skills\/[a-z0-9_-]+\.(png|jpg|webp)$/.test(icon))throw new Error(t.iconError);
+      if(icon&&!/^hatarvilag\/(skills|art)\/[a-z0-9_-]+\.(png|jpg|webp|avif)$/.test(icon))throw new Error(t.iconError);
       const r=await supabase.from('game_skills').update({icon_path:icon||null}).eq('id',active.id);
       if(r.error)throw r.error;
       const data=Object.entries(names).filter(([code,x])=>((code==='hu'||code==='en')||x.name.trim())&&x.name.trim()).map(([code,x])=>({skill_id:active.id,locale:code,name:x.name.trim(),description:x.description.trim()}));
