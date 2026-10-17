@@ -78,7 +78,7 @@ function transList(item:CatalogRecord,k:Kind){return (k==='species'?item.game_sp
 function bonusList(item:CatalogRecord,k:Kind){return (k==='species'?item.game_species_skill_bonuses:item.game_classes_skill_bonuses)||[];}
 function translated(item:CatalogRecord,k:Kind,lang:string){return transList(item,k).find(t=>t.locale===lang)?.name||transList(item,k).find(t=>t.locale==='hu')?.name||item.slug;}
 function hydrate(item:CatalogRecord,k:Kind):FormBody{
- const translations=Object.fromEntries(transList(item,k).map(x=>[x.locale,{...emptyTranslation(),...x}]));
+ const translations:Record<string,TranslationBody>=Object.fromEntries(transList(item,k).map(x=>[x.locale,{...emptyTranslation(),...x}]));
  if(!translations.hu)translations.hu=emptyTranslation();
  if(!translations.en)translations.en=emptyTranslation();
  return {id:item.id,slug:item.slug,primary_attribute:item.primary_attribute,secondary_attribute:item.secondary_attribute,
