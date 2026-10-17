@@ -45,7 +45,7 @@ begin
  select count(*) into n from public.character_inventory where character_id=cid and quantity>0;
  if n>newcap then raise exception 'Inventory capacity exceeded after equipment change';end if;
  return jsonb_build_object('slot',p_slot,'item_id',p_item,'crew_id',p_crew,'previous',old_id);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION private.save_game_item_impl(p_id uuid, p_slug text, p_category text, p_rarity text, p_published boolean, p_translations jsonb, p_ingredients jsonb)
  RETURNS jsonb
@@ -109,7 +109,7 @@ begin
  end loop;
  update public.game_items set is_published=p_published where id=item_id;
  return jsonb_build_object('id',item_id,'ingredient_count',jsonb_array_length(p_ingredients),'published',p_published);
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION private.on_crew_replacement()
  RETURNS trigger
@@ -128,7 +128,7 @@ begin
   end loop;
  end if;
  return new;
-end $function$
+end $function$;
 
 CREATE OR REPLACE FUNCTION public.get_inventory_capacity()
  RETURNS integer
@@ -141,7 +141,7 @@ begin
 select id into c from public.characters where user_id=auth.uid();
 if c is null then raise exception 'Captain required';end if;
 return private.inventory_capacity(c);
-end $function$
+end $function$;
 
 
 -- Check the FINAL committed inventory after all equip/loot/craft stack changes.
