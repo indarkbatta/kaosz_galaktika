@@ -40,3 +40,11 @@
 .cmd-inventory-item p{font-size:11px;color:#aebfca;line-height:1.35;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .cmd-inventory-item b{font-size:18px;color:#f2ba90;align-self:center}
 @media(max-width:760px){.cmd-head nav{grid-template-columns:repeat(6,minmax(0,1fr))}.cmd-head nav button{font-size:9px}.cmd-inventory{grid-template-columns:1fr;grid-auto-rows:minmax(55px,1fr);gap:4px}.cmd-inventory-item{padding:4px}.cmd-inventory-emblem{flex-basis:35px;height:35px;font-size:21px}.cmd-inventory-item p{display:none}}
+
+/* M5.3: seven independently bounded game tabs, including cantina. */
+.cmd-head nav{grid-template-columns:repeat(7,minmax(0,1fr))}
+.cmd-head nav button{min-width:0;font-size:10px;line-height:1.2;padding:7px 2px;overflow-wrap:anywhere}
+.cmd-cargo-tabs{display:flex;align-items:center;gap:6px}
+.cmd-cargo-tabs button{background:#15202b;border:1px solid #485d6c;color:#d4dce4;padding:6px 11px;font-size:10px}
+.cmd-cargo-tabs button.active{background:#6a3024;border-color:#d67753;color:#fff}
+@media(max-width:760px){.cmd-head nav{grid-template-columns:repeat(7,minmax(0,1fr))}.cmd-head nav button{font-size:9px;padding:5px 1px}.cmd-cargo-tabs button{padding:4px 5px;font-size:9px}}
