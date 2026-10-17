@@ -8,3 +8,6 @@ Node 22 szükséges. Futtatás: npm install, npm run dev, npm run build. A webes
 A kétnyelvű, bővíthető szótár a src/i18n könyvtárban található. Az auth és jogosultságok szerveroldalon érvényesítettek (Supabase RLS). A részletes projektállapot a docs/HANDOFF.md fájlban olvasható.
 
 **R2 runtime asset origin:** https://assets.voidnoir.net; meglévő bucket: `voidnoir`, kulcsprefix `hatarvilag/`. A bejelentkező háttér az első körös kisfelbontású változat. Cloudflare tárhelystruktúra és további lépések: [docs/HANDOFF.md](docs/HANDOFF.md).
+
+## M1.2: kapitánygenerálás és Skill Editor
+A skillikonok a Cloudflare R2 alatt vannak (`voidnoir/hatarvilag/skills/`). A skillkatalógus, a szabálykonfiguráció és a két nyelvű szerkesztők Supabase-ből dolgoznak. A karaktergenerálás szerveroldali RPC-t használ. Részletek: [docs/M12_IMPLEMENTATION.md](docs/M12_IMPLEMENTATION.md). A Git push nem indít automatikus Vercel telepítést.
