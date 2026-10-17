@@ -151,12 +151,11 @@ function App(){
     :page==='dashboard'?<CharacterPage locale={locale} />
     :<main className="terminal in-game">
       <nav className="tabs">
-       <button className={page==='dashboard'?'active':''} onClick={()=>setPage('dashboard')}>{t('dashboard')}</button>
+       <button className="" onClick={()=>setPage('dashboard')}>{t('dashboard')}</button>
        {(role==='editor'||role==='admin')&&<button className={page==='editor'?'active':''} onClick={()=>setPage('editor')}>{t('editor')}</button>}
        {role==='admin'&&<button className={page==='admin'?'active':''} onClick={()=>setPage('admin')}>{t('admin')}</button>}
        <button className="logout" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button>
       </nav>
-      {page==='dashboard'&&<section className="content"><small>COMMAND / 01</small><h2>{t('welcome')}, {profile?.display_name||user.email?.split('@')[0]}.</h2><div className="stats"><div><span>{t('role')}</span><strong>{t(role)}</strong></div><div><span>{t('email')}</span><strong>{user.email}</strong></div></div><div className="settings"><strong>{t('settings')}</strong>{selector}</div></section>}
 
       {page==='admin'&&role==='admin'&&<section className="content"><small>ACCESS / 03</small><h2>{t('users')}</h2><p className="dim">{t('adminText')}</p>{rosterError&&<p role="alert">{rosterError}</p>}{rows.length===0?<p>{t('noUsers')}</p>:rows.map(r=><div className="role-row" key={r.user_id}><code>{r.user_id.slice(0,12)}…</code><strong>{t(r.role)}</strong></div>)}</section>}
       {(page==='admin'&&role!=='admin'||page==='editor'&&role==='user')&&<p>{t('noAccess')}</p>}
