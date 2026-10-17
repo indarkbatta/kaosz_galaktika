@@ -132,3 +132,23 @@
 - UI UX: kapitány → faj → kaszt → tulajdonságok → skillek → hajó → véglegesítés; tulajdonság szerinti skill panel; fix alkalmazás-magasság és scroll nélküli nézet, nem régi széthúzott dashboard.
 - M1.3 CI: self-hosted `tsc --noEmit && vite build` sikeresen ellenőrizve; a legutolsó dokumentációs/migrációs commit build eredményét mindig ellenőrizni kell.
 - Vercel: HOBBY, korábbi elv érvényben — nincs automatikus deploy; az aktuális új művészeti irány csak a GitHub/DB/R2 forrásokban van, publikálást külön felhasználói kérésre végezzünk.
+
+
+## M1.4 — High-resolution R2 asset upgrade (2026-10-17)
+
+**User request:** 33 illustrations are blurry. Root cause: the previous M1.3 `game-atlas-v3.avif` is only 480×500 pixels, with skill crops 64×64, attribute crops 80×80 and ship crops 160×100. Rendering these in larger card panels caused resampling blur. Upscaling the old atlas would not recover source detail.
+
+**Implemented:**
+- The original high-resolution generated source artwork already existed. Re-exported from the original images, *not* resized from the previously compressed low-resolution atlas.
+- 25 individually stored skill illustrations: `voidnoir/hatarvilag/skills/<slug>-hd-v4.avif`, approximately 245×245 pixels from the original 1254×1254 / 5×5 grid.
+- 5 individually stored attribute illustrations: `voidnoir/hatarvilag/attributes/<attribute>-hd-v4.avif`, approx 390–470 pixels per source crop.
+- 3 individually stored starter ship paintings: `voidnoir/hatarvilag/ships/<ship>-hd-v4.avif`, **1448×1086** pixels, original image dimensions.
+- Total **33 new image objects, about 1.1 MB**. Cloudflare R2 list with pagination verified 25/25 skill images, 5/5 attributes and 3/3 ships.
+- `src/components/GameArt.tsx` now maps directly to **individual high-resolution Cloudflare R2 files**, supports per-skill custom `icon_path`, and retains legacy fallbacks to HD defaults. `background-size: contain` prevents cropping/overstretch.
+- Supabase applied migration `m14_hd_individual_cloudflare_game_assets` changes published `game_skills.icon_path` and `game_starter_ships.image_path` from the legacy atlas to their dedicated files without overwriting custom image assignments.
+- Canonical HD manifest: `https://assets.voidnoir.net/hatarvilag/art/manifest-hd-v4.json`. The 480×500 atlas is **DEPRECATED**, must not be reused for any new game art.
+- Artwork preserves the approved dramatic digitally painted dark industrial sci-fi art direction, with each skill as a narrative scene, five evocative attribute paintings, and three clearly identifiable spacecraft.
+- Vercel Hobby discipline: only one intentional production deploy after verified build when needed; GitHub commits remain disconnected from automatic Vercel deploy.
+- Follow-up validation: inspect images at common display sizes and high-DPI; test logged-in CharacterPage/SkillEditor after production deployment.
+
+**Asset pipeline rule:** For new content, upload individual files at native source resolution (or at least 256×256 for skill cards; 400×400 for attribute cards; 1200px+ for ships). Prefer AVIF/WebP with quality sufficient to retain painted details. Do not pack images into tiny atlases merely to minimize byte size. Use versioned keys to avoid stale Cloudflare/browser caches.
