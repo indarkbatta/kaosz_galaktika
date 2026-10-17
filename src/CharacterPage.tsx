@@ -1,5 +1,6 @@
 import {useEffect,useMemo,useState} from 'react';
 import {supabase} from './lib/supabase';
+import {notify} from './lib/toast';
 import {attributes,calculateAttributes,remainingPoints,toDice,type Attribute} from './lib/d6';
 import './character.css';
 import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
@@ -34,7 +35,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   ]);
   if(!active)return;
   const problem=s.error||c.error||sh.error||sk.error||r.error||ch.error;
-  if(problem){setError(problem.message);setLoading(false);return;}
+  if(problem){setError(problem.message);notify(problem.message,'error');setLoading(false);return;}
   setSpecies(s.data as unknown as Base[]);setClasses(c.data as unknown as Base[]);
   setShips(sh.data as unknown as Ship[]);setSkills(sk.data as unknown as Skill[]);setRules(r.data as Rules);
   setSpeciesId(s.data?.[0]?.id||'');setClassId(c.data?.[0]?.id||'');setShipId(sh.data?.[0]?.id||'');
@@ -68,7 +69,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   const {error}=await supabase.rpc('create_captain',{
    p_name:name.trim(),p_species:speciesId,p_class:classId,p_ship:shipId,p_attribute_points:attr,p_skill_points:skillPts
   });
-  if(error)setError(error.message);else{
+  if(error){setError(error.message);notify(error.message,'error');}else{
    const {data}=await supabase.from('characters').select('id,captain_name,species_id,class_id,starter_ship_id,attribute_pips,skill_bonus_pips').single();
    if(data){setCaptain(data as Captain);const cr=await supabase.from('character_crew').select('position,name').eq('character_id',data.id);if(!cr.error)setCrew(cr.data||[]);}
   }
@@ -92,7 +93,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   {step===3&&<><div className="ch-v2-section-heading"><h2>{steps[3]}</h2><span>{t(en,'Szabad pip','Remaining pips')} <b>{attrRemaining}</b></span></div><div className="ch-v2-attributes">{attributes.map(a=><div className="ch-v2-attribute" key={a}><AttributeArt attribute={a}/><strong>{names[l][a]}</strong><div className="ch-v2-controls"><button disabled={!(attr[a]||0)} onClick={()=>chooseStat(a,-1)} aria-label={t(en,'Csökkentés','Decrease')}><LucideMinus/></button><b>{toDice(currentStats[a]||3)}</b><button disabled={attrRemaining===0||((currentStats[a]||3)>=(rules?.max_attribute_pips||18))} onClick={()=>chooseStat(a,1)} aria-label={t(en,'Növelés','Increase')}><LucidePlus/></button></div><small>+{attr[a]||0} pip</small></div>)}</div></>}
   {step===4&&<><div className="ch-v2-section-heading"><h2>{steps[4]}</h2><span>{t(en,'Szabad pip','Remaining pips')} <b>{skillRemaining}</b></span></div><div className="ch-v2-attr-switch">{attributes.map(a=><button type="button" key={a} className={activeAttribute===a?'active':''} onClick={()=>setActiveAttribute(a)}><AttributeArt attribute={a}/>{names[l][a]}</button>)}</div><div className="ch-v2-skills">{selectedSkills.map(s=><div className="ch-v2-skill" key={s.id}><SkillArt slug={s.slug} path={s.icon_path}/><strong>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</strong><div className="ch-v2-controls"><button disabled={!(skillPts[s.id]||0)} onClick={()=>chooseSkill(s.id,-1)} aria-label={t(en,'Csökkentés','Decrease')}><LucideMinus/></button><b>{toDice((currentStats[s.attribute]||3)+(skillPts[s.id]||0)+skillBonus(s.id))}</b><button disabled={skillRemaining===0||(skillPts[s.id]||0)>=(rules?.max_allocated_skill_pips||6)} onClick={()=>chooseSkill(s.id,1)} aria-label={t(en,'Növelés','Increase')}><LucidePlus/></button></div><small>+{skillPts[s.id]||0} pip</small></div>)}</div></>}
   {step===5&&<div className="ch-v2-ships">{ships.map(s=><button type="button" key={s.id} className={'ch-v2-ship '+(shipId===s.id?'selected':'')} onClick={()=>setShipId(s.id)}><div className="ch-v2-ship-art"><ShipArt slug={s.slug}/></div><strong>{localized(s.game_starter_ships_i18n)?.name||s.slug}</strong><small>HP {s.hull} · CARGO {s.cargo} · SPEED {s.speed}</small><p>{localized(s.game_starter_ships_i18n)?.description}</p></button>)}</div>}
-  {step===6&&<div className="ch-v2-confirm"><div><h2>{name||'—'}</h2><div className="ch-v2-confirm-images">{[speciesSelected,classSelected].map((v,i)=><div key={i}>{v?.image_path&&<img src={src(v.image_path)} alt=""/>}<strong>{v?selectName(v,i===1):''}</strong></div>)}</div><p>{localized(ships.find(s=>s.id===shipId)?.game_starter_ships_i18n)?.name}</p></div><div className="ch-v2-confirm-stats">{attributes.map(a=><div key={a}><span>{names[l][a]}</span><b>{toDice(currentStats[a]||3)}</b></div>)}<p>{t(en,'Kiosztatlan pip','Unspent pips')}: {attrRemaining} / {skillRemaining}</p>{error&&<p role="alert" className="ch-error">{error}</p>}<button className="ch-v2-finalize" disabled={busy||!speciesId||!classId||!shipId||name.trim().length<2||attrRemaining!==0||skillRemaining!==0} onClick={()=>void create()}>{busy?'…':t(en,'Kapitány véglegesítése','Finalize captain')}</button></div></div>}
+  {step===6&&<div className="ch-v2-confirm"><div><h2>{name||'—'}</h2><div className="ch-v2-confirm-images">{[speciesSelected,classSelected].map((v,i)=><div key={i}>{v?.image_path&&<img src={src(v.image_path)} alt=""/>}<strong>{v?selectName(v,i===1):''}</strong></div>)}</div><p>{localized(ships.find(s=>s.id===shipId)?.game_starter_ships_i18n)?.name}</p></div><div className="ch-v2-confirm-stats">{attributes.map(a=><div key={a}><span>{names[l][a]}</span><b>{toDice(currentStats[a]||3)}</b></div>)}<p>{t(en,'Kiosztatlan pip','Unspent pips')}: {attrRemaining} / {skillRemaining}</p><button className="ch-v2-finalize" disabled={busy||!speciesId||!classId||!shipId||name.trim().length<2||attrRemaining!==0||skillRemaining!==0} onClick={()=>void create()}>{busy?'…':t(en,'Kapitány véglegesítése','Finalize captain')}</button></div></div>}
  </main><footer className="ch-v2-footer"><span>SPACE D6 FREE</span><div><button type="button" disabled={step===0} onClick={()=>setStep(v=>Math.max(0,v-1))}>{t(en,'Vissza','Back')}</button>{step!==6&&<button type="button" className="ch-v2-next" onClick={()=>setStep(v=>Math.min(6,v+1))}>{t(en,'Tovább','Next')} →</button>}</div></footer>
  </section>;
 }
