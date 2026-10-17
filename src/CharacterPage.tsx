@@ -70,46 +70,37 @@ export default function CharacterPage({locale}:{locale:string}){
   }
   setBusy(false);
  };
- if(loading)return <section className="ch-card">{t(en,'Karakteradatok betöltése…','Loading captain data…')}</section>;
- if(error&&!rules)return <section className="ch-card ch-error">{error}</section>;
- if(captain){const race=species.find(x=>x.id===captain.species_id),klass=classes.find(x=>x.id===captain.class_id),ship=ships.find(x=>x.id===captain.starter_ship_id);
- return <div className="ch-card"><div className="ch-eyebrow">{t(en,'PARANCSNOKI ADATLAP','CAPTAIN RECORD')}</div><h2>{captain.captain_name}</h2>
-  <div className="ch-summary">
-   <div className="ch-summary-portraits">{[race,klass].map((v,i)=><div key={i}>{v?.image_path&&<img alt="" src={src(v.image_path)}/>}<strong>{v?localized(i===0?v.game_species_i18n:v.game_classes_i18n)?.name:''}</strong></div>)}</div>
-   <div>{attributes.map(a=><div className="ch-stat" key={a}><span>{names[l][a]}</span><b>{toDice(captain.attribute_pips[a]||3)}</b></div>)}</div>
-  </div>
-  <h3>{t(en,'Képességek','Skills')}</h3><div className="ch-skill-grid">{skills.map(s=><div className="ch-skill" key={s.id}><img src={src(s.icon_path)} alt="" loading="lazy"/><span>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</span><b>{toDice((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0))}</b></div>)}</div>
-  <h3>{t(en,'Kezdő űrhajó és legénység','Starter ship & crew')}</h3><p>{ship?localized(ship.game_starter_ships_i18n)?.name:'—'} · {ship?.hull} HP / {ship?.cargo} cargo / {ship?.speed} speed</p>
-  {crew.map(c=><p key={c.position}>{c.position==='pilot'?t(en,'Pilóta','Pilot'):t(en,'Navigátor','Navigator')}: {c.name}</p>)}
-  <p className="ch-muted">{t(en,'A játék akciói és az energiaregeneráció a következő fejlesztési szakaszban érkeznek.','Gameplay actions and energy regeneration are coming in a future milestone.')}</p>
- </div>}
- const stageNames=en?['Species','Class','Captain','Attributes','Skills','Starship','Confirm']:['Faj','Kaszt','Kapitány','Tulajdonságok','Skillek','Űrhajó','Véglegesítés'];
- const choiceCards=(choices:Base[],picked:string,onPick:(v:string)=>void,isClass:boolean)=><div className="ch-options">{choices.map(item=><button key={item.id} className={'ch-option '+(picked===item.id?'active':'')} onClick={()=>onPick(item.id)}>
-   <div className="ch-option-picture">{item.image_path?<img src={src(item.image_path)} alt=""/>:'◈'}</div>
-   <strong>{localized(isClass?item.game_classes_i18n:item.game_species_i18n)?.name||item.slug}</strong>
-   <small>+1D {names[l][item.primary_attribute]} · +1 {names[l][item.secondary_attribute]}</small>
- </button>)}</div>;
- return <section className="ch-card"><div className="ch-eyebrow">{t(en,'KARAKTERGENERÁLÁS','CHARACTER CREATION')} / SPACE D6</div>
-  <h2>{stageNames[step]}</h2>
-  <div className="ch-steps">{stageNames.map((s,i)=><button type="button" className={i===step?'active':''} key={s} onClick={()=>setStep(i)}>{i+1}. {s}</button>)}</div>
-  {step===0&&choiceCards(species,speciesId,setSpeciesId,false)}
-  {step===1&&choiceCards(classes,classId,setClassId,true)}
-  {step===2&&<div className="ch-fields"><label>{t(en,'A kapitány neve','Captain name')}<input maxLength={40} value={name} onChange={e=>setName(e.target.value)} placeholder={t(en,'Adj nevet a karakterednek','Name your captain')}/></label></div>}
-  {step===3&&<><p className="ch-muted">{t(en,'Kiosztható pip-pontok','Assignable pips')}: <b>{attrRemaining}</b></p>
-   {attributes.map(a=><div key={a} className="ch-stat"><span>{names[l][a]}</span><button onClick={()=>chooseStat(a,-1)} disabled={!(attr[a]||0)}>−</button><b>{toDice(currentStats[a]||3)}</b><button onClick={()=>chooseStat(a,1)} disabled={attrRemaining===0}>＋</button></div>)}</>}
-  {step===4&&<><p className="ch-muted">{t(en,'Kiosztható skillpip-ek','Assignable skill pips')}: <b>{skillRemaining}</b></p>
-    <div className="ch-skill-grid">{skills.map(s=><div key={s.id} className="ch-skill"><img src={src(s.icon_path)} alt=""/><span>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</span>
-    <button onClick={()=>chooseSkill(s.id,-1)} disabled={!(skillPts[s.id]||0)}>−</button><b>{toDice((currentStats[s.attribute]||3)+(skillPts[s.id]||0)+skillBonus(s.id))}</b><button onClick={()=>chooseSkill(s.id,1)} disabled={skillRemaining===0}>＋</button></div>)}</div></>}
-  {step===5&&<div className="ch-options">{ships.map(s=><button key={s.id} className={'ch-option '+(shipId===s.id?'active':'')} onClick={()=>setShipId(s.id)}>
-    <div className="ch-ship-symbol">✦</div><strong>{localized(s.game_starter_ships_i18n)?.name||s.slug}</strong>
-    <small>HP {s.hull} · {t(en,'Raktér','Cargo')} {s.cargo} · {t(en,'Sebesség','Speed')} {s.speed}</small>
-    <span>{localized(s.game_starter_ships_i18n)?.description}</span></button>)}</div>}
-  {step===6&&<div className="ch-confirm"><h3>{name||'—'}</h3><p>{localized(speciesSelected?.game_species_i18n)?.name} / {localized(classSelected?.game_classes_i18n)?.name}</p>
-   <p>{t(en,'Tulajdonságpontok maradéka','Attribute points remaining')}: {attrRemaining}; {t(en,'Skillpontok maradéka','Skill points remaining')}: {skillRemaining}</p>
-   {attributes.map(a=><div className="ch-stat" key={a}><span>{names[l][a]}</span><strong>{toDice(currentStats[a]||3)}</strong></div>)}
-   {error&&<p className="ch-error" role="alert">{error}</p>}
-   <button className="ch-primary" disabled={busy||!speciesId||!classId||!shipId||name.trim().length<2||attrRemaining!==0||skillRemaining!==0} onClick={()=>void create()}>{busy?'…':t(en,'Kapitány létrehozása','Create captain')}</button>
-  </div>}
-  <div className="ch-buttons"><button disabled={step===0} onClick={()=>setStep(i=>Math.max(0,i-1))}>{t(en,'Vissza','Back')}</button><button disabled={step===6} onClick={()=>setStep(i=>Math.min(6,i+1))}>{t(en,'Tovább','Next')} →</button></div>
+ const steps=en?['Captain','Species','Class','Attributes','Skills','Starship','Confirm']:['Kapitány','Faj','Kaszt','Tulajdonságok','Skillek','Űrhajó','Véglegesítés'];
+ const [sheetPage,setSheetPage]=useState(0); 
+ const [activeAttribute,setActiveAttribute]=useState<typeof attributes[number]>('body');
+ const attrArts=(a:string)=>'https://assets.voidnoir.net/hatarvilag/attributes/'+a+'.webp';
+ const selectedSkills=skills.filter(s=>s.attribute===activeAttribute);
+ const shipArt=(s:Ship)=>s.image_path?src(s.image_path):'https://assets.voidnoir.net/hatarvilag/ships/'+s.slug+'.webp';
+ const selectName=(i:Base,k:boolean)=>localized(k?i.game_classes_i18n:i.game_species_i18n)?.name||i.slug;
+ const mainActions=<span className="ch-head-actions"><span>SPACE D6 FREE</span></span>;
+ if(loading)return <section className="ch-v2"><div className="ch-loading">{t(en,'Karakteradatok betöltése…','Loading characters…')}</div></section>;
+ if(error&&!rules)return <section className="ch-v2"><div className="ch-loading ch-error">{error}</div></section>;
+ if(captain){
+  const race=species.find(x=>x.id===captain.species_id),klass=classes.find(x=>x.id===captain.class_id),ship=ships.find(x=>x.id===captain.starter_ship_id);
+  return <section className="ch-v2"><header className="ch-v2-heading"><div><small>{t(en,'PARANCSNOKI ADATLAP','CAPTAIN DOSSIER')}</small><strong>{captain.captain_name}</strong></div>{mainActions}</header>
+   <nav className="ch-v2-steps">{[t(en,'Karakterlap','Character'),t(en,'Skillek','Skills'),t(en,'Űrhajó','Ship')].map((label,i)=><button className={sheetPage===i?'active':''} key={label} onClick={()=>setSheetPage(i)}>{i+1} / {label}</button>)}</nav>
+   <div className="ch-v2-stage">
+    {sheetPage===0&&<div className="ch-v2-profile">{[race,klass].map((r,i)=><div className="ch-v2-portrait" key={i}>{r?.image_path&&<img src={src(r.image_path)} alt=""/>}<strong>{r?selectName(r,i===1):''}</strong></div>)}<div className="ch-v2-stats">{attributes.map(a=><div key={a}><img src={attrArts(a)} alt=""/><span>{names[l][a]}</span><b>{toDice(captain.attribute_pips[a]||3)}</b></div>)}</div></div>}
+    {sheetPage===1&&<><div className="ch-v2-attr-switch">{attributes.map(a=><button className={activeAttribute===a?'active':''} onClick={()=>setActiveAttribute(a)} key={a}><img src={attrArts(a)} alt=""/>{names[l][a]}</button>)}</div><div className="ch-v2-skills">{selectedSkills.map(s=><div className="ch-v2-skill" key={s.id}><img src={src(s.icon_path)} alt=""/><strong>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</strong><b>{toDice((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0))}</b></div>)}</div></>}
+    {sheetPage===2&&ship&&<div className="ch-v2-ship-detail"><img src={shipArt(ship)} alt=""/><div><h2>{localized(ship.game_starter_ships_i18n)?.name}</h2><p>{localized(ship.game_starter_ships_i18n)?.description}</p><strong>HP {ship.hull} · {ship.cargo} CARGO · {ship.speed} SPEED</strong>{crew.map(c=><p key={c.position}>{c.position}: {c.name}</p>)}</div></div>}
+   </div><footer className="ch-v2-footer"><span>HATÁRVILÁG // SPACE D6</span></footer></section>;
+ }
+ const cards=(items:Base[],which:string,set:(id:string)=>void,isClass:boolean)=><div className="ch-v2-cards">{items.map(item=><button type="button" key={item.id} className={'ch-v2-card '+(which===item.id?'selected':'')} onClick={()=>set(item.id)}><div className="ch-v2-card-art">{item.image_path&&<img src={src(item.image_path)} alt=""/>}</div><strong>{selectName(item,isClass)}</strong><small>+1D {names[l][item.primary_attribute]} / +1 {names[l][item.secondary_attribute]}</small></button>)}</div>;
+ return <section className="ch-v2"><header className="ch-v2-heading"><div><small>{t(en,'KARAKTERGENERÁLÁS','CHARACTER CREATION')}</small><strong>HATÁRVILÁG</strong></div>{mainActions}</header>
+ <nav className="ch-v2-steps">{steps.map((s,i)=><button type="button" key={i} className={step===i?'active':''} onClick={()=>setStep(i)}><b>{i+1}</b>{s}</button>)}</nav>
+ <main className="ch-v2-stage">
+  {step===0&&<div className="ch-v2-captain"><div className="ch-v2-captain-portrait"><img src="https://assets.voidnoir.net/hatarvilag/species/ember.jpg" alt=""/></div><div><small>01 / {steps[0]}</small><h2>{t(en,'Nevezd el a kapitányodat','Name your captain')}</h2><p>{t(en,'Egy saját kapitányt alakítasz, akinek a faját, kasztját és képességeit a következő lépésekben választod meg.','Create your captain. Species, class and abilities are selected in the following steps.')}</p><label>{t(en,'A kapitány neve','Captain name')}<input maxLength={40} autoFocus value={name} placeholder={t(en,'Kapitány neve…','Captain name…')} onChange={e=>setName(e.target.value)}/></label></div></div>}
+  {step===1&&<>{cards(species,speciesId,setSpeciesId,false)}<p className="ch-v2-info">{localized(speciesSelected?.game_species_i18n)?.description}</p></>}
+  {step===2&&<>{cards(classes,classId,setClassId,true)}<p className="ch-v2-info">{localized(classSelected?.game_classes_i18n)?.description}</p></>}
+  {step===3&&<><div className="ch-v2-section-heading"><h2>{steps[3]}</h2><span>{t(en,'Szabad pip','Remaining pips')} <b>{attrRemaining}</b></span></div><div className="ch-v2-attributes">{attributes.map(a=><div className="ch-v2-attribute" key={a}><img src={attrArts(a)} alt=""/><strong>{names[l][a]}</strong><div className="ch-v2-controls"><button disabled={!(attr[a]||0)} onClick={()=>chooseStat(a,-1)}>−</button><b>{toDice(currentStats[a]||3)}</b><button disabled={attrRemaining===0||((currentStats[a]||3)>=(rules?.max_attribute_pips||18))} onClick={()=>chooseStat(a,1)}>+</button></div><small>+{attr[a]||0} pip</small></div>)}</div></>}
+  {step===4&&<><div className="ch-v2-section-heading"><h2>{steps[4]}</h2><span>{t(en,'Szabad pip','Remaining pips')} <b>{skillRemaining}</b></span></div><div className="ch-v2-attr-switch">{attributes.map(a=><button type="button" key={a} className={activeAttribute===a?'active':''} onClick={()=>setActiveAttribute(a)}><img src={attrArts(a)} alt=""/>{names[l][a]}</button>)}</div><div className="ch-v2-skills">{selectedSkills.map(s=><div className="ch-v2-skill" key={s.id}><img src={src(s.icon_path)} alt=""/><strong>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</strong><div className="ch-v2-controls"><button disabled={!(skillPts[s.id]||0)} onClick={()=>chooseSkill(s.id,-1)}>−</button><b>{toDice((currentStats[s.attribute]||3)+(skillPts[s.id]||0)+skillBonus(s.id))}</b><button disabled={skillRemaining===0||(skillPts[s.id]||0)>=(rules?.max_allocated_skill_pips||6)} onClick={()=>chooseSkill(s.id,1)}>+</button></div><small>+{skillPts[s.id]||0} pip</small></div>)}</div></>}
+  {step===5&&<div className="ch-v2-ships">{ships.map(s=><button type="button" key={s.id} className={'ch-v2-ship '+(shipId===s.id?'selected':'')} onClick={()=>setShipId(s.id)}><div className="ch-v2-ship-art"><img src={shipArt(s)} alt=""/></div><strong>{localized(s.game_starter_ships_i18n)?.name||s.slug}</strong><small>HP {s.hull} · CARGO {s.cargo} · SPEED {s.speed}</small><p>{localized(s.game_starter_ships_i18n)?.description}</p></button>)}</div>}
+  {step===6&&<div className="ch-v2-confirm"><div><h2>{name||'—'}</h2><div className="ch-v2-confirm-images">{[speciesSelected,classSelected].map((v,i)=><div key={i}>{v?.image_path&&<img src={src(v.image_path)} alt=""/>}<strong>{v?selectName(v,i===1):''}</strong></div>)}</div><p>{localized(ships.find(s=>s.id===shipId)?.game_starter_ships_i18n)?.name}</p></div><div className="ch-v2-confirm-stats">{attributes.map(a=><div key={a}><span>{names[l][a]}</span><b>{toDice(currentStats[a]||3)}</b></div>)}<p>{t(en,'Kiosztatlan pip','Unspent pips')}: {attrRemaining} / {skillRemaining}</p>{error&&<p role="alert" className="ch-error">{error}</p>}<button className="ch-v2-finalize" disabled={busy||!speciesId||!classId||!shipId||name.trim().length<2||attrRemaining!==0||skillRemaining!==0} onClick={()=>void create()}>{busy?'…':t(en,'Kapitány véglegesítése','Finalize captain')}</button></div></div>}
+ </main><footer className="ch-v2-footer"><span>SPACE D6 FREE</span><div><button type="button" disabled={step===0} onClick={()=>setStep(v=>Math.max(0,v-1))}>{t(en,'Vissza','Back')}</button>{step!==6&&<button type="button" className="ch-v2-next" onClick={()=>setStep(v=>Math.min(6,v+1))}>{t(en,'Tovább','Next')} →</button>}</div></footer>
  </section>;
 }
