@@ -75,3 +75,18 @@
 - GitHub Windows self-hosted runner: TypeScript és production Vite build SIKERES a 2a86d50f5c commiton, run 38974779442.
 - Egyszeri, tudatos Vercel production deployment elindítva és READY: dpl_8nLk76btwy6vwSYiocg7k8Yzc5uF, a frontend verziója 2a86d50f5c, https://hatarvilag.vercel.app. A git.deploymentEnabled=false változatlan, tehát új GitHub commitok nem publikálnak automatikusan.
 - Nyitott: hitelesített felhasználóval kattintgatós regisztráció+editor CRUD E2E; Supabase Auth leaked password protection beállításához adminisztráció, R2 belső image uploader és játékbeli karaktergenerálás. UI kétdimenziós illusztrált változat, nem a mockup pixelenkénti másolata.
+
+## M1.1 — Egységes, kompakt editor: Skillek és Szótár (2026-10-17)
+- Követelmény: faj- és kasztszerkesztő ~60%-os képernyőszélességben, középre igazítva; portrék teljes egészében a kereten belül; skillek és szótár külön tabon.
+- Frontend sablon: src/components/EditorTemplate.tsx → EditorFrame + EditorTabs; az új tartalomszerkesztők ugyanazt az elrendezést és tabkomponenst használják.
+- src/Editor.tsx ugyanazzal a template-tel szolgálja ki a faj- és kasztadatokat. Három tab: Alapadatok (slug, tulajdonságbónusz, R2 képfájl, fajellenállás, publikálás), Skillek (egyedi bónuszok), Szótár (valamennyi lokalizált mező).
+- src/editor.css: 62vw max 1100px, centered, responsive breakpoint; a képek object-fit: contain módban illeszkednek a portré- és listaképkockákba. Szögletes ipari HUD, belső görgetés.
+- A skillbónuszok a faji/kaszt tulajdonságbónuszokon felül járnak; 1D = 3 pip: +1, +2, +1D (=3), +1D+1 (=4), +2D (=6) ... +4D (=12). Minden egyes skillhez külön választható érték, a nulla = nincs külön bónusz.
+- DB változások (alkalmazva): editor_tabs_languages_skill_bonuses migration. Táblák: public.game_locales, public.game_species_skill_bonuses, public.game_classes_skill_bonuses. Szerverfüggvény: public.replace_catalog_skill_bonuses(kind,entity_id,bonuses), SECURITY INVOKER + explicit editor/admin authorization + RLS, a bónusz-lista atomikus mentésével.
+- Második migration alkalmazva: editor_dictionary_locale_foreign_keys. A faj/kaszt/skill fordítások locale mezője FK a game_locales táblára.
+- A Szótár tab nem puszta hardcoded HU/EN kapcsoló: dinamikusan olvassa game_locales táblát, editor felvehet új kétbetűs nyelvkódot. A magyar és angol név kötelező, további nyelvek neve és szövege később tölthető fel. Játék runtime UI jelenleg HU/EN, későbbi UI nyelveknél új React szótár és profilséma-bővítés kell.
+- Faji lokalizált mezők: név, leírás, passzív sajátosságok. Kaszt lokalizált mezők: név, leírás, kezdő felszerelés, sajátosságok, játékbeli szerep.
+- Eltávolítás és mentetlen változások eldobása kizárólag saját editor decision modalban; a tabváltás önmagában nem törli a formot.
+- Jogosultság: az editor/admin írhatja a lokális és skillbónusz-adatokat; user nem. Szerveroldali RLS megmarad.
+- Vercel Hobby: a git.deploymentEnabled:false beállítás érvényben. Kód commit után csak GitHub self-hosted runner build; nincs automatikus Vercel production telepítés. Ez a verzió a következő tudatos release-ig nem látható a korábbi live Vercel linken.
+- Következő QA: valós auth felhasználóval faji/kaszt CRUD teszt, +pip/+D mentés/visszatöltés, új locale, R2 képek kereten belüli megjelenés, mobil breakpoint.
