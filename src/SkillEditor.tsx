@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
+import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
 import './skill-editor.css';
 import {SkillArt} from './components/GameArt';
@@ -29,6 +30,8 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
  const [rules,setRules]=useState<Rules>(initialRules);
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false);
  const [error,setError]=useState(''),[message,setMessage]=useState('');
+ useEffect(()=>{if(error)notify(error,'error');},[error]);
+ useEffect(()=>{if(message)notify(message,'success');},[message]);
  const read=useCallback(async(keep?:string)=>{
   const [s,localeList,rule]=await Promise.all([
    supabase.from('game_skills').select('id,slug,attribute,position,is_combat,icon_path,game_skills_i18n(locale,name,description)').order('attribute').order('position'),
@@ -88,8 +91,7 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
    </aside>
    <section className="ed-editor"><header className="ed-editor-head"><strong>{tab==='rules'?t.rules:active?trans(active):t.skills}</strong><span>SPACE D6</span></header>
     <EditorTabs label={t.title} selected={tab} onSelect={setTab} items={[{id:'skills',name:t.skills},{id:'rules',name:t.rules}]}/>
-    {error&&<div className="ed-feedback ed-error" role="alert">{error}</div>}
-    {message&&<div className="ed-feedback ed-success" role="status">{message}</div>}
+
     <form className="ed-form" id="skills-editor-form" onSubmit={save}>
      {tab==='skills'&&active&&<div className="ed-tab-pane sk-editor-fields">
        <div className="sk-icon-row"><div className="sk-large-icon">{icon?<SkillArt slug={active.slug} path={icon}/>:<span>◈</span>}</div>
