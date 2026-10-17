@@ -1,5 +1,6 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
+import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
 import './sector-editor.css';
 type Translation={locale:string;name:string;description:string};
@@ -17,7 +18,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
  const [draft,setDraft]=useState<Place>(blank),[translations,setTranslations]=useState<Record<string,{name:string;description:string}>>({});
  const [checked,setChecked]=useState<string[]>([]),[links,setLinks]=useState<Record<string,Link>>({});
  const [tab,setTab]=useState('general'),[language,setLanguage]=useState('hu');
- const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ const [busy,setBusy]=useState(false);
  const label=(x:Place)=>x.game_locations_i18n.find(n=>n.locale===locale)?.name||x.game_locations_i18n.find(n=>n.locale==='hu')?.name||x.slug;
  const activeName=(a:Action)=>a.game_actions_i18n.find(n=>n.locale===locale)?.name||a.game_actions_i18n.find(n=>n.locale==='hu')?.name||a.slug;
  function choose(p:Place,allRoutes:Route[],allPlacements:{location_id:string;action_id:string}[]){
@@ -26,7 +27,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
   setChecked(allPlacements.filter(x=>x.location_id===p.id).map(x=>x.action_id));
   setLinks(Object.fromEntries(allRoutes.filter(x=>x.origin_id===p.id||x.destination_id===p.id)
    .map(x=>[x.origin_id===p.id?x.destination_id:x.origin_id,{enabled:true,cost:x.energy_cost}])));
-  setMessage('');
+  
  }
  async function load(keep?:string){
   const [p,r,a,placements,langs]=await Promise.all([
@@ -37,7 +38,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order')
   ]);
   const err=p.error||r.error||a.error||placements.error||langs.error;
-  if(err){setMessage(err.message);return;}
+  if(err){notify(err.message,'error');return;}
   const rows=p.data as unknown as Place[],rts=(r.data||[]) as Route[],ps=placements.data||[];
   setPlaces(rows);setRoutes(rts);setActions((a.data||[]) as Action[]);
   setPlacements(ps);setLanguages(langs.data as Local[]);
@@ -49,7 +50,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
  const loc={name:translations[language]?.name||'',description:translations[language]?.description||''};
  const patchLang=(key:'name'|'description',value:string)=>setTranslations(v=>({...v,[language]:{...loc,[key]:value}}));
  const newPlace=()=>{choose({...blank},routes,placements);setTab('general');};
- async function save(event:FormEvent){event.preventDefault();if(busy)return;setBusy(true);setMessage('');
+ async function save(event:FormEvent){event.preventDefault();if(busy)return;setBusy(true);
   try{
    if(!/^[a-z][a-z0-9_]*$/.test(draft.slug))throw Error(tr('Érvénytelen technikai azonosító.','Invalid slug.'));
    if(!translations.hu?.name?.trim()||!translations.en?.name?.trim())throw Error(tr('A magyar és angol név kötelező.','Hungarian and English names required.'));
@@ -63,8 +64,8 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
    const associations=Object.entries(links).filter(([target,link])=>link.enabled&&target!==id).map(([target,link])=>({target,cost:link.cost}));
    const saved=await supabase.rpc('replace_sector_links',{p_location:id,p_actions:checked,p_routes:associations});if(saved.error)throw saved.error;
    if(!draft.id&&draft.is_published){const published=await supabase.from('game_locations').update({is_published:true}).eq('id',id);if(published.error)throw published.error;}
-   await load(id);setMessage(tr('Helyszín sikeresen mentve.','Location saved.'));
-  }catch(e){setMessage(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'));}finally{setBusy(false);}
+   await load(id);notify(tr('Helyszín sikeresen mentve.','Location saved.'),'success');
+  }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'),'error');}finally{setBusy(false);}
  }
  return <EditorFrame>
   <nav className="ed-nav"><h2>{tr('Szektorszerkesztő','Sector Editor')}</h2><button onClick={onBack} type="button">⌂　{tr('Vissza','Back')}</button>
@@ -82,7 +83,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
   <section className="ed-editor">
    <header className="ed-editor-head"><strong>{draft.id?label(places.find(x=>x.id===draft.id)||draft):tr('Új helyszín','New location')}</strong><span>M4</span></header>
    <EditorTabs label="Sector Editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'dictionary',name:tr('Szótár','Dictionary')},{id:'routes',name:tr('Akciók / útvonalak','Actions / routes')}]}/>
-   {message&&<div role="status" className="ed-feedback">{message}</div>}
+
    <form className="ed-form sector-editor-form" id="sector-editor-form" onSubmit={save}>
     {tab==='general'&&<><label>{tr('Technikai azonosító','Slug')}<input value={draft.slug} onChange={e=>update('slug',e.target.value.toLowerCase())}/></label>
      <label>{tr('Helyszín típusa','Location type')}<select value={draft.kind} onChange={e=>update('kind',e.target.value as Place['kind'])}>{(['station','wreck','planet','anomaly'] as const).map(x=><option value={x} key={x}>{x}</option>)}</select></label>
