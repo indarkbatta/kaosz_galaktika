@@ -1,1 +1,10 @@
 .ge-form{padding:14px 18px;display:flex;flex-direction:column;gap:13px}.ge-form>p{font-size:12px;color:#a7b6c1;line-height:1.6}.ge-form label{display:block;font-size:11px;text-transform:uppercase;color:#b9c8d1}.ge-form input:not([type=checkbox]),.ge-form select,.ge-form textarea{margin-top:6px;display:block;width:100%;padding:9px;color:#fff;background:#080e15;border:1px solid #4b5966;box-sizing:border-box;font-family:inherit}.ge-form textarea{resize:none}.ge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.ge-form .ge-checkbox{display:flex;align-items:center;gap:8px}.ge-form .ge-checkbox input{accent-color:#d55a3a}.ge-form .ed-language-list{margin:2px 0}.ge-form .ed-language-list button{font-size:11px}
+
+/* M5: actionable loot table fits editor frame without creating a web-page scroll. */
+.ge-form .ge-loot-list{display:grid;align-content:start;gap:8px;min-height:0;flex:1}
+.ge-loot-row{display:grid;grid-template-columns:minmax(0,1fr) 76px 65px 65px;gap:8px;align-items:center;padding:10px;background:#101b24;border:1px solid #344b58}
+.ge-form .ge-loot-row>label{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:10px}
+.ge-form .ge-loot-row .ge-checkbox{display:flex;gap:6px;align-items:center;font-size:12px;color:#e4eaf0;text-transform:none}
+.ge-loot-row .ge-checkbox span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ge-form .ge-loot-row input[type=number]{padding:6px 5px;text-align:center;margin:3px 0 0}
+@media(max-width:800px){.ge-loot-row{grid-template-columns:minmax(0,1fr) 54px 47px 47px;gap:4px;padding:5px}.ge-form .ge-loot-row>label{font-size:9px}}
