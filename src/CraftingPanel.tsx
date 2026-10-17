@@ -3,7 +3,7 @@ import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './crafting-panel.css';
 type Name={locale:string;name:string;description?:string};
-type Item={id:string;slug:string;rarity:string;category:string;game_items_i18n:Name[]};
+type Item={id:string;slug:string;rarity:string;category:string;image_path:string|null;game_items_i18n:Name[]};
 type Part={output_item_id:string;ingredient_item_id:string;quantity:number};
 export default function CraftingPanel({locale,inventory,onCrafted}:{locale:string;inventory:{item_id:string;quantity:number}[];onCrafted:()=>Promise<void>}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
@@ -13,7 +13,7 @@ export default function CraftingPanel({locale,inventory,onCrafted}:{locale:strin
  item?.game_items_i18n.find(x=>x.locale==='hu')?.name||item?.slug||'—';
  useEffect(()=>{let alive=true;const load=async()=>{
   const [i,r]=await Promise.all([
-   supabase.from('game_items').select('id,slug,rarity,category,game_items_i18n(locale,name,description)').eq('is_published',true).order('slug'),
+   supabase.from('game_items').select('id,slug,rarity,category,image_path,game_items_i18n(locale,name,description)').eq('is_published',true).order('slug'),
    supabase.from('game_item_recipes').select('output_item_id,ingredient_item_id,quantity')
   ]);
   if(!alive)return;
@@ -34,7 +34,7 @@ export default function CraftingPanel({locale,inventory,onCrafted}:{locale:strin
    <div className="crafting-recipes">{craftable.map(item=>{
     const materials=parts.filter(p=>p.output_item_id===item.id),amount=amounts[item.id]||1;
     const possible=materials.every(p=>owned(p.ingredient_item_id)>=p.quantity*amount);
-    return <article key={item.id} className="crafting-card"><div className="crafting-card-title"><span>⚒</span><strong>{name(item)}</strong><small>{item.rarity.toUpperCase()}</small></div>
+    return <article key={item.id} className="crafting-card"><div className="crafting-card-title"><span className="crafting-card-image">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt=""/>:'⚒'}</span><strong>{name(item)}</strong><small>{item.rarity.toUpperCase()}</small></div>
      <div className="crafting-materials">{materials.map(p=><div key={p.ingredient_item_id}><span>{name(items.find(x=>x.id===p.ingredient_item_id))}</span>
       <b className={owned(p.ingredient_item_id)>=p.quantity*amount?'enough':'short'}>{owned(p.ingredient_item_id)} / {p.quantity*amount}</b></div>)}</div>
      <footer><label>{tr('Db','Qty')}<input type="number" min="1" max="20" value={amount} onChange={e=>setAmounts(s=>({...s,[item.id]:Math.max(1,Math.min(20,Number(e.target.value)||1))}))}/></label>
