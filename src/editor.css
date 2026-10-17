@@ -106,7 +106,7 @@
 .ed-modal h3{margin:0;color:#e9ebee}.ed-modal p{line-height:1.6;color:#c1c8ce}
 .ed-modal>div{display:flex;justify-content:flex-end;gap:10px}
 .ed-modal button{border:1px solid #53616e;background:#202a32}
-@media(max-width:1500px){.ed-shell{width:min(1100px,72vw);grid-template-columns:145px 215px minmax(0,1fr)}}
+@media(max-width:1500px){.ed-shell{width:min(1100px,62vw);grid-template-columns:145px 215px minmax(0,1fr)}}
 @media(max-width:1150px){.ed-shell{width:calc(100vw - 28px);grid-template-columns:145px 235px minmax(0,1fr)}}
 @media(max-width:760px){
  .scene:has(.ed-layout) .ed-layout{height:auto;max-height:none;min-height:0}
