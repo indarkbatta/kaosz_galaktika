@@ -90,3 +90,15 @@
 - Jogosultság: az editor/admin írhatja a lokális és skillbónusz-adatokat; user nem. Szerveroldali RLS megmarad.
 - Vercel Hobby: a git.deploymentEnabled:false beállítás érvényben. Kód commit után csak GitHub self-hosted runner build; nincs automatikus Vercel production telepítés. Ez a verzió a következő tudatos release-ig nem látható a korábbi live Vercel linken.
 - Következő QA: valós auth felhasználóval faji/kaszt CRUD teszt, +pip/+D mentés/visszatöltés, új locale, R2 képek kereten belüli megjelenés, mobil breakpoint.
+
+## M1.2 — Skill Editor, karaktergenerálás, Cloudflare skillikonok (2026-10-17)
+- Bővebben: [M1.2 implementációs dokumentáció](M12_IMPLEMENTATION.md).
+- 25 külön R2 skillikon a voidnoir/hatarvilag/skills/ prefix alatt; a Skill Editorban élő ikon-előnézet és R2-útvonal-mező, plusz galériás kiválasztás.
+- A Skill Editor HU/EN és későbbi locale-képes név- és leírásmezőkkel, rule editorral működik; közös EditorFrame/EditorTabs sablonból.
+- A karaktergeneráló faj→kaszt→név→5 attribútum pipkiosztás→25 skill kiosztás→3 kezdő hajó→összegzés; karakterlap, 2 legénységi seed.
+- Space D6 saját konfigurálható pipszámítás: 3 pip = 1D, faj +1D/+1, kaszt +1D/+1, skillek a faji/kasztból plusz kiosztásból épülnek.
+- SQL migration hármas alkalmazva, minden karakterlétrehozási és bónuszszámítási szabályt a Supabase szerveroldal is ellenőriz.
+- A definer jogosultságú karakterépítő private sémában él, public RPC csak SECURITY INVOKER, így a Supabase linterből kikerült a public definer-executable figyelmeztetés.
+- Vercel Hobby: M1.2 verziót még nem telepítettük, a commitok automatikus buildje tiltva.
+- Cloudflare Workers AI napi ingyenes kerete a 25 ikon után elfogyott; ezért a három hajó új illusztrációja egyelőre hiányzik. Nem kapcsoltunk be fizetős opciót.
+- QA: self-hosted CI, majd felhasználóval valós böngészős CRUD / karaktergenerálási E2E teszt, továbbá képek méretre optimalizálása szükséges.
