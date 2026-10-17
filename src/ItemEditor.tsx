@@ -52,17 +52,18 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
  async function save(e:FormEvent){e.preventDefault();if(busy)return;
   if(!text.hu?.name?.trim()||!text.en?.name?.trim()){notify(tr('A magyar és angol név kötelező.','Hungarian and English names are required.'),'error');return;}
   if(draft.category==='material'&&ingredients.length>0){notify(tr('Az alapanyagoknak nincs receptjük.','Raw materials cannot have recipes.'),'error');return;}
-  if(['equipment','consumable'].includes(draft.category)&&ingredients.length===0){notify(tr('A készíthető tárgynak legalább egy alapanyag kell.','Craftable items require at least one ingredient.'),'error');setTab('recipe');return;}
+  const preexistingRecipeLessGear=!!draft.id&&draft.category==='equipment'&&!recipes.some(r=>r.output_item_id===draft.id);
+  if(['equipment','consumable'].includes(draft.category)&&ingredients.length===0&&!preexistingRecipeLessGear){notify(tr('A készíthető tárgynak legalább egy alapanyag kell.','Craftable items require at least one ingredient.'),'error');setTab('recipe');return;}
   if(ingredients.length>5||new Set(ingredients.map(x=>x.item_id)).size!==ingredients.length||ingredients.some(x=>!x.item_id||x.quantity<1||x.quantity>10000)){notify(tr('1–5 eltérő alapanyag és érvényes mennyiségek szükségesek.','Choose 1–5 distinct materials and valid quantities.'),'error');return;}
   setBusy(true);
   const values=Object.entries(text).filter(([,v])=>v.name.trim()).map(([code,v])=>({locale:code,name:v.name.trim(),description:v.description.trim()}));
-  const r=await supabase.rpc('save_game_item',{p_id:draft.id||null,p_slug:draft.slug,p_category:draft.category,p_rarity:draft.rarity,
-    p_published:draft.is_published,p_translations:values,p_ingredients:ingredients});
+  const r=await supabase.rpc('save_game_item_full',{p_id:draft.id||null,p_slug:draft.slug,p_category:draft.category,p_rarity:draft.rarity,
+    p_published:draft.is_published,p_translations:values,p_ingredients:ingredients,
+    p_image_path:draft.image_path||null,p_equip_owner:draft.equip_owner,p_equip_slot:draft.equip_slot,p_bonus:draft.capacity_bonus});
   if(r.error)notify(r.error.message,'error');
   else{
    const id=(r.data as {id:string}).id;
-   const meta=await supabase.rpc('set_item_presentation',{p_item:id,p_image_path:draft.image_path||null,p_equip_owner:draft.equip_owner,p_equip_slot:draft.equip_slot,p_bonus:draft.capacity_bonus});
-   if(meta.error)notify(meta.error.message,'error');else notify(tr('Tárgy, kép és felszerelési slot mentve.','Item, artwork and slot saved.'),'success');
+   notify(tr('Tárgy, kép és felszerelési slot atomikusan mentve.','Item, artwork and slot saved atomically.'),'success');
    await load(id);
   }
   setBusy(false);
@@ -73,7 +74,7 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
    <button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>◈　{tr('Alapadatok','General')}</button>
    <button className={tab==='recipe'?'active':''} onClick={()=>setTab('recipe')}>⚒　{tr('Recept','Recipe')}</button>
    <button className={tab==='dictionary'?'active':''} onClick={()=>setTab('dictionary')}>⊞　{tr('Szótár','Dictionary')}</button>
-   <div className="ed-nav-bottom">M5.2 // CRAFTING</div>
+   <div className="ed-nav-bottom">M5.4 // INVENTORY</div>
   </nav>
   <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Tárgyak','Items')} ({items.length})</strong><button type="button" onClick={newItem} title={tr('Új tárgy','New item')}><LucidePlus/></button></div>
    <div className="ed-roster-list">{items.map(item=><button type="button" className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>choose(item,recipes)}>
@@ -81,7 +82,7 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
     <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {item.category}</small></span></button>)}</div>
   </aside>
   <section className="ed-editor">
-   <header className="ed-editor-head"><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.2</span></header>
+   <header className="ed-editor-head"><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></header>
    <EditorTabs label="Item editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
    <form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
     {tab==='general'&&<>
