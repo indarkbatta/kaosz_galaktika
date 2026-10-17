@@ -1,1 +1,15 @@
 .sk-items{display:grid;gap:7px}.sk-editor{padding:16px;overflow:auto}.sk-icon{width:96px;height:96px;object-fit:contain;border:2px solid #8e4038}.sk-fields{display:grid;gap:14px}.sk-fields label{font-size:12px;color:#c4cbd1;display:block}.sk-fields input,.sk-fields textarea{width:100%;display:block;padding:11px;margin-top:7px;background:#080c12;border:1px solid #48535e;color:#fff}.sk-icon-row{display:flex;gap:16px;align-items:center}.sk-icons-list{width:49px;height:49px;object-fit:contain;border:1px solid #6e4843}.sk-rule-row{display:grid;gap:4px;margin:12px 0}.sk-hint{color:#aab5bd;line-height:1.5;font-size:12px}
+
+.sk-roster{display:block}.sk-group-name{color:#ad9f98;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:11px 5px;border-bottom:1px solid #35434e}
+.sk-editor-fields{padding:18px;display:flex;flex-direction:column;gap:15px}.sk-editor-fields label{display:block;font-size:12px;letter-spacing:.03em;color:#c8d1d9}
+.sk-editor-fields input,.sk-editor-fields textarea{width:100%;display:block;box-sizing:border-box;border-radius:0;border:1px solid #53616c;background:#080e14;color:#eef4f9;padding:12px;margin-top:8px;resize:vertical}
+.sk-large-icon{height:112px;width:112px;display:flex;align-items:center;justify-content:center;border:2px solid #855349;background:#0b1117;color:#bb5952;font-size:45px;overflow:hidden}
+.sk-large-icon img{height:100%;width:100%;object-fit:contain}
+.sk-icon-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:16px}
+.sk-icon-row p{font-size:12px;color:#aeb8c4}.sk-icon-row label{min-width:0}.sk-icon-row input{font-size:11px}
+.sk-gallery{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin-top:13px}
+.sk-gallery button{border:1px solid #505e69;background:#0b1218;padding:3px;cursor:pointer;aspect-ratio:1;min-width:0}
+.sk-gallery button.selected{border:2px solid #ef644f;background:#54221f}
+.sk-gallery img{display:block;height:100%;width:100%;object-fit:contain}
+.sk-rule-row{margin:8px 0}.sk-rule-row input{max-width:160px}
+@media(max-width:850px){.sk-gallery{grid-template-columns:repeat(5,minmax(0,1fr))}.sk-icon-row{grid-template-columns:85px minmax(0,1fr)}.sk-large-icon{height:85px;width:85px}}
