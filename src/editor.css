@@ -127,3 +127,5 @@
  .ed-language-form{grid-template-columns:1fr}
  .ed-language-form>label:first-child,.ed-language-form>button{grid-column:1}
 }
+
+.ed-skill-row label{display:flex;align-items:center;gap:8px}.ed-skill-icon{width:34px;height:34px;object-fit:contain;flex-shrink:0;border:1px solid #77564c;background:#09121a}.ed-combat{margin-left:auto}
