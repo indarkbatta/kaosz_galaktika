@@ -5,6 +5,8 @@ import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
 import {LucidePlus} from './components/LucideSigns';
 import {attributes,toDice} from './lib/d6';
 import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery} from './SectorMap';
+import Cantina,{crewPositionName,type CrewMember} from './Cantina';
+import CraftingPanel from './CraftingPanel';
 import './captain-dashboard.css';
 
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
@@ -32,12 +34,14 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [position,setPosition]=useState(''),[discoveries,setDiscoveries]=useState<SectorDiscovery[]>([]);
  const [placements,setPlacements]=useState<{location_id:string;action_id:string}[]>([]);
  const [inventory,setInventory]=useState<InventoryRow[]>([]);
+ const [activeCrew,setActiveCrew]=useState<CrewMember[]>(crew);
+ const [cargoView,setCargoView]=useState<'stock'|'craft'>('stock');
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
- const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'inventory'|'log'>('bridge'),[group,setGroup]=useState('body');
+ const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'cantina'|'inventory'|'log'>('bridge'),[group,setGroup]=useState('body');
  const [busy,setBusy]=useState(false);
  const [time,setTime]=useState(Date.now()),[confirmReset,setConfirmReset]=useState(false),[resetWord,setResetWord]=useState('');
  const refresh=useCallback(async()=>{
-  const [p,r,a,l,u,pos,dis,loc,rou,placement,travelHistory,inv]=await Promise.all([
+  const [p,r,a,l,u,pos,dis,loc,rou,placement,travelHistory,inv,crewData]=await Promise.all([
     supabase.from('character_progress').select('level,xp_total,energy,energy_at,upgrade_points').eq('character_id',captain.id).single(),
     supabase.from('gameplay_rules').select('energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
     supabase.from('game_actions').select('id,slug,energy_cost,target_number,skill_id,game_actions_i18n(locale,name,description,success_message,failure_message)').eq('is_published',true).order('sort_order'),
@@ -49,14 +53,15 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published').eq('is_published',true),
     supabase.from('game_location_actions').select('location_id,action_id'),
     supabase.from('character_travel_log').select('id,origin_id,destination_id,energy_spent,traveled_at').eq('character_id',captain.id).order('id',{ascending:false}).limit(8),
-    supabase.from('character_inventory').select('item_id,quantity,game_items(slug,rarity,category,game_items_i18n(locale,name,description))').eq('character_id',captain.id)
+    supabase.from('character_inventory').select('item_id,quantity,game_items(slug,rarity,category,game_items_i18n(locale,name,description))').eq('character_id',captain.id),
+    supabase.from('character_crew').select('position,name,specialty,aptitude,species_slug').eq('character_id',captain.id)
   ]);
-  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error||inv.error;
+  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error||inv.error||crewData.error;
   if(problem){notify(problem.message,'error');return;}
   setProgress(p.data as Progress);setRules(r.data as Rules);setActions(a.data as Action[]);setLogs(l.data as Log[]);setUpgrades(u.data||[]);
   setPosition(pos.data?.location_id||'');setDiscoveries((dis.data||[]) as SectorDiscovery[]);
   setLocations((loc.data||[]) as unknown as SectorLocation[]);setRoutes((rou.data||[]) as SectorRoute[]);
-  setPlacements(placement.data||[]);setTravelLogs((travelHistory.data||[]) as TravelLog[]);setInventory((inv.data||[]) as unknown as InventoryRow[]);
+  setPlacements(placement.data||[]);setTravelLogs((travelHistory.data||[]) as TravelLog[]);setInventory((inv.data||[]) as unknown as InventoryRow[]);setActiveCrew((crewData.data||[]) as CrewMember[]);
  },[captain.id]);
  useEffect(()=>{void refresh();},[refresh]);
  useEffect(()=>{const interval=setInterval(()=>setTime(Date.now()),10000);return()=>clearInterval(interval);},[]);
@@ -121,7 +126,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
  return <section className="cmd-shell">
   <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
-   <nav>{(['bridge','map','character','ship','inventory','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),inventory:tr('Raktér','Cargo'),log:tr('Napló','Log')})[k]}</button>)}</nav>
+   <nav>{(['bridge','map','character','ship','cantina','inventory','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),cantina:tr('Kantin','Cantina'),inventory:tr('Raktér','Cargo'),log:tr('Napló','Log')})[k]}</button>)}</nav>
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
@@ -147,8 +152,11 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     <div className="cmd-group-tabs">{attributes.map(a=><button className={group===a?'active':''} key={a} onClick={()=>setGroup(a)}>{attributeNames[lang][a]}</button>)}</div>
     <div className="cmd-skills">{skills.filter(s=>s.attribute===group).map(s=><div key={s.id}><SkillArt slug={s.slug} path={s.icon_path}/><span>{local(s.game_skills_i18n)?.name}</span><strong>{toDice(pool(s))}</strong><button title={tr('Skill fejlesztése','Upgrade skill')} disabled={busy||!progress?.upgrade_points||(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0)>=12} onClick={()=>void upgrade(s.id)}><LucidePlus/></button></div>)}</div>
    </>}
-   {tab==='ship'&&<><div className="cmd-title"><h2>{tr('HAJÓ ÉS LEGÉNYSÉG','SHIP AND CREW')}</h2></div><div className="cmd-ship"><ShipArt slug={ship?.slug||'vagabond'}/><div><h2>{local(ship?.game_starter_ships_i18n)?.name}</h2><p>{local(ship?.game_starter_ships_i18n)?.description}</p><p>HP {ship?.hull} · {tr('Raktér','Cargo')} {ship?.cargo} · {tr('Sebesség','Speed')} {ship?.speed}</p><h3>{tr('Legénység','Crew')}</h3>{crew.map(c=><p key={c.position}>{c.position==='pilot'?tr('Pilóta','Pilot'):tr('Navigátor','Navigator')}: {c.name}</p>)}</div></div></>}
-   {tab==='inventory'&&<><div className="cmd-title"><h2>{tr('RAKTÉR // MEGSZERZETT ERŐFORRÁSOK','CARGO // COLLECTED RESOURCES')}</h2><small>{inventory.reduce((v,x)=>v+x.quantity,0)} {tr('egység','units')}</small></div><div className="cmd-inventory">{inventory.length?inventory.map(row=><article key={row.item_id} className="cmd-inventory-item"><div className="cmd-inventory-emblem">{({material:'◈',data:'⌁',trade:'✦'} as Record<string,string>)[row.game_items?.category]||'◆'}</div><div><small>{row.game_items?.rarity?.toUpperCase()}</small><strong>{local(row.game_items?.game_items_i18n)?.name||row.game_items?.slug}</strong><p>{local(row.game_items?.game_items_i18n)?.description}</p></div><b>×{row.quantity}</b></article>):<p className="cmd-empty">{tr('A raktér üres. A sikeres akciók során gyűjthetsz erőforrásokat.','Cargo is empty. Successful actions can award resources.')}</p>}</div></>}
+   {tab==='ship'&&<><div className="cmd-title"><h2>{tr('HAJÓ ÉS LEGÉNYSÉG','SHIP AND CREW')}</h2></div><div className="cmd-ship"><ShipArt slug={ship?.slug||'vagabond'}/><div><h2>{local(ship?.game_starter_ships_i18n)?.name}</h2><p>{local(ship?.game_starter_ships_i18n)?.description}</p><p>HP {ship?.hull} · {tr('Raktér','Cargo')} {ship?.cargo} · {tr('Sebesség','Speed')} {ship?.speed}</p><h3>{tr('Legénység','Crew')}</h3>{activeCrew.map(c=><p key={c.position}>{crewPositionName(c.position,en)}: {c.name} {c.aptitude?' ◆'+c.aptitude:''}</p>)}</div></div></>}
+   {tab==='cantina'&&<><div className="cmd-title"><h2>{tr('HATÁRVIDÉKI KANTIN // TOBORZÁS','FRONTIER CANTINA // RECRUITMENT')}</h2><small>⚡ {energy}</small></div><Cantina locale={locale} atStation={here?.slug==='frontier_station'} crew={activeCrew} energy={energy} onChanged={refresh}/></>}
+   {tab==='inventory'&&<><div className="cmd-title"><h2>{tr('RAKTÉR ÉS GYÁRTÁS','CARGO AND CRAFTING')}</h2><div className="cmd-cargo-tabs"><button className={cargoView==='stock'?'active':''} onClick={()=>setCargoView('stock')}>{tr('KÉSZLET','INVENTORY')}</button><button className={cargoView==='craft'?'active':''} onClick={()=>setCargoView('craft')}>{tr('GYÁRTÁS','CRAFTING')}</button></div></div>
+    {cargoView==='stock'?<div className="cmd-inventory">{inventory.length?inventory.map(row=><article key={row.item_id} className="cmd-inventory-item"><div className="cmd-inventory-emblem">{({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[row.game_items?.category]||'◆'}</div><div><small>{row.game_items?.rarity?.toUpperCase()}</small><strong>{local(row.game_items?.game_items_i18n)?.name||row.game_items?.slug}</strong><p>{local(row.game_items?.game_items_i18n)?.description}</p></div><b>×{row.quantity}</b></article>):<p className="cmd-empty">{tr('A raktér üres. A sikeres akciók során gyűjthetsz erőforrásokat.','Cargo is empty. Successful actions can award resources.')}</p>}</div>:<CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/>}
+   </>}
    {tab==='log'&&<><div className="cmd-title"><h2>{tr('ESEMÉNYNAPLÓ','ACTIVITY LOG')}</h2></div><div className="cmd-log">{timeline.length?timeline.map(x=><div key={x.key}><small>{new Date(x.at).toLocaleString(en?'en-GB':'hu-HU')}</small><strong>{x.title}</strong><span>{x.detail}</span></div>):<p>{tr('Még nincs végrehajtott akció vagy utazás.','No actions or travel yet.')}</p>}</div></>}
   </main>
   <footer className="cmd-footer"><span>SPACE D6 FREE · {tr('SZERVEROLDALI JÁTÉKMOTOR','SERVER-AUTHORITATIVE GAME ENGINE')}</span>
