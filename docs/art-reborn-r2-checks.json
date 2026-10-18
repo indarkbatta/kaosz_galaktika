@@ -1,0 +1,434 @@
+[
+  {
+    "key": "hatarvilag/items/reborn/alloy_scrap.webp",
+    "ok": true,
+    "etag": "02bbb6feec9e265ebf50d7088c5f8d44",
+    "size": 16700
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_backpack.webp",
+    "ok": true,
+    "etag": "173ace0fb66625567b9dfe70d396566c",
+    "size": 21460
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_belt.webp",
+    "ok": true,
+    "etag": "456659bfa9ea89023d074670f18c850f",
+    "size": 14552
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_medkit.webp",
+    "ok": true,
+    "etag": "916a3105b6085a76cf9ba3e166ac596d",
+    "size": 16690
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_relic.webp",
+    "ok": true,
+    "etag": "b3ee0705eb87d95bd257a7b47c4ec40b",
+    "size": 15258
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_rifle.webp",
+    "ok": true,
+    "etag": "9df9eeb7b83b31b89e18b359af62b64e",
+    "size": 9432
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_sidearm.webp",
+    "ok": true,
+    "etag": "7a7c0b1583aa362e52c0b60441b1b428",
+    "size": 14958
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_toolkit.webp",
+    "ok": true,
+    "etag": "942c5bb895800dabaadb1b71999a688d",
+    "size": 20616
+  },
+  {
+    "key": "hatarvilag/items/reborn/captain_vest.webp",
+    "ok": true,
+    "etag": "493173a077926680eec6d4e8d4b5af00",
+    "size": 18728
+  },
+  {
+    "key": "hatarvilag/items/reborn/circuit_core.webp",
+    "ok": true,
+    "etag": "8f353d7be6f34cb10d16fe612b1b800e",
+    "size": 19432
+  },
+  {
+    "key": "hatarvilag/items/reborn/crew_armor.webp",
+    "ok": true,
+    "etag": "6aab604503039b6f61d60ed01ee43282",
+    "size": 18476
+  },
+  {
+    "key": "hatarvilag/items/reborn/crew_utility.webp",
+    "ok": true,
+    "etag": "f05f7a4f5108103c42e5e1d1fd22c8b2",
+    "size": 20820
+  },
+  {
+    "key": "hatarvilag/items/reborn/crew_weapon.webp",
+    "ok": true,
+    "etag": "5c4384da0119e5bb59977f5b0ec8f8e2",
+    "size": 13648
+  },
+  {
+    "key": "hatarvilag/items/reborn/emergency_patch.webp",
+    "ok": true,
+    "etag": "6e8a85e8b7fbc6a0366ac826321f4529",
+    "size": 16364
+  },
+  {
+    "key": "hatarvilag/items/reborn/encrypted_fragments.webp",
+    "ok": true,
+    "etag": "c69a4a0f22b2fe3248ef7a0053dfdccd",
+    "size": 17826
+  },
+  {
+    "key": "hatarvilag/items/reborn/field_scanner.webp",
+    "ok": true,
+    "etag": "2c7ed006a420638630e4984a0cad81b0",
+    "size": 14352
+  },
+  {
+    "key": "hatarvilag/items/reborn/plasma_cell.webp",
+    "ok": true,
+    "etag": "5952618ae3c69882e08d76bb3196404e",
+    "size": 13812
+  },
+  {
+    "key": "hatarvilag/items/reborn/polymer_fiber.webp",
+    "ok": true,
+    "etag": "da7c539d9df37b9de44a956a4ae9e9bf",
+    "size": 16336
+  },
+  {
+    "key": "hatarvilag/items/reborn/stellar_charts.webp",
+    "ok": true,
+    "etag": "c3055301ca4f6830d8b0e0bc72581a02",
+    "size": 19204
+  },
+  {
+    "key": "hatarvilag/items/reborn/trade_seals.webp",
+    "ok": true,
+    "etag": "884a35ab781d75496049815c01fd5bd9",
+    "size": 18442
+  },
+  {
+    "key": "hatarvilag/attributes/reborn/body.webp",
+    "ok": true,
+    "etag": "2e49e87d45781d87a71f26790c5e7d06",
+    "size": 89110
+  },
+  {
+    "key": "hatarvilag/attributes/reborn/mind.webp",
+    "ok": true,
+    "etag": "e44fc96eed63b4eddbf4ad6d4411c4b2",
+    "size": 72218
+  },
+  {
+    "key": "hatarvilag/attributes/reborn/morale.webp",
+    "ok": true,
+    "etag": "039efeb67115dfddf5f9021a8f44c7a4",
+    "size": 92130
+  },
+  {
+    "key": "hatarvilag/attributes/reborn/social.webp",
+    "ok": true,
+    "etag": "c1c43789474d778827666020145ae3c8",
+    "size": 68438
+  },
+  {
+    "key": "hatarvilag/attributes/reborn/soul.webp",
+    "ok": true,
+    "etag": "a7833b39fdf739f16d92ce798660054e",
+    "size": 67196
+  },
+  {
+    "key": "hatarvilag/backgrounds/reborn/login.webp",
+    "ok": true,
+    "etag": "98d77c9cf7a0eb31c9aa4e43d39098c8",
+    "size": 245390
+  },
+  {
+    "key": "hatarvilag/branding/reborn/crest.webp",
+    "ok": true,
+    "etag": "4b33425cdcc55fe053b39d9845981527",
+    "size": 88356
+  },
+  {
+    "key": "hatarvilag/classes/reborn/arnyugynok.webp",
+    "ok": true,
+    "etag": "cf6b0991886a9410ecdaf98c78e98181",
+    "size": 204996
+  },
+  {
+    "key": "hatarvilag/classes/reborn/felderito.webp",
+    "ok": true,
+    "etag": "adb92470855320c0ce761206999a2708",
+    "size": 248772
+  },
+  {
+    "key": "hatarvilag/classes/reborn/hadur.webp",
+    "ok": true,
+    "etag": "e624c81bad9abb9794b29c1498075c12",
+    "size": 258532
+  },
+  {
+    "key": "hatarvilag/classes/reborn/hangkovacs.webp",
+    "ok": true,
+    "etag": "1c9a77e31ebd4b041e7d20b31eebb54b",
+    "size": 207216
+  },
+  {
+    "key": "hatarvilag/classes/reborn/muszeresz.webp",
+    "ok": true,
+    "etag": "068fef379f4c91817d8bb5a71f0b4007",
+    "size": 247424
+  },
+  {
+    "key": "hatarvilag/classes/reborn/navigator.webp",
+    "ok": true,
+    "etag": "e9d73f8a635257ab54a6a1ac57dc1324",
+    "size": 267060
+  },
+  {
+    "key": "hatarvilag/classes/reborn/pszion.webp",
+    "ok": true,
+    "etag": "6c7ca33bb5273d04bc2ae05cf687f0bb",
+    "size": 191602
+  },
+  {
+    "key": "hatarvilag/paperdolls/reborn/captain.webp",
+    "ok": true,
+    "etag": "b0628177b7c31b53a2f726450822953c",
+    "size": 231684
+  },
+  {
+    "key": "hatarvilag/paperdolls/reborn/crew.webp",
+    "ok": true,
+    "etag": "cc10c86c4e7fe9756239e531a22a7b36",
+    "size": 194784
+  },
+  {
+    "key": "hatarvilag/portraits/reborn/captain.webp",
+    "ok": true,
+    "etag": "87218e77af14a6e7a95d56eb4736ce10",
+    "size": 182000
+  },
+  {
+    "key": "hatarvilag/ships/reborn/bastion.webp",
+    "ok": true,
+    "etag": "a72b2520413503d147c71511b710345e",
+    "size": 246920
+  },
+  {
+    "key": "hatarvilag/ships/reborn/sparrow.webp",
+    "ok": true,
+    "etag": "1e966284e7cd697d1ba979c3118fa287",
+    "size": 259976
+  },
+  {
+    "key": "hatarvilag/ships/reborn/vagabond.webp",
+    "ok": true,
+    "etag": "e664822f031a3a66fbf0153a7aeaf3e5",
+    "size": 272168
+  },
+  {
+    "key": "hatarvilag/species/reborn/ember.webp",
+    "ok": true,
+    "etag": "71ea521f8e84e72cc0c4b340a123ee8d",
+    "size": 227264
+  },
+  {
+    "key": "hatarvilag/species/reborn/ferron.webp",
+    "ok": true,
+    "etag": "99f16d9aca8031916bb4655473e31965",
+    "size": 249384
+  },
+  {
+    "key": "hatarvilag/species/reborn/karszid.webp",
+    "ok": true,
+    "etag": "8ac3351a3686119f6727298b263e2614",
+    "size": 217612
+  },
+  {
+    "key": "hatarvilag/species/reborn/mycelion.webp",
+    "ok": true,
+    "etag": "5dfd1dbe5a08fe7a56ab6c6369f51a7f",
+    "size": 226050
+  },
+  {
+    "key": "hatarvilag/species/reborn/noxari.webp",
+    "ok": true,
+    "etag": "5e48891b6699978a8b1395bb3783dd98",
+    "size": 227970
+  },
+  {
+    "key": "hatarvilag/species/reborn/vektorita.webp",
+    "ok": true,
+    "etag": "94aae0adc68ca33be8d544853b4b377a",
+    "size": 252814
+  },
+  {
+    "key": "hatarvilag/species/reborn/voxari.webp",
+    "ok": true,
+    "etag": "5c0f5729aafab4ff24bd00e97859ed1f",
+    "size": 202046
+  },
+  {
+    "key": "hatarvilag/skills/reborn-athletics.webp",
+    "ok": true,
+    "etag": "86255b4687116c7527322fa9fb000dcf",
+    "size": 76660
+  },
+  {
+    "key": "hatarvilag/skills/reborn-endurance.webp",
+    "ok": true,
+    "etag": "6133c8931aa6dd1c624b6cbd45930a1f",
+    "size": 90224
+  },
+  {
+    "key": "hatarvilag/skills/reborn-reflexes.webp",
+    "ok": true,
+    "etag": "9948095c82c85f85ea4d0f608c3d63f2",
+    "size": 72524
+  },
+  {
+    "key": "hatarvilag/skills/reborn-stealth.webp",
+    "ok": true,
+    "etag": "e86235b387eac350081eea7c8ab32c19",
+    "size": 83084
+  },
+  {
+    "key": "hatarvilag/skills/reborn-engineering.webp",
+    "ok": true,
+    "etag": "d26557b2eb7808ee97f25714232116ac",
+    "size": 87978
+  },
+  {
+    "key": "hatarvilag/skills/reborn-physical_arms.webp",
+    "ok": true,
+    "etag": "04fbbe62ac12e7fff4a7a6ae2e965421",
+    "size": 78932
+  },
+  {
+    "key": "hatarvilag/skills/reborn-navigation.webp",
+    "ok": true,
+    "etag": "2b181019dca2047cc1adfbc8382f2215",
+    "size": 90188
+  },
+  {
+    "key": "hatarvilag/skills/reborn-research.webp",
+    "ok": true,
+    "etag": "fbbe038f894aa444b8bbf8b6469716ec",
+    "size": 81504
+  },
+  {
+    "key": "hatarvilag/skills/reborn-psionic_arms.webp",
+    "ok": true,
+    "etag": "10bdc268046c63d938e3a56463d03fb5",
+    "size": 88634
+  },
+  {
+    "key": "hatarvilag/skills/reborn-analysis.webp",
+    "ok": true,
+    "etag": "1b9696ffe9846c46befac47100990f24",
+    "size": 76776
+  },
+  {
+    "key": "hatarvilag/skills/reborn-willpower.webp",
+    "ok": true,
+    "etag": "c105a589aed415fe6c9683e25549f0e5",
+    "size": 86840
+  },
+  {
+    "key": "hatarvilag/skills/reborn-attunement.webp",
+    "ok": true,
+    "etag": "b23d62b4c0c1e75ebec00a3e187dc88a",
+    "size": 64744
+  },
+  {
+    "key": "hatarvilag/skills/reborn-terror_arms.webp",
+    "ok": true,
+    "etag": "2b386be01995cf955febcefcf78122e4",
+    "size": 87270
+  },
+  {
+    "key": "hatarvilag/skills/reborn-intuition.webp",
+    "ok": true,
+    "etag": "558aa8c6b044c78caa3983a40f27cbdf",
+    "size": 67748
+  },
+  {
+    "key": "hatarvilag/skills/reborn-meditation.webp",
+    "ok": true,
+    "etag": "b47a7d87c4901b8f9c0ba1ef929cef28",
+    "size": 76286
+  },
+  {
+    "key": "hatarvilag/skills/reborn-command.webp",
+    "ok": true,
+    "etag": "0cdf0116939775ca0ab5e887f5596fc2",
+    "size": 75076
+  },
+  {
+    "key": "hatarvilag/skills/reborn-discipline.webp",
+    "ok": true,
+    "etag": "17e454f80f2e0e1abd36895c73b8761b",
+    "size": 86344
+  },
+  {
+    "key": "hatarvilag/skills/reborn-rally.webp",
+    "ok": true,
+    "etag": "c00d36796bda2cee8959c79ac7e203e0",
+    "size": 77234
+  },
+  {
+    "key": "hatarvilag/skills/reborn-fear_arms.webp",
+    "ok": true,
+    "etag": "9c83e53aef4094efb7c3f2af0148371a",
+    "size": 82030
+  },
+  {
+    "key": "hatarvilag/skills/reborn-tactics.webp",
+    "ok": true,
+    "etag": "18f3de162c2564a6f672e5950670e2e0",
+    "size": 85202
+  },
+  {
+    "key": "hatarvilag/skills/reborn-diplomacy.webp",
+    "ok": true,
+    "etag": "26751708700daf8084b81078faa02ceb",
+    "size": 83152
+  },
+  {
+    "key": "hatarvilag/skills/reborn-trade.webp",
+    "ok": true,
+    "etag": "b0be5123c034dbe94db88c6a5d382090",
+    "size": 73276
+  },
+  {
+    "key": "hatarvilag/skills/reborn-deception.webp",
+    "ok": true,
+    "etag": "982e04833386540fb6b535cb528e5146",
+    "size": 69684
+  },
+  {
+    "key": "hatarvilag/skills/reborn-networking.webp",
+    "ok": true,
+    "etag": "b624a1626c178e67d09121465d78ec8d",
+    "size": 74256
+  },
+  {
+    "key": "hatarvilag/skills/reborn-sonic_arms.webp",
+    "ok": true,
+    "etag": "01b48854bf395e000c57c38548be42f2",
+    "size": 92502
+  }
+]

@@ -10,7 +10,7 @@
 .eq-pane-head strong{font-size:12px;color:#e8e2d7;white-space:nowrap;max-width:65%;overflow:hidden;text-overflow:ellipsis}
 .eq-doll-grid{position:relative;display:grid;grid-template-columns:minmax(64px,1fr) minmax(100px,2.9fr) minmax(64px,1fr);grid-template-rows:repeat(4,minmax(0,1fr));place-items:center;flex:1;min-height:0;min-width:0;gap:4px 6px;background:radial-gradient(ellipse at 50% 47%,#1a2d39 0%,#0e1b25 46%,transparent 79%);border:1px solid #253845;padding:5px}
 .eq-figure-wrap{position:relative;grid-column:2;grid-row:1/5;height:100%;min-height:0;min-width:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;overflow:hidden}
-.eq-figure{height:100%;width:100%;max-width:275px;filter:drop-shadow(0 9px 18px #05090b);opacity:.85}
+.eq-figure{object-fit:contain;height:100%;width:100%;max-width:275px;filter:drop-shadow(0 9px 18px #05090b);opacity:.85}
 .eq-figure-caption{position:absolute;bottom:1px;color:#798c9b;font-size:9px;letter-spacing:.2em;text-shadow:0 2px 5px #000}
 .eq-slot-wrap{position:relative;min-width:0;min-height:0;max-height:100%;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .eq-slot-label{display:block;color:#c8b1a0;font-size:10px;line-height:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}

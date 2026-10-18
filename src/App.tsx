@@ -121,10 +121,10 @@ function App(){
  const selector=<div className="language"><span>{t('language')}</span>{(['hu','en'] as Locale[]).map(l=>
   <button key={l} className={locale===l?'current':''} aria-pressed={locale===l} onClick={()=>chooseLocale(l)}>{l.toUpperCase()}</button>
  )}</div>;
- const sceneStyle:CSSProperties=assetOrigin?{'--space-image':'url('+assetOrigin+'/hatarvilag/backgrounds/login-space-v2.jpg)'} as CSSProperties:{};
+ const sceneStyle:CSSProperties=assetOrigin?{'--space-image':'url('+assetOrigin+'/hatarvilag/backgrounds/reborn/login.webp)'} as CSSProperties:{};
  return <div className="shell" style={sceneStyle}>
   <header className="topbar">
-   <img className="sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
+   <img className="sigil" alt="" src={assetOrigin+'/hatarvilag/branding/reborn/crest.webp'}/>
    <strong className="brand">{t('brand')}</strong>
    <span className="head-sub">{t('explore')} <em>//</em> {t('command')} <em>//</em> {t('survive')}</span>
    <div className="spacer"/>{selector}
@@ -141,7 +141,7 @@ function App(){
    {loading?<div className="terminal"><p className="dim">{t('loading')}</p></div>
     :profileError?<div className="terminal"><p role="alert">{t('profileError')}</p><button className="action" onClick={()=>window.location.reload()}>{t('retry')}</button><button className="alternate" onClick={()=>void supabase.auth.signOut()}>{t('signout')}</button></div>
     :(!user||mode==='change')?<main className="terminal auth">
-     <img className="large-sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
+     <img className="large-sigil" alt="" src={assetOrigin+'/hatarvilag/branding/reborn/crest.webp'}/>
      <h1 className="auth-heading">{mode==='login'?t('subtitle'):mode==='register'?t('register'):mode==='recover'?t('recover'):t('change')}</h1>
      <p className="center-sub">{t('brand')} // {t('explore')} · {t('command')} · {t('survive')}</p>
      <form onSubmit={submit}>

@@ -1,5 +1,5 @@
-.ga-skill,.ga-attribute,.ga-ship{display:block;flex-shrink:0;background-repeat:no-repeat;background-color:#0b141c;border:1px solid #76554b}.ga-skill{aspect-ratio:1;width:42px;height:42px}.ga-attribute{aspect-ratio:1;width:56px;height:56px}.ga-ship{width:100%;aspect-ratio:16/9;background-size:contain;background-position:center}
-/* Story atlas: fixed-square painted thumbnails, large matching illustration tiles. */
+.ga-skill,.ga-attribute,.ga-ship{display:block;flex-shrink:0;background-repeat:no-repeat;background-color:#0b141c;border:1px solid #816543}.ga-skill{aspect-ratio:1;width:42px;height:42px}.ga-attribute{aspect-ratio:1;width:56px;height:56px}.ga-ship{width:100%;aspect-ratio:16/9;background-size:contain;background-position:center}
+/* Standalone square painted skill and attribute illustrations. */
 .ch-v2-attribute .ga-attribute{width:min(100%,170px);height:auto;max-height:68%;aspect-ratio:1;align-self:center;flex:1 1 auto;background-color:#141f27}
 .ch-v2-attr-switch .ga-attribute{width:35px;height:35px;aspect-ratio:1;flex:0 0 35px}
 .ch-v2-skill .ga-skill{width:min(100%,170px);height:auto;max-height:70%;aspect-ratio:1;align-self:center;flex:1 1 auto}

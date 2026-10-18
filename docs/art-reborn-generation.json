@@ -1,0 +1,267 @@
+{
+  "mode": "built-in image_gen",
+  "art_direction": "Dark hand-painted European comic-book science fiction; painterly retrofuturism; industrial gothic; weathered functional technology; graphite, cold steel blue, dark petrol, muted bronze, controlled amber and cyan; no text, grids, collages, neon cyberpunk or old visual references.",
+  "item_standard": "Individually generated square, centered complete objects on near-black; 256x256 WebP quality 92.",
+  "assets": [
+    {
+      "key": "skills/athletics",
+      "subject": "an armored explorer vaulting a broken industrial gantry",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/endurance",
+      "subject": "a resolute space worker carrying a heavy salvaged power core through freezing haze",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/reflexes",
+      "subject": "a gloved hand catching a falling steel component with vivid controlled motion",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/stealth",
+      "subject": "a hooded infiltrator silently passing a derelict station guard light",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/engineering",
+      "subject": "gloved hands repairing an exposed intricate machine core",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/physical_arms",
+      "subject": "a frontier combatant aiming a heavy practical rifle",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/navigation",
+      "subject": "a star pilot plotting sparse cyan routes on an analog navigation globe",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/research",
+      "subject": "a researcher examining a contained enigmatic alien artifact",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/psionic_arms",
+      "subject": "a disciplined psion projecting a concentrated cyan mental force from a cranial harness",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/analysis",
+      "subject": "a focused investigator examining complex traces through a bronze magnifying sensor",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/willpower",
+      "subject": "a calm face resisting surrounding ominous psychic currents",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/attunement",
+      "subject": "an open gloved hand harmonizing with a small alien resonant crystal",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/terror_arms",
+      "subject": "an ominous masked figure projecting a restrained spectral nightmare apparition",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/intuition",
+      "subject": "an uncanny watchful eye sensing a faint hidden silhouette in darkness",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/meditation",
+      "subject": "a seated space wanderer meditating in a silent dark ship chamber",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/command",
+      "subject": "an armored commander giving a decisive hand signal",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/discipline",
+      "subject": "a perfectly still resolute armored sentinel amid dust and damaged machinery",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/rally",
+      "subject": "a veteran raising an amber emergency beacon to inspire exhausted crew",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/fear_arms",
+      "subject": "a towering armored silhouette using an eerie amber intimidation emitter",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/tactics",
+      "subject": "gloved commander's hand moving bronze tactical markers across a dark industrial map",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/diplomacy",
+      "subject": "two distinct frontier envoys sealing an uneasy pact with clasped hands",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/trade",
+      "subject": "a gloved merchant hand balancing bronze trade seals against a compact power cell",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/deception",
+      "subject": "a shadow agent holding a removable realistic identity mask",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/networking",
+      "subject": "a broker connecting three rugged data terminals with subtle cyan communication lines",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "skills/sonic_arms",
+      "subject": "a soundforger firing a functional bronze sonic gauntlet with visible restrained pressure waves",
+      "composition": "Square standalone skill scene; 12 percent margin; readable at 128px."
+    },
+    {
+      "key": "species/ember",
+      "subject": "Human: resilient frontier woman, short dark hair, weathered work jacket, curious steady expression",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "species/ferron",
+      "subject": "Ferron: massive forge-world survivor with metal-reinforced skin and heavy functional implanted steel plates",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "species/noxari",
+      "subject": "Noxari: uncanny tall slim alien wanderer with elongated temples, deep dark eyes, ritual sensor apparatus and subtle psychic presence",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "species/voxari",
+      "subject": "Voxari: alien resonance-speaker with folded throat membranes, fluted cheek structures and bronze sound resonators",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "species/vektorita",
+      "subject": "Vectorite: precise fully mechanical humanoid with segmented graphite body and intricate cyan computational optics, no human flesh",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "species/karszid",
+      "subject": "Karsid: battle-hardened alien clan warrior with cragged chitin-like ridges, broad disciplined posture, scarred dark armor",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "species/mycelion",
+      "subject": "Mycelion: sensitive fungal humanoid with layered organic crown, living dark mycelial skin, faint sick-green network filaments",
+      "composition": "Portrait 2:3 composition, waist-up species representative, subtle atmospheric industrial background, no cropping of head."
+    },
+    {
+      "key": "classes/felderito",
+      "subject": "Scout: lean explorer in worn hooded pressure jacket, compact tracking scanner, wary stance amid derelict frontier ruins",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "classes/navigator",
+      "subject": "Navigator: experienced star pilot with brass analog navigation instruments and cyan holographic route traces",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "classes/pszion",
+      "subject": "Psion: austere mental specialist wearing a functional cranial focusing harness, controlled faint cyan psychic field",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "classes/hadur",
+      "subject": "Warlord: imposing veteran commander in heavy graphite plate armor, scarred face, amber tactical command device",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "classes/muszeresz",
+      "subject": "Engineer: practical grease-stained woman with heavy tool harness, repairing a complex frontier mechanism",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "classes/arnyugynok",
+      "subject": "Shadow Agent: guarded identity broker in dark practical coat with concealed data probes and face half in shadow",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "classes/hangkovacs",
+      "subject": "Soundforger: resonance specialist with angular bronze throat amplifier and powerful functional sonic gauntlets",
+      "composition": "Portrait 2:3 composition, waist-up character illustration, entire head visible, atmospheric industrial background."
+    },
+    {
+      "key": "attributes/body",
+      "subject": "physical resilience: powerful armored gauntlet braced against scarred bulkhead",
+      "composition": "Square centered emblematic painted game illustration on dark background, readable at 128px."
+    },
+    {
+      "key": "attributes/mind",
+      "subject": "analysis: intricate analog computation apparatus and cyan precision optical lens",
+      "composition": "Square centered emblematic painted game illustration on dark background, readable at 128px."
+    },
+    {
+      "key": "attributes/soul",
+      "subject": "inner perception: enigmatic dark mask surrounded by faint spectral cyan currents",
+      "composition": "Square centered emblematic painted game illustration on dark background, readable at 128px."
+    },
+    {
+      "key": "attributes/morale",
+      "subject": "resolve: weathered steel command standard and clenched armored fist",
+      "composition": "Square centered emblematic painted game illustration on dark background, readable at 128px."
+    },
+    {
+      "key": "attributes/social",
+      "subject": "influence: two expressive alien and human hands exchanging a bronze diplomatic seal",
+      "composition": "Square centered emblematic painted game illustration on dark background, readable at 128px."
+    },
+    {
+      "key": "ships/vagabond",
+      "subject": "Vagabond: rugged asymmetrical frontier cargo vessel, bulky patched hull, external cargo modules, amber engine glow",
+      "composition": "Landscape 4:3 composition. Entire spacecraft visible with generous margin, three-quarter elevated view, dark empty cosmic backdrop."
+    },
+    {
+      "key": "ships/sparrow",
+      "subject": "Sparrow: compact agile courier ship, narrow angular hull, twin swept engine pods, cyan engines",
+      "composition": "Landscape 4:3 composition. Entire spacecraft visible with generous margin, three-quarter elevated view, dark empty cosmic backdrop."
+    },
+    {
+      "key": "ships/bastion",
+      "subject": "Bastion: heavily armored slow escort ship, broad brutalist hull, layered defensive plates, amber running lamps",
+      "composition": "Landscape 4:3 composition. Entire spacecraft visible with generous margin, three-quarter elevated view, dark empty cosmic backdrop."
+    },
+    {
+      "key": "portraits/captain",
+      "subject": "A seasoned human frontier captain in a practical weathered dark coat, short salt-and-pepper hair, resolute expression, bronze rank clasp, standing on a dim industrial spacecraft bridge",
+      "composition": "Portrait 2:3 waist-up character illustration, entire head visible."
+    },
+    {
+      "key": "paperdolls/captain",
+      "subject": "Neutral full-body human captain in plain worn graphite expedition under-suit, subtle bronze harness, no weapons or equipment obscuring torso, front-facing neutral stance, arms slightly away from body",
+      "composition": "Tall portrait 1:3, entire figure including boots and head visible, transparent background."
+    },
+    {
+      "key": "paperdolls/crew",
+      "subject": "Neutral full-body human crew technician in plain dark petrol utility under-suit, practical work boots, no tools or equipment obscuring torso, front-facing neutral stance, arms slightly away from body",
+      "composition": "Tall portrait 1:3, entire figure including boots and head visible, transparent background."
+    },
+    {
+      "key": "backgrounds/login",
+      "subject": "Monumental decaying brutalist frontier space station above a dark planet, weathered industrial gothic docking architecture, distant sparse stars and subtly uncanny empty space, restrained amber habitation lights and cyan navigation signals",
+      "composition": "Wide landscape 16:9 cinematic environment. Dark calm central area suitable behind login UI. No characters or readable text."
+    },
+    {
+      "key": "branding/crest",
+      "subject": "Single angular weathered bronze frontier insignia: a broken orbital ring embracing a stark vertical gateway, restrained amber inner glow, solemn industrial gothic identity",
+      "composition": "Square centered complete insignia, transparent background, no letters."
+    }
+  ]
+}
