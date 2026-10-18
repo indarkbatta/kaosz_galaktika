@@ -2,7 +2,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
-import {LucidePlus} from './components/LucideSigns';
+import {LucidePlus,LucideZap} from './components/LucideSigns';
 import {attributes,toDice} from './lib/d6';
 import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery} from './SectorMap';
 import Cantina,{crewPositionName,type CrewMember} from './Cantina';
@@ -137,7 +137,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
-   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||100}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}>⚡</button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||100))+'%'}}/></div><small>{energy===(rules?.energy_max||100)?tr('Feltöltve','Fully charged'):tr('Következő +1','Next +1')+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
+   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||100}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}><LucideZap width={15} height={15}/></button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||100))+'%'}}/></div><small>{energy===(rules?.energy_max||100)?tr('Feltöltve','Fully charged'):tr('Következő +1','Next +1')+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
    <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
    <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||'vagabond'}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>
