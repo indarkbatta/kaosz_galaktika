@@ -262,6 +262,106 @@
       "key": "branding/crest",
       "subject": "Single angular weathered bronze frontier insignia: a broken orbital ring embracing a stark vertical gateway, restrained amber inner glow, solemn industrial gothic identity",
       "composition": "Square centered complete insignia, transparent background, no letters."
+    },
+    {
+      "key": "items/captain_rifle",
+      "subject": "captain rifle",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_sidearm",
+      "subject": "captain sidearm",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_medkit",
+      "subject": "captain medkit",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_vest",
+      "subject": "captain vest",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_belt",
+      "subject": "captain belt",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_toolkit",
+      "subject": "captain toolkit",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_relic",
+      "subject": "captain relic",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/captain_backpack",
+      "subject": "captain backpack",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/crew_armor",
+      "subject": "crew armor",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/crew_weapon",
+      "subject": "crew weapon",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/field_scanner",
+      "subject": "field scanner",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/emergency_patch",
+      "subject": "emergency patch",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/crew_utility",
+      "subject": "crew utility",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/alloy_scrap",
+      "subject": "alloy scrap",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/trade_seals",
+      "subject": "trade seals",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/stellar_charts",
+      "subject": "stellar charts",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/encrypted_fragments",
+      "subject": "encrypted fragments",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/circuit_core",
+      "subject": "circuit core",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/polymer_fiber",
+      "subject": "polymer fiber",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
+    },
+    {
+      "key": "items/plasma_cell",
+      "subject": "plasma cell",
+      "composition": "Square standalone centered complete object, three-quarter view, near-black background, generous safe margin; no labels or frame."
     }
   ]
 }

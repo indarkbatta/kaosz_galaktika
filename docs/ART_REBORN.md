@@ -26,6 +26,16 @@ Local browser verification was blocked: the installed Playwright package had no 
 
 ## Retention and cleanup policy
 
-The immediately preceding active set of 70 objects is intentionally retained to support rollback of the previous frontend and catalog snapshot. It is not selected by the new runtime. Older duplicate item-v2 files, old JPG skill icons, discarded atlases/story sheets and the first login placeholder are obsolete. The temporary nested skills staging directory is obsolete after the flat canonical keys were verified. These obsolete objects can be removed after deployment verification. The prior HD-v4 manifest is retained only with that rollback set. Historical documentation records past work and is not a current runtime asset manifest.
+The immediately preceding active set of 70 objects is intentionally retained to support rollback of the previous frontend and catalog snapshot. It is not selected by the new runtime. Older duplicate item-v2 files, old JPG skill icons, discarded atlases/story sheets and the first login placeholder are obsolete. The temporary nested skills staging directory is obsolete after the flat canonical keys were verified. 77 obsolete objects (51 older graphics, 25 superseded skill staging files and 1 obsolete manifest) were deleted after the canonical release was verified. The exact keys are in `art-reborn-retired.json`. The prior HD-v4 manifest is retained only with that rollback set. Historical documentation records past work and is not a current runtime asset manifest.
 
 Deployment result and final cleanup counts are recorded in the release completion note after publication.
+
+## Release completion status
+
+- R2: all 72 production objects verified; 77 obsolete objects deleted; 70 previous active objects intentionally retained for rollback.
+- Database: guarded update applied, 62/62 exact matches and zero mismatches.
+- Review candidate: https://github.com/indarkbatta/kaosz_galaktika/pull/1 (`art/reborn`).
+- Preview: https://hatarvilag-2q5bbjcm8-in-dark-batta.vercel.app — Vercel READY, runtime commit `34f5b028ba59aaace4b17e79942969d793af6c23`, 15.6 second build.
+- Production frontend: NOT released. Automatic approval review rejected direct main push because it lacked explicit authorization for the shared default branch. The release is prepared as a draft PR; production publication awaits user approval.
+- Transitional live state: DB-driven images already use reborn. The previous production frontend still uses old static background/attribute/ship/crest/portrait paths and its SVG paperdoll until release. This is a documented staging transition, not a completed production overhaul.
+- Protected-preview HTTP/browser verification: connector returned 403 at `read_protection_bypass`. Deployment Protection was not disabled. Local Playwright was also unavailable. No full authenticated UI pass is claimed.
