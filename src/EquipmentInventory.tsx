@@ -1,11 +1,12 @@
-import {useCallback,useEffect,useState,type DragEvent} from 'react';
+import {useCallback,useEffect,useState,type DragEvent,type MouseEvent as ReactMouseEvent,type FocusEvent as ReactFocusEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {crewPositionName,type CrewMember} from './Cantina';
+import {ItemHoverTooltip} from './components/ItemDetailView';
+import {itemAssetUrl,itemName,type ItemCatalogEntry} from './lib/itemPresentation';
 import './equipment-inventory.css';
 
-type Txt={locale:string;name:string;description?:string};
-type Item={id:string;slug:string;category:string;rarity:string;image_path:string|null;equip_owner:string|null;equip_slot:string|null;capacity_bonus:number;game_items_i18n:Txt[]};
+type Item=ItemCatalogEntry;
 type Stock={item_id:string;quantity:number};
 type Equipped={id:string;crew_id:string|null;slot:string;item_id:string};
 type Slot={key:string;hu:string;en:string};
@@ -17,11 +18,11 @@ const captainSlots:Slot[]=[
  {key:'utility2',hu:'Utility 2',en:'Utility 2'},{key:'belt',hu:'Öv',en:'Belt'},
  {key:'backpack',hu:'Hátizsák',en:'Backpack'},{key:'relic',hu:'Relikvia',en:'Relic'}];
 const crewSlots:Slot[]=[{key:'armor',hu:'Páncélzat',en:'Armor'},{key:'weapon',hu:'Fegyverzet',en:'Weapon'},{key:'utility',hu:'Utility',en:'Utility'}];
-const assetUrl=(p:string|null|undefined)=>p&&/^hatarvilag\/items\/[a-z0-9_/-]+\.(webp|avif|png)$/.test(p)?'https://assets.voidnoir.net/'+p:undefined;
+
 function ItemPicture({item,showPlaceholder=true}:{item:Item|undefined;showPlaceholder?:boolean}){
  const [failed,setFailed]=useState(false);
  useEffect(()=>setFailed(false),[item?.id,item?.image_path]);
- const src=assetUrl(item?.image_path);
+ const src=itemAssetUrl(item?.image_path);
  return <span className="eq-art">{src&&!failed?<img src={src} alt="" draggable={false} onError={()=>setFailed(true)}/>:showPlaceholder?<span className="eq-no-art" aria-hidden="true">◇</span>:null}</span>;
 }
 function DollSilhouette({crew}:{crew:boolean}){
@@ -36,7 +37,22 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  const [target,setTarget]=useState('captain'),[busy,setBusy]=useState(false),[cap,setCap]=useState(24);
  const [selected,setSelected]=useState<{slot:string;crewId:string|null}|null>(null);
  const [dragged,setDragged]=useState<DragData|null>(null),[hover,setHover]=useState<string|null>(null),[page,setPage]=useState(0);
- const name=(item:Item|undefined)=>item?.game_items_i18n.find(x=>x.locale===locale)?.name||item?.game_items_i18n.find(x=>x.locale==='hu')?.name||item?.slug||'—';
+ const name=(item:Item|undefined)=>itemName(item,locale);
+ const [tip,setTip]=useState<{item:Item;quantity?:number;equipped:boolean;x:number;y:number}|null>(null);
+ const showTip=(e:ReactMouseEvent<HTMLButtonElement>,item:Item|undefined,quantity?:number,equipped=false)=>{
+  if(!item||dragged||busy)return;
+  setTip({item,quantity,equipped,
+   x:Math.max(8,Math.min(e.clientX+16,window.innerWidth-336)),
+   y:Math.max(8,Math.min(e.clientY+14,window.innerHeight-325))});
+ };
+ const focusTip=(e:ReactFocusEvent<HTMLButtonElement>,item:Item|undefined,quantity?:number,equipped=false)=>{
+  if(!item||dragged||busy)return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  setTip({item,quantity,equipped,
+   x:Math.max(8,Math.min(rect.right+12,window.innerWidth-336)),
+   y:Math.max(8,Math.min(rect.top,window.innerHeight-325))});
+ };
+ 
  const refresh=useCallback(async()=>{
   const [i,st,eq,capacity]=await Promise.all([
    supabase.from('game_items').select('id,slug,category,rarity,image_path,equip_owner,equip_slot,capacity_bonus,game_items_i18n(locale,name,description)').eq('is_published',true).order('slug'),
@@ -71,12 +87,13 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  };
  const startDrag=(e:DragEvent<HTMLElement>,data:DragData)=>{
   if(busy){e.preventDefault();return;}
+  setTip(null);
   e.dataTransfer.effectAllowed='move';
   e.dataTransfer.setData(DRAG_TYPE,JSON.stringify(data));
   e.dataTransfer.setData('text/plain',data.itemId);
   setDragged(data);
  };
- const clearDrag=()=>{setDragged(null);setHover(null);};
+ const clearDrag=()=>{setDragged(null);setHover(null);setTip(null);};
  async function perform(rpc:'set_equipment'|'move_equipment',args:Record<string,string|null>,message:string){
   if(busy)return;
   setBusy(true);
@@ -120,13 +137,15 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
   return <div key={slot.key} className={'eq-slot-wrap slot-'+slot.key}>
    <span className="eq-slot-label">{en?slot.en:slot.hu}</span>
    <button type="button" className={'eq-slot '+(worn?'occupied ':'')+(item?.rarity||'')+(active?' active':'')+(hover===slot.key?' hover':'')+(compatible?' compatible':'')}
-    disabled={busy} title={item?name(item):en?slot.en:slot.hu}
+    disabled={busy} title={item?undefined:en?slot.en:slot.hu}
+    onMouseEnter={e=>showTip(e,item,undefined,true)} onMouseMove={e=>showTip(e,item,undefined,true)}
+    onMouseLeave={()=>setTip(null)} onFocus={e=>focusTip(e,item,undefined,true)} onBlur={()=>setTip(null)}
     aria-label={(en?slot.en:slot.hu)+(item?': '+name(item):'')}
     draggable={!!worn&&!busy} onDragStart={e=>worn&&startDrag(e,{kind:'gear',slot:slot.key,crewId,itemId:worn.item_id})}
     onDragEnd={clearDrag}
     onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect=compatible?'move':'none';setHover(slot.key);}}
     onDragLeave={()=>setHover(null)} onDrop={e=>dropOnSlot(e,slot.key,crewId)}
-    onClick={()=>setSelected(active?null:{slot:slot.key,crewId})}>
+    onClick={()=>{setTip(null);setSelected(active?null:{slot:slot.key,crewId});}}>
     <ItemPicture item={item}/>
    </button>
   </div>;
@@ -163,7 +182,9 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
        draggable={!!row&&!busy} onDragStart={e=>row&&startDrag(e,{kind:'stock',itemId:row.item_id})}
        onDragEnd={clearDrag}
        onClick={()=>{if(row&&canEquip&&selected)equip(selected.slot,row.item_id,selected.crewId);}}
-       title={item?name(item):''} aria-label={item?name(item)+' ×'+row.quantity:tr('Üres hely','Empty slot')}>
+       aria-label={item?name(item)+' ×'+row.quantity:tr('Üres hely','Empty slot')}
+       onMouseEnter={e=>showTip(e,item,row?.quantity)} onMouseMove={e=>showTip(e,item,row?.quantity)}
+       onMouseLeave={()=>setTip(null)} onFocus={e=>focusTip(e,item,row?.quantity)} onBlur={()=>setTip(null)}>
        <ItemPicture item={item} showPlaceholder={false}/>{row&&<small className="eq-quantity">{row.quantity}</small>}
       </button>;
      })}
@@ -173,11 +194,16 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
       <span>{tr('KIVÁLASZTOTT SLOT','SELECTED SLOT')}: {slots.find(x=>x.key===selected.slot)?.[en?'en':'hu']}</span>
       <button type="button" disabled={busy||!positionItem(selected.slot,selected.crewId)} onClick={()=>equip(selected.slot,null,selected.crewId)}>{tr('LEVÉTEL ↓','UNEQUIP ↓')}</button>
      </div><div className="eq-pick-options">{available.length?available.map(item=><button type="button" key={item.id} disabled={busy}
-       onClick={()=>equip(selected.slot,item.id,selected.crewId)} title={name(item)}><ItemPicture item={item}/><span>{name(item)}</span></button>):
+       onClick={()=>equip(selected.slot,item.id,selected.crewId)}
+       onMouseEnter={e=>showTip(e,item,positive.find(row=>row.item_id===item.id)?.quantity)}
+       onMouseMove={e=>showTip(e,item,positive.find(row=>row.item_id===item.id)?.quantity)}
+       onMouseLeave={()=>setTip(null)} onFocus={e=>focusTip(e,item,positive.find(row=>row.item_id===item.id)?.quantity)}
+       onBlur={()=>setTip(null)}><ItemPicture item={item}/><span>{name(item)}</span></button>):
        <span className="eq-picker-empty">{tr('Nincs kompatibilis tárgy a raktérben.','No matching items in cargo.')}</span>}</div></>:
      <p>{tr('Slot kiválasztása után kattintással is felszerelhetsz. A kétirányú húzás mindig működik.','Select a slot for click-to-equip. Drag and drop works in both directions.')}</p>}
     </div>
    </section>
   </div>
+  {tip&&!dragged&&<ItemHoverTooltip item={tip.item} locale={locale} quantity={tip.quantity} equipped={tip.equipped} x={tip.x} y={tip.y}/>}
  </section>;
 }

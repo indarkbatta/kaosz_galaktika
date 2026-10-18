@@ -1,3 +1,61 @@
-.crafting-panel{display:flex;flex:1;min-height:0;overflow:hidden}.crafting-recipes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);gap:10px;width:100%;overflow:hidden}.crafting-card{min-height:0;min-width:0;padding:12px;border:1px solid #4c5966;background:linear-gradient(145deg,#182630,#0d151c);display:flex;flex-direction:column;gap:12px}.crafting-card-title{display:grid;grid-template-columns:29px 1fr auto;align-items:center;gap:6px}.crafting-card-title span{font-size:23px;color:#e0ac91}.crafting-card-title strong{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crafting-card-title small{font-size:9px;color:#b9917d}.crafting-materials{display:grid;gap:6px;align-content:start;flex:1;min-height:0}.crafting-materials>div{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #394751;padding:6px 0;font-size:12px;color:#b9c8d3;gap:6px}.crafting-materials b{white-space:nowrap;font-size:12px}.crafting-materials .enough{color:#85d5b4}.crafting-materials .short{color:#fa8e76}.crafting-card footer{display:flex;align-items:end;justify-content:space-between;gap:10px}.crafting-card label{font-size:10px;color:#9eafb9;display:grid;gap:4px}.crafting-card input{width:56px;background:#0b1219;border:1px solid #586978;color:#f0ebe9;padding:7px}.crafting-card button{padding:9px 12px;background:#722f26;border:1px solid #d77657;color:#fff;font-size:11px}.crafting-card button:disabled{opacity:.35}@media(max-width:950px){.crafting-recipes{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.crafting-card{padding:7px;gap:5px}.crafting-materials>div{font-size:10px;padding:3px 0}}@media(max-height:640px){.crafting-card-title strong{font-size:11px}.crafting-materials>div{padding:2px}.crafting-card footer button{padding:6px}}
-
-.crafting-card-title .crafting-card-image{display:grid;place-items:center;width:33px;height:33px;border:1px solid #836046;background:#0a121c}.crafting-card-image img{width:100%;height:100%;object-fit:contain}
+/* Határvilág recipe browser: dedicated paginated list and selected recipe statblock. */
+.crafting-panel{display:grid;grid-template-columns:minmax(230px,38%) minmax(0,62%);flex:1;min-width:0;min-height:0;gap:10px;overflow:hidden;color:#dbe5e8}
+.crafting-panel *{box-sizing:border-box}
+.crafting-browser,.crafting-detail{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;background:linear-gradient(145deg,#192a34,#0a1119 78%);border:1px solid #4d636e}
+.crafting-browser{padding:10px;gap:9px}
+.crafting-browser-title{display:flex;justify-content:space-between;align-items:center;gap:8px;flex:none;padding-bottom:8px;border-bottom:1px solid #485b65}
+.crafting-browser-title strong,.crafting-detail h4{margin:0;color:#e3b080;font-size:12px;letter-spacing:.085em}
+.crafting-browser-title small{font-size:10px;color:#9aadb7}
+.crafting-filters{display:grid;gap:7px;flex:none}
+.crafting-filters input,.crafting-filters select{width:100%;min-width:0;padding:8px;border-radius:0;border:1px solid #475f6b;background:#101c26;color:#e7ecef;font:inherit;font-size:12px;outline-offset:1px}
+.crafting-filters input:focus-visible,.crafting-filters select:focus-visible{outline:1px solid #e5a46a}
+.crafting-filter-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+.crafting-filter-tabs button{min-width:0;padding:7px 3px;border:1px solid #4a606c;background:#111e28;color:#bdced6;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crafting-filter-tabs button.active{border-color:#d5a36e;background:#4d3224;color:#ffe2b8}
+.crafting-recipe-list{flex:1;min-height:0;display:grid;grid-template-rows:repeat(6,minmax(0,1fr));gap:5px;overflow:hidden}
+.crafting-recipe{width:100%;min-width:0;min-height:0;display:flex;align-items:center;text-align:left;gap:8px;padding:4px 6px;background:#101c26;border:1px solid #334954;color:#dae4e9}
+.crafting-recipe.selected,.crafting-recipe:hover{background:#273341;border-color:#d29c69}
+.crafting-recipe.selected{box-shadow:inset 3px 0 #e1a56f}
+.crafting-recipe-icon,.crafting-ingredient-art{flex:none;display:grid;place-items:center;width:40px;height:40px;border:1px solid #3f5361;background:#0a121a;color:#a6b4bc}
+.crafting-recipe-icon img,.crafting-ingredient-art img{height:100%;width:100%;object-fit:contain}
+.crafting-recipe-text{display:grid;min-width:0;flex:1;gap:4px}
+.crafting-recipe-text strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.crafting-recipe-text small{color:#8fabb9;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crafting-ready-mark{font-size:10px;flex:none;text-align:right;white-space:nowrap}
+.crafting-ready-mark.ready,.crafting-ingredient .enough,.crafting-status-ready{color:#85d6b6}
+.crafting-ready-mark.missing,.crafting-ingredient .short,.crafting-status-missing{color:#f3a08c}
+.crafting-empty{grid-row:1/7;align-self:center;padding:10px;text-align:center;color:#98aeb8;font-size:12px}
+.crafting-pager{display:flex;justify-content:space-between;align-items:center;gap:8px;flex:none;color:#a9bac5;font-size:11px}
+.crafting-pager button{padding:3px 11px;border:1px solid #59707e;background:#142330;color:#ffdab0}
+.crafting-detail{padding:12px;gap:10px}
+.crafting-detail-header{display:grid;grid-template-columns:minmax(95px,130px) minmax(0,1fr);gap:13px;flex:none;min-height:112px;padding-bottom:9px;border-bottom:1px solid #425662}
+.crafting-detail-art{display:grid;place-items:center;width:100%;height:115px;overflow:hidden;border:1px solid #7d654e;background:radial-gradient(circle,#243542,#0a131c 75%)}
+.crafting-detail-art img{width:100%;height:100%;object-fit:contain}
+.crafting-detail-header>div{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.crafting-detail-header small{color:#d1a578;font-size:10px;letter-spacing:.12em}
+.crafting-detail-header h3{font-size:17px;color:#fff1dc;margin:0;line-height:1.15;overflow-wrap:anywhere}
+.crafting-rarity{font-size:11px;color:#adbec9}
+.crafting-rarity.rare{color:#b99aec}.crafting-rarity.uncommon{color:#8ad3d9}.crafting-rarity.epic{color:#ffd08b}
+.crafting-detail-header p{color:#b9cbd3;line-height:1.45;font-size:11px;margin:0;max-height:48px;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3}
+.crafting-detail-main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);flex:1;min-height:0;gap:12px}
+.crafting-stats,.crafting-components{min-width:0;min-height:0;display:flex;flex-direction:column;gap:7px}
+.crafting-components header{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.crafting-components header span{font-size:10px;color:#a6b8c4}.crafting-components header b{color:#bce7c4}
+.crafting-stats .hv-item-stats{grid-template-columns:minmax(0,1fr);gap:5px}
+.crafting-stats .hv-item-stats>div{flex-direction:row;align-items:center;justify-content:space-between;gap:6px;padding:7px}
+.crafting-stats .hv-item-stats dd{text-align:right}
+.crafting-ingredients{display:flex;flex-direction:column;gap:5px;min-height:0;overflow:hidden}
+.crafting-ingredient{display:flex;align-items:center;gap:6px;min-height:33px;padding-bottom:4px;border-bottom:1px solid #304754}
+.crafting-ingredient-art{width:28px;height:28px}
+.crafting-ingredient-name{font-size:11px;min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crafting-ingredient b{font-size:11px;white-space:nowrap}
+.crafting-produce{display:flex;align-items:flex-end;justify-content:space-between;gap:9px;flex:none;padding-top:9px;border-top:1px solid #475b66}
+.crafting-produce label{display:grid;gap:3px;font-size:10px;color:#b2c0c9}
+.crafting-produce input{width:64px;background:#0a151e;color:#f2e5d5;border:1px solid #657783;padding:6px;font-size:12px}
+.crafting-produce>span{font-size:10px;line-height:1.25;max-width:155px;text-align:right;align-self:center}
+.crafting-produce button{padding:10px 13px;background:#6f3d25;color:#ffe3c0;border:1px solid #d69a62;font-weight:700;font-size:11px;white-space:nowrap}
+.crafting-produce button:disabled{opacity:.36}
+.crafting-no-selection{flex:1;display:grid;place-items:center;color:#9ab0bb;font-size:12px;text-align:center}
+@media(max-width:1050px){.crafting-panel{grid-template-columns:minmax(185px,42%) minmax(0,58%);gap:6px}.crafting-browser,.crafting-detail{padding:6px;gap:6px}.crafting-recipe{gap:4px;padding:3px}.crafting-recipe-icon{width:31px;height:31px}.crafting-recipe-text strong{font-size:11px}.crafting-detail-header{grid-template-columns:90px minmax(0,1fr);gap:7px;min-height:86px}.crafting-detail-art{height:85px}.crafting-detail-header h3{font-size:14px}.crafting-detail-main{gap:5px}.crafting-stats .hv-item-stats>div{padding:4px}}
+@media(max-width:710px){.crafting-panel{grid-template-columns:minmax(155px,45%) minmax(0,55%);gap:4px}.crafting-browser,.crafting-detail{padding:4px;gap:4px}.crafting-filter-tabs button{font-size:9px}.crafting-recipe-text small{display:none}.crafting-ready-mark{font-size:9px}.crafting-detail-header{grid-template-columns:58px minmax(0,1fr);min-height:60px}.crafting-detail-art{height:58px}.crafting-detail-header h3{font-size:12px}.crafting-detail-header p{display:none}.crafting-detail-main{grid-template-columns:1fr;gap:4px}.crafting-stats .hv-item-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.crafting-stats .hv-item-stats>div{flex-direction:column;align-items:start}.crafting-stats .hv-item-stats dd{text-align:left}.crafting-components{gap:2px}.crafting-ingredient{min-height:26px}.crafting-produce{gap:3px}.crafting-produce button{padding:7px 4px}.crafting-produce>span{display:none}}
+@media(max-height:610px){.crafting-detail-header{min-height:75px}.crafting-detail-art{height:70px}.crafting-detail-header p{max-height:28px;-webkit-line-clamp:2}.crafting-detail{gap:4px}.crafting-detail-main{gap:5px}.crafting-ingredient{min-height:26px;padding-bottom:2px}.crafting-stats .hv-item-stats>div{padding:3px 5px}.crafting-recipe-icon{width:29px;height:29px}}
