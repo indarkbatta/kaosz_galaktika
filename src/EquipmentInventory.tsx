@@ -26,22 +26,8 @@ function ItemPicture({item,showPlaceholder=true}:{item:Item|undefined;showPlaceh
  return <span className="eq-art">{src&&!failed?<img src={src} alt="" draggable={false} onError={()=>setFailed(true)}/>:showPlaceholder?<span className="eq-no-art" aria-hidden="true">◇</span>:null}</span>;
 }
 function DollSilhouette({crew}:{crew:boolean}){
- return <svg className="eq-figure" viewBox="0 0 190 440" preserveAspectRatio="xMidYMid meet" role="img" aria-label={crew?'Legénységi felszerelés sziluettje':'Kapitány felszerelési sziluettje'}>
-  <defs><linearGradient id="eqArmorMetal" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#637180"/><stop offset=".45" stopColor="#24323e"/><stop offset="1" stopColor="#101922"/></linearGradient><linearGradient id="eqVoidMetal" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#263642"/><stop offset="1" stopColor="#080d13"/></linearGradient></defs>
-  <path d="M73 44 Q64 30 73 14 Q95 -4 117 14 Q126 30 117 44 L125 59 L151 67 Q168 80 167 115 L158 202 L174 251 L160 267 L144 254 L130 163 L127 198 L132 253 L127 337 L139 416 L122 430 L100 426 L94 314 L88 426 L67 431 L49 416 L59 336 L53 253 L58 195 L49 166 L36 253 L22 267 L8 251 L23 201 L21 116 Q18 80 38 68 L65 59 Z" fill="url(#eqVoidMetal)" stroke="#76818b" strokeWidth="2.2"/>
-  <path d="M77 16 Q95 4 113 16 L117 39 L107 55 L83 55 L73 39 Z" fill="url(#eqArmorMetal)" stroke="#a7a59d" strokeWidth="1.3"/>
-  <path d="M80 27 L110 27 L107 37 L83 37 Z" fill="#080e14" stroke="#d18b5b" strokeWidth="1.5"/><path d="M85 34 L105 34" stroke="#d97844" strokeWidth="2"/>
-  <path d="M69 58 L122 58 L143 87 L127 153 L115 188 L76 188 L61 150 L45 86 Z" fill="url(#eqArmorMetal)" stroke="#87919b" strokeWidth="2"/>
-  <path d="M57 80 L95 98 L132 80 L126 128 L95 153 L64 128 Z" fill="#18252e" stroke="#697783"/><path d="M95 98 L95 148 M60 132 L130 132" stroke="#c0784a" strokeWidth="2"/>
-  <path d="M48 72 L25 87 L28 116 L54 114 L66 93 Z M142 72 L166 87 L162 116 L137 114 L126 93 Z" fill="url(#eqArmorMetal)" stroke="#89929a" strokeWidth="1.8"/>
-  <path d="M33 121 L54 125 L40 190 L20 185 Z M136 125 L157 121 L170 185 L150 190 Z" fill="#2c3945" stroke="#677685"/>
-  <path d="M22 192 L42 195 L29 253 L13 245 Z M148 195 L168 192 L178 245 L162 253 Z" fill="#364450" stroke="#8d857c"/>
-  <path d="M65 192 L125 192 L128 215 L60 215 Z" fill="#131a21" stroke="#aa805c" strokeWidth="3"/>
-  <path d="M63 225 L91 225 L87 313 L55 311 Z M101 225 L129 225 L136 311 L103 313 Z" fill="#2a3947" stroke="#697784" strokeWidth="2"/>
-  <path d="M54 313 L88 315 L83 402 L51 408 Z M104 315 L138 313 L140 408 L108 402 Z" fill="#27333d" stroke="#78838c" strokeWidth="2"/>
-  <path d="M52 404 L84 400 L86 421 L61 429 L43 423 Z M108 400 L139 404 L148 423 L131 429 L106 421 Z" fill="#222c34" stroke="#989189" strokeWidth="2"/>
-  <path d="M56 170 L135 170" stroke="#b8754b" strokeWidth="2" strokeDasharray="3 6"/>
- </svg>;
+ return <img className="eq-figure" src={'https://assets.voidnoir.net/hatarvilag/paperdolls/reborn/'+(crew?'crew':'captain')+'.webp'}
+  alt={crew?'Legénységi felszerelés sziluettje':'Kapitány felszerelési sziluettje'} draggable={false}/>;
 }
 export default function EquipmentInventory({characterId,captainName,locale,crew,onChanged}:{
  characterId:string;captainName:string;locale:string;crew:CrewMember[];onChanged:()=>Promise<void>

@@ -1,37 +1,23 @@
 import type {CSSProperties} from 'react';
 import './game-art.css';
 
-/**
- * Határvilág original painted game art, version HD-v4.
- * Every image lives separately in the Cloudflare R2 voidnoir bucket.
- *
- * Skill: ~245x245px; attributes: ~400x460px; ships: 1448x1086px.
- * Never upscale an atlas thumbnail when the original R2 asset is available.
- */
+/** Standalone painted assets. Release inventory: docs/art-reborn-manifest.json. */
 const root='https://assets.voidnoir.net/';
-export const ART_VERSION='hd-v4';
-const legacyAtlas='hatarvilag/art/game-atlas-v3.avif';
-const legacySkillAtlas='hatarvilag/skills/story-atlas.webp';
-
+export const ART_VERSION='reborn';
 const imageStyle=(key:string,size:'cover'|'contain'='contain'):CSSProperties=>({
- backgroundImage:'url("'+root+key+'")',
- backgroundSize:size,
- backgroundPosition:'center center',
- backgroundRepeat:'no-repeat'
+ backgroundImage:'url("'+root+key+'")',backgroundSize:size,
+ backgroundPosition:'center center',backgroundRepeat:'no-repeat'
 });
-
-export function SkillArt({slug,className='',path}: {slug:string;className?:string;path?:string|null}){
- const oldDefault=!path||path===legacyAtlas||path===legacySkillAtlas||path==='hatarvilag/skills/'+slug+'.jpg';
- const key=oldDefault?'hatarvilag/skills/'+slug+'-hd-v4.avif':path;
- return <span className={'ga-skill '+className} aria-hidden="true" style={imageStyle(key,'contain')}/>;
+export function SkillArt({slug,className='',path}:{slug:string;className?:string;path?:string|null}){
+ const key=path||'hatarvilag/skills/reborn-'+slug+'.webp';
+ return <span className={'ga-skill '+className} aria-hidden="true" style={imageStyle(key)}/>;
 }
-
 export function AttributeArt({attribute,className=''}:{attribute:string;className?:string}){
  const attr=['body','mind','soul','morale','social'].includes(attribute)?attribute:'body';
- return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle('hatarvilag/attributes/'+attr+'-hd-v4.avif','contain')}/>;
+ const key='hatarvilag/attributes/torchlight-v1/'+attr+'.webp';
+ return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle(key)}/>;
 }
-
 export function ShipArt({slug,className=''}:{slug:string;className?:string}){
  const ship=['vagabond','sparrow','bastion'].includes(slug)?slug:'vagabond';
- return <span className={'ga-ship '+className} aria-hidden="true" style={imageStyle('hatarvilag/ships/'+ship+'-hd-v4.avif','contain')}/>;
+ return <span className={'ga-ship '+className} aria-hidden="true" style={imageStyle('hatarvilag/ships/reborn/'+ship+'.webp')}/>;
 }

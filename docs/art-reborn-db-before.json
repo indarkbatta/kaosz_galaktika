@@ -1,0 +1,374 @@
+[
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "arnyugynok",
+    "old_path": "hatarvilag/classes/arnyugynok.jpg"
+  },
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "felderito",
+    "old_path": "hatarvilag/classes/felderito.jpg"
+  },
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "hadur",
+    "old_path": "hatarvilag/classes/hadur.jpg"
+  },
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "hangkovacs",
+    "old_path": "hatarvilag/classes/hangkovacs.jpg"
+  },
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "muszeresz",
+    "old_path": "hatarvilag/classes/muszeresz.jpg"
+  },
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "navigator",
+    "old_path": "hatarvilag/classes/navigator.jpg"
+  },
+  {
+    "table_name": "game_classes",
+    "column_name": "image_path",
+    "slug": "pszion",
+    "old_path": "hatarvilag/classes/pszion.jpg"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "alloy_scrap",
+    "old_path": "hatarvilag/items/alloy_scrap-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_backpack",
+    "old_path": "hatarvilag/items/captain_backpack-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_belt",
+    "old_path": "hatarvilag/items/captain_belt-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_medkit",
+    "old_path": "hatarvilag/items/captain_medkit-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_relic",
+    "old_path": "hatarvilag/items/captain_relic-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_rifle",
+    "old_path": "hatarvilag/items/captain_rifle-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_sidearm",
+    "old_path": "hatarvilag/items/captain_sidearm-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_toolkit",
+    "old_path": "hatarvilag/items/captain_toolkit-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "captain_vest",
+    "old_path": "hatarvilag/items/captain_vest-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "circuit_core",
+    "old_path": "hatarvilag/items/circuit_core-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "crew_armor",
+    "old_path": "hatarvilag/items/crew_armor-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "crew_utility",
+    "old_path": "hatarvilag/items/crew_utility-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "crew_weapon",
+    "old_path": "hatarvilag/items/crew_weapon-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "emergency_patch",
+    "old_path": "hatarvilag/items/emergency_patch-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "encrypted_fragments",
+    "old_path": "hatarvilag/items/encrypted_fragments-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "field_scanner",
+    "old_path": "hatarvilag/items/field_scanner-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "plasma_cell",
+    "old_path": "hatarvilag/items/plasma_cell-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "polymer_fiber",
+    "old_path": "hatarvilag/items/polymer_fiber-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "stellar_charts",
+    "old_path": "hatarvilag/items/stellar_charts-v3.webp"
+  },
+  {
+    "table_name": "game_items",
+    "column_name": "image_path",
+    "slug": "trade_seals",
+    "old_path": "hatarvilag/items/trade_seals-v3.webp"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "analysis",
+    "old_path": "hatarvilag/skills/analysis-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "athletics",
+    "old_path": "hatarvilag/skills/athletics-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "attunement",
+    "old_path": "hatarvilag/skills/attunement-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "command",
+    "old_path": "hatarvilag/skills/command-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "deception",
+    "old_path": "hatarvilag/skills/deception-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "diplomacy",
+    "old_path": "hatarvilag/skills/diplomacy-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "discipline",
+    "old_path": "hatarvilag/skills/discipline-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "endurance",
+    "old_path": "hatarvilag/skills/endurance-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "engineering",
+    "old_path": "hatarvilag/skills/engineering-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "fear_arms",
+    "old_path": "hatarvilag/skills/fear_arms-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "intuition",
+    "old_path": "hatarvilag/skills/intuition-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "meditation",
+    "old_path": "hatarvilag/skills/meditation-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "navigation",
+    "old_path": "hatarvilag/skills/navigation-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "networking",
+    "old_path": "hatarvilag/skills/networking-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "physical_arms",
+    "old_path": "hatarvilag/skills/physical_arms-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "psionic_arms",
+    "old_path": "hatarvilag/skills/psionic_arms-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "rally",
+    "old_path": "hatarvilag/skills/rally-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "reflexes",
+    "old_path": "hatarvilag/skills/reflexes-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "research",
+    "old_path": "hatarvilag/skills/research-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "sonic_arms",
+    "old_path": "hatarvilag/skills/sonic_arms-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "stealth",
+    "old_path": "hatarvilag/skills/stealth-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "tactics",
+    "old_path": "hatarvilag/skills/tactics-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "terror_arms",
+    "old_path": "hatarvilag/skills/terror_arms-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "trade",
+    "old_path": "hatarvilag/skills/trade-hd-v4.avif"
+  },
+  {
+    "table_name": "game_skills",
+    "column_name": "icon_path",
+    "slug": "willpower",
+    "old_path": "hatarvilag/skills/willpower-hd-v4.avif"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "ember",
+    "old_path": "hatarvilag/species/ember.jpg"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "ferron",
+    "old_path": "hatarvilag/species/ferron.jpg"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "karszid",
+    "old_path": "hatarvilag/species/karszid.jpg"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "mycelion",
+    "old_path": "hatarvilag/species/mycelion.jpg"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "noxari",
+    "old_path": "hatarvilag/species/noxari.jpg"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "vektorita",
+    "old_path": "hatarvilag/species/vektorita.jpg"
+  },
+  {
+    "table_name": "game_species",
+    "column_name": "image_path",
+    "slug": "voxari",
+    "old_path": "hatarvilag/species/voxari.jpg"
+  },
+  {
+    "table_name": "game_starter_ships",
+    "column_name": "image_path",
+    "slug": "bastion",
+    "old_path": "hatarvilag/ships/bastion-hd-v4.avif"
+  },
+  {
+    "table_name": "game_starter_ships",
+    "column_name": "image_path",
+    "slug": "sparrow",
+    "old_path": "hatarvilag/ships/sparrow-hd-v4.avif"
+  },
+  {
+    "table_name": "game_starter_ships",
+    "column_name": "image_path",
+    "slug": "vagabond",
+    "old_path": "hatarvilag/ships/vagabond-hd-v4.avif"
+  }
+]
