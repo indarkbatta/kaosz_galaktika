@@ -81,3 +81,6 @@
 .ch-v2-captain-portrait img{object-fit:cover!important;object-position:center 20%!important}
 .ch-v2-controls button{display:grid;place-items:center}.ch-v2-controls button svg{width:17px;height:17px}
 .ch-v2-attr-switch .ga-attribute{background-size:cover!important}
+
+/* Keep the complete hanging class banners visible in narrow creation cards. */
+.ch-v2-card-art img[src*="/torchlight-banner-v1/"]{object-fit:contain!important;object-position:center!important}
