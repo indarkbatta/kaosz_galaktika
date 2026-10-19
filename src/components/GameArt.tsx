@@ -14,7 +14,8 @@ export function SkillArt({slug,className='',path}:{slug:string;className?:string
 }
 export function AttributeArt({attribute,className=''}:{attribute:string;className?:string}){
  const attr=['body','mind','soul','morale','social'].includes(attribute)?attribute:'body';
- return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle('hatarvilag/attributes/reborn/'+attr+'.webp')}/>;
+ const key=attr==='body'?'hatarvilag/attributes/torchlight-v1/body.webp':'hatarvilag/attributes/reborn/'+attr+'.webp';
+ return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle(key)}/>;
 }
 export function ShipArt({slug,className=''}:{slug:string;className?:string}){
  const ship=['vagabond','sparrow','bastion'].includes(slug)?slug:'vagabond';
