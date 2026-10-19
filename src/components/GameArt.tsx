@@ -28,7 +28,7 @@ export function SkillArt({slug,className='',path}: {slug:string;className?:strin
 
 export function AttributeArt({attribute,className=''}:{attribute:string;className?:string}){
  const attr=['body','mind','soul','morale','social'].includes(attribute)?attribute:'body';
- return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle('hatarvilag/attributes/'+attr+'-hd-v4.avif','contain')}/>;
+ return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle('hatarvilag/attributes/torchlight-v1/'+attr+'.webp','contain')}/>;
 }
 
 export function ShipArt({slug,className=''}:{slug:string;className?:string}){
