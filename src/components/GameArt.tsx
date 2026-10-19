@@ -33,5 +33,5 @@ export function AttributeArt({attribute,className=''}:{attribute:string;classNam
 
 export function ShipArt({slug,className=''}:{slug:string;className?:string}){
  const ship=['vagabond','sparrow','bastion'].includes(slug)?slug:'vagabond';
- return <span className={'ga-ship '+className} aria-hidden="true" style={imageStyle('hatarvilag/ships/'+ship+'-hd-v4.avif','contain')}/>;
+ return <span className={'ga-ship '+className} aria-hidden="true" style={imageStyle(ship==='vagabond'?'hatarvilag/ships/torchlight-v1/vagabond.webp':'hatarvilag/ships/'+ship+'-hd-v4.avif',ship==='vagabond'?'cover':'contain')}/>;
 }
