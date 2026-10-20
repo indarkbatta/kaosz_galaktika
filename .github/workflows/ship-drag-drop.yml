@@ -15,8 +15,6 @@ jobs:
     defaults:
       run:
         shell: cmd
-    env:
-      SHIP_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-browser-tools
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -28,8 +26,10 @@ jobs:
       - name: Install application dependencies
         run: npm ci --no-fund --no-audit
       - name: Install isolated pinned browser tools
-        run: npm install --prefix "%SHIP_BROWSER_TOOLS%" --no-save --no-fund --no-audit playwright@1.56.1
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1
       - name: Install test browsers
-        run: node "%SHIP_BROWSER_TOOLS%\node_modules\playwright\cli.js" install chromium firefox
+        run: node "%RUNNER_TEMP%\hatarvilag-browser-tools\node_modules\playwright\cli.js" install chromium firefox
       - name: Verify native drag and drop in Chromium and Firefox
+        env:
+          SHIP_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-browser-tools
         run: node tools/qa/ship-dnd-browser.mjs
