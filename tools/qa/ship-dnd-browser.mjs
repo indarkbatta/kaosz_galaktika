@@ -62,15 +62,27 @@ async function idle(page){
   await page.waitForFunction(()=>document.querySelector(".sh-root")?.getAttribute("aria-busy")==="false");
 }
 async function callCount(page){return page.evaluate(()=>window.__calls.length)}
+async function nativeDrag(page,source,target,position){
+  const from=await source.boundingBox(), to=await target.boundingBox();
+  assert.ok(from && to,"drag endpoints must be visible");
+  const x=from.x+from.width/2,y=from.y+from.height/2;
+  const tx=to.x+(position?.x??to.width/2),ty=to.y+(position?.y??to.height/2);
+  await page.mouse.move(x,y);
+  await page.mouse.down();
+  await page.mouse.move(x+8,y+8,{steps:5});
+  await page.mouse.move(tx,ty,{steps:15});
+  await page.mouse.move(tx+1,ty+1,{steps:2});
+  await page.mouse.up();
+}
 async function drag(page,source,target,expected,position){
   const before=await callCount(page);
-  await source.dragTo(target,position?{targetPosition:position}:{});
+  await nativeDrag(page,source,target,position);
   try{
     await page.waitForFunction(n=>window.__calls.length===n+1,before,{timeout:5000});
   }catch(error){
     console.log("FAILED DROP",JSON.stringify(expected),JSON.stringify(await page.evaluate(()=>({
       calls:window.__calls,events:window.__dragEvents,
-      cells:[...document.querySelectorAll(".sh-cell")].slice(0,8).map(e=>({label:e.getAttribute("aria-label"),disabled:e.disabled,rect:e.getBoundingClientRect().toJSON()})),
+      cells:[...document.querySelectorAll(".sh-cell")].slice(0,8).map(e=>({label:e.getAttribute("aria-label"),disabled:e.disabled,draggable:e.draggable,style:getComputedStyle(e).webkitUserDrag,rect:e.getBoundingClientRect().toJSON()})),
     }))));
     throw error;
   }
@@ -110,9 +122,9 @@ for(const [browserName,browserType] of [["chromium",chromium],["firefox",firefox
       {rpc:"assign_ship_crew",args:{p_slot:"Pilot B",p_crew:"mara"}});
     // Incompatible destinations and a cancelled drag must never mutate.
     const before=await callCount(page);
-    await station("Engine B: engine").dragTo(station("Shield: Empty"));
-    await station("Pilot B: Mara").dragTo(cargo.getByRole("button",{name:"Empty module slot",exact:true}).first());
-    await station("Engine B: engine").dragTo(page.locator(".sh-summary"));
+    await nativeDrag(page,station("Engine B: engine"),station("Shield: Empty"));
+    await nativeDrag(page,station("Pilot B: Mara"),cargo.getByRole("button",{name:"Empty module slot",exact:true}).first());
+    await nativeDrag(page,station("Engine B: engine"),page.locator(".sh-summary"));
     assert.equal(await callCount(page),before);
     assert.equal(await page.locator(".sh-stock-panel.compatible").count(),0,"cancel clears highlight");
     // Filled cells are valid return destinations too.
@@ -149,7 +161,7 @@ try{
   await ready(page);
   const target=page.getByRole("button",{name:"Empty module slot",exact:true}).first();
   assert.equal(await target.isDisabled(),true,"baseline has a disabled empty target");
-  await page.getByRole("button",{name:"Engine A: engine",exact:true}).dragTo(target);
+  await nativeDrag(page,page.getByRole("button",{name:"Engine A: engine",exact:true}),target);
   assert.equal(await callCount(page),0,"baseline native drop on empty cell is lost");
   reports.push("baseline: REPRODUCED lost drop on disabled empty cargo cell");
 }finally{await browser.close();await new Promise(r=>server.close(r));await rm(scratch,{recursive:true,force:true})}
