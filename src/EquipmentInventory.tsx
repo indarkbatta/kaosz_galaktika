@@ -174,7 +174,7 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
    <section className="eq-paperdoll" aria-label={tr('Karakter felszerelése','Character equipment')}>
     <header className="eq-pane-head"><span>{tr('FELSZERELÉS','EQUIPMENT')}</span><strong>{currentName}</strong></header>
     <div className={'eq-doll-grid '+(crewId?'eq-crew-doll':'eq-captain-doll')}>
-     <div className="eq-figure-wrap"><DollSilhouette crew={!!crewId}/><span className="eq-figure-caption">{crewId?tr('LEGÉNYSÉG','CREW'):tr('KAPITÁNY','CAPTAIN')}</span></div>
+     <div className="eq-figure-wrap">{crewId?<DollSilhouette crew={true}/>:<img className="eq-figure" src="https://assets.voidnoir.net/hatarvilag/inventory/torchlight-v1/captain.webp" alt={tr('Kapitány felszerelési alakja','Captain equipment figure')} draggable={false} style={{objectFit:'contain',objectPosition:'center',opacity:1}}/>}<span className="eq-figure-caption">{crewId?tr('LEGÉNYSÉG','CREW'):tr('KAPITÁNY','CAPTAIN')}</span></div>
      {slots.map(slot=>slotButton(slot))}
     </div>
     <div className="eq-instructions">{tr('Húzd a tárgyakat a megfelelő helyre, vagy vissza a raktérbe.','Drag items onto matching slots, or back into cargo.')}</div>
