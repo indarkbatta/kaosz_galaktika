@@ -1,0 +1,68 @@
+-- Real RPC regression, temporary users only, every change rolls back.
+begin;
+do $test$
+declare u uuid:=gen_random_uuid();other_u uuid:=gen_random_uuid();cid uuid;other_cid uuid;sp uuid;cl uuid;ship uuid;skill uuid;pilot uuid;new_pilot uuid;
+ sid uuid;tid uuid;candidate uuid;armor uuid;portrait text;data jsonb;payload jsonb;published uuid[];initial_count integer;baseline_damage integer;
+begin
+ insert into auth.users(id,email,raw_user_meta_data) values(u,'crew-regression-'||u||'@example.invalid','{}'),(other_u,'crew-isolation-'||other_u||'@example.invalid','{}');
+ select id into sp from public.game_species where slug='ember';select id into cl from public.game_classes where slug='navigator';select id into ship from public.game_starter_ships where slug='sparrow';select id into skill from public.game_skills limit 1;
+ perform set_config('request.jwt.claim.sub',u::text,true);execute 'set local role authenticated';
+ cid:=public.create_captain('Crew regression',sp,cl,ship,'{"body":6}',jsonb_build_object(skill::text,6));
+ select count(*) into initial_count from public.character_crew where character_id=cid;
+ if exists(select 1 from public.character_crew where character_id=cid and (portrait_path is null or class_id is null)) then raise exception 'Starter crew identity incomplete';end if;
+ begin perform public.get_crew_editor_catalog();raise exception 'TEST: user read editor catalog';exception when insufficient_privilege then null;end;
+ execute 'set local role postgres';update public.user_roles set role='editor' where user_id=u;
+ execute 'set local role authenticated';
+ data:=public.get_crew_editor_catalog();if jsonb_array_length(data->'sets')<1 then raise exception 'Missing portrait catalog';end if;
+ sid:=(public.save_crew_catalog('set',null,jsonb_build_object('slug','test_set_'||replace(u::text,'-',''),'name_hu','Tesztportrék','name_en','Test portraits','species_id',sp,'class_id',cl,'image_paths',jsonb_build_array('hatarvilag/species/torchlight-v1/ember.webp'),'is_published',true),null)->>'id')::uuid;
+ payload:=jsonb_build_object('slug','test_crew_'||replace(u::text,'-',''),'kind','named','translations','{"hu":{"name":"Teszt Pilóta","description":"Teszt."},"en":{"name":"Test Pilot","description":"Test."}}'::jsonb,'species_id',sp,'class_id',cl,'specialty','pilot','aptitude',4,'rarity','rare','portrait_set_id',sid,'portrait_path',null,'weight',10,'max_per_character',1,'source','cantina','hull_bonus',0,'shield_bonus',0,'damage_bonus',2,'speed_bonus',1,'is_published',true);
+ tid:=(public.save_crew_catalog('template',null,payload,null)->>'id')::uuid;
+ begin perform public.save_crew_catalog('template',tid,payload,0);raise exception 'TEST: stale editor write allowed';exception when serialization_failure then null;end;
+ begin perform public.save_crew_catalog('set',sid,jsonb_build_object('slug','bad_portrait','name_hu','Hibás','name_en','Invalid','image_paths',jsonb_build_array('https://evil.invalid/x.png'),'is_published',true),1);raise exception 'TEST: external portrait allowed';exception when raise_exception then if sqlerrm<>'Invalid crew portrait path' then raise;end if;end;
+ -- Get normal applicants before isolating the named template's weighted selection.
+ perform public.get_cantina_roster();
+ select id into pilot from public.character_crew where character_id=cid and specialty='pilot' limit 1;
+ baseline_damage:=(public.get_ship_loadout()->'stats'->>'damage')::integer;
+ execute 'set local role postgres';
+ select array_agg(id) into published from public.game_crew_templates where is_published;
+ update public.game_crew_templates set is_published=(id=tid);
+ perform private.generate_cantina_candidate(cid);
+ select id,portrait_path into candidate,portrait from public.character_cantina_candidates where character_id=cid and template_id=tid;
+ if candidate is null or portrait<>'hatarvilag/species/torchlight-v1/ember.webp' then raise exception 'Named candidate identity/portrait missing';end if;
+ begin perform private.generate_cantina_candidate(cid);raise exception 'TEST: duplicate unique applicant generated';exception when raise_exception then if sqlerrm<>'No recruitable crew templates available' then raise;end if;end;
+ update public.game_crew_templates set is_published=(id=any(published));
+ update public.character_progress set energy=100,energy_at=clock_timestamp() where character_id=cid;
+ select id into armor from public.game_items where equip_owner='crew' and equip_slot='armor' and is_published limit 1;
+ insert into public.character_inventory(character_id,item_id,quantity) values(cid,armor,1) on conflict(character_id,item_id) do update set quantity=public.character_inventory.quantity+1;
+ execute 'set local role authenticated';
+ perform public.set_equipment_from_storage('armor',armor,pilot,'cargo');
+ perform public.hire_cantina_candidate(candidate,'pilot');
+ if(select count(*) from public.character_crew where character_id=cid)<>initial_count+1 then raise exception 'Hiring replaced or lost existing crew';end if;
+ select id into new_pilot from public.character_crew where character_id=cid and template_id=tid;
+ if not exists(select 1 from public.character_crew where id=new_pilot and portrait_path=portrait and rarity='rare' and class_id=cl) then raise exception 'Hire lost snapshot';end if;
+ if exists(select 1 from public.character_ship_crew where crew_id=new_pilot) then raise exception 'Recruit unexpectedly auto-assigned';end if;
+ perform public.assign_ship_crew('crew_pilot',new_pilot);
+ if(public.get_ship_loadout()->'stats'->>'damage')::integer<>baseline_damage+2 then raise exception 'Active crew bonus missing';end if;
+ if exists(select 1 from public.character_ship_crew where crew_id=pilot) then raise exception 'Old pilot not returned to reserve';end if;
+ if not exists(select 1 from public.character_equipment where crew_id=pilot and item_id=armor) then raise exception 'Station change lost personal gear';end if;
+ begin perform public.assign_ship_crew('crew_navigator',new_pilot);raise exception 'TEST: incompatible station allowed';exception when raise_exception then if sqlerrm<>'Crew member is not qualified for this station' then raise;end if;end;
+ perform public.assign_ship_crew('crew_pilot',null);
+ if(public.get_ship_loadout()->'stats'->>'damage')::integer<>baseline_damage then raise exception 'Reserve crew bonus remained active';end if;
+ if not exists(select 1 from public.character_crew where id=new_pilot and portrait_path=portrait) then raise exception 'Unequipping crew lost identity';end if;
+ perform public.assign_ship_crew('crew_pilot',pilot);
+ -- Editor changes do not retroactively mutate owned members.
+ perform public.save_crew_catalog('template',tid,payload||'{"portrait_path":"hatarvilag/species/torchlight-v1/ferron.webp","damage_bonus":10}',1);
+ if not exists(select 1 from public.character_crew where id=new_pilot and portrait_path=portrait and damage_bonus=2) then raise exception 'Editor changed owned crew snapshot';end if;
+ begin insert into public.character_crew(character_id,position,name,specialty) values(cid,'pilot','Forged','pilot');raise exception 'TEST: direct crew mutation allowed';exception when insufficient_privilege then null;end;
+ execute 'set local role postgres';update public.user_roles set role='user' where user_id=u;
+ execute 'set local role authenticated';
+ if exists(select 1 from public.game_crew_templates) then raise exception 'Catalog RLS exposed templates to player';end if;
+ begin perform public.save_crew_catalog('template',tid,payload,2);raise exception 'TEST: user catalog write allowed';exception when insufficient_privilege then null;end;
+ perform set_config('request.jwt.claim.sub',other_u::text,true);
+ other_cid:=public.create_captain('Other crew owner',sp,cl,ship,'{"body":6}',jsonb_build_object(skill::text,6));
+ if exists(select 1 from public.character_crew where character_id=cid) then raise exception 'Foreign crew exposed by RLS';end if;
+ begin perform public.assign_ship_crew('crew_pilot',new_pilot);raise exception 'TEST: foreign crew assigned';exception when raise_exception then if sqlerrm<>'Crew member is not qualified for this station' then raise;end if;end;
+ execute 'set local role postgres';set constraints all immediate;
+ if has_function_privilege('anon','public.save_crew_catalog(text,uuid,jsonb,integer)','execute') then raise exception 'Anonymous catalog mutation allowed';end if;
+end $test$;
+rollback;

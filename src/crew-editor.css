@@ -1,0 +1,412 @@
+.ed-shell:has(.ce-editor) {
+  width: min(1420px, 94vw);
+  grid-template-columns: 160px 230px minmax(0, 1fr);
+  background: #0a141b;
+  border-color: #596c75;
+}
+.ed-shell:has(.ce-editor) .ed-nav > button.active,
+.ce-editor .ed-tabs button.active {
+  background: linear-gradient(#5e3d29, #2d231b);
+  border-color: #b27d50;
+  box-shadow: none;
+}
+.ce-roster .ed-record.selected {
+  border-color: #c18d5c;
+  background: #24333a;
+  box-shadow: inset 2px 0 #bb8451;
+}
+.ce-roster .ed-thumbnail img {
+  object-fit: cover;
+  object-position: center 25%;
+}
+.ce-search {
+  margin: 8px;
+  padding: 8px;
+  background: #0a1923;
+  border: 1px solid #4b616e;
+  color: #d9e3e8;
+  font: inherit;
+  min-width: 0;
+}
+.ce-list {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 5px 8px;
+}
+.ce-list .ed-record {
+  min-height: 68px;
+}
+.ce-pager {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 5px;
+  font-size: 11px;
+}
+.ce-pager button,
+.ce-clone,
+.ce-secondary {
+  background: #14242e;
+  color: #cbd6db;
+  border: 1px solid #57717f;
+  font: inherit;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.ce-pager button:disabled {
+  opacity: 0.35;
+}
+.ce-clone {
+  font-size: 10px;
+  margin: 8px;
+}
+.ce-editor .ed-editor-head {
+  flex: none;
+  height: 51px;
+  padding: 10px 14px;
+}
+.ce-editor .ed-editor-head strong {
+  font-size: 15px;
+  letter-spacing: 0.07em;
+  color: #e2d1b5;
+}
+.ce-editor .ed-tabs {
+  flex: none;
+}
+.ce-editor .ed-tabs button {
+  padding: 8px 3px;
+}
+.ce-form {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding: 12px;
+}
+.ce-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 14px;
+}
+.ce-inputs {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  gap: 10px;
+}
+.ce-fields h3 {
+  font-size: 12px;
+  color: #d9c5a4;
+  letter-spacing: 0.08em;
+  margin: 0 0 3px;
+  padding: 6px 0;
+  border-bottom: 1px solid #47606b;
+  font-weight: 500;
+  flex: none;
+}
+.ce-fields label {
+  font-size: 11px;
+  color: #b3c4ce;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.ce-fields input:not([type="checkbox"]),
+.ce-fields select,
+.ce-fields textarea {
+  font: inherit;
+  font-size: 12px;
+  background: #08151e;
+  color: #e4e9eb;
+  border: 1px solid #4e6978;
+  border-radius: 0;
+  padding: 8px;
+  width: 100%;
+  min-width: 0;
+  outline: none;
+}
+.ce-fields input:focus,
+.ce-fields select:focus,
+.ce-fields textarea:focus {
+  border-color: #cb935d;
+}
+.ce-fields select {
+  appearance: none;
+  padding-right: 22px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #b5c9d0 50%),
+    linear-gradient(135deg, #b5c9d0 50%, transparent 50%);
+  background-position:
+    calc(100% - 12px) 50%,
+    calc(100% - 8px) 50%;
+  background-size: 4px 4px;
+  background-repeat: no-repeat;
+}
+.ce-fields select option {
+  background: #0b1a23;
+}
+.ce-fields textarea {
+  resize: none;
+  height: 140px;
+  line-height: 1.5;
+}
+.ce-fields textarea.ce-paths {
+  height: 165px;
+  font-size: 11px;
+}
+.ce-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ce-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 9px !important;
+}
+.ce-check input {
+  appearance: none;
+  width: 17px;
+  height: 17px;
+  border: 1px solid #a57c53;
+  background: #111b22;
+  margin: 0;
+  display: grid;
+  place-items: center;
+}
+.ce-check input:checked {
+  background: #a76c42;
+}
+.ce-check input:checked:after {
+  content: "✓";
+  color: #fff;
+  font-size: 13px;
+}
+.ce-help {
+  font-size: 10px;
+  line-height: 1.5;
+  color: #93acba;
+  margin: 3px 0;
+}
+.ce-preview {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  gap: 7px;
+  overflow: hidden;
+}
+.ce-portrait {
+  min-height: 80px;
+  flex: 1;
+  max-height: 330px;
+  border: 1px solid #697a7d;
+  background: #08141c;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.ce-portrait img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  min-height: 0;
+}
+.ce-portrait > span {
+  font-size: 12px;
+  color: #8da3b0;
+  text-align: center;
+  padding: 10px;
+}
+.ce-portrait.rare,
+.ed-thumbnail.rare {
+  border-color: #65a9c8;
+}
+.ce-portrait.uncommon,
+.ed-thumbnail.uncommon {
+  border-color: #69a592;
+}
+.ce-portrait.epic,
+.ed-thumbnail.epic {
+  border-color: #aa83c3;
+}
+.ce-portrait-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px;
+  flex: none;
+  min-width: 0;
+}
+.ce-portrait-grid > div {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+}
+.ce-portrait-grid button:not(.ce-remove) {
+  height: 100%;
+  width: 100%;
+  padding: 1px;
+  background: #0d1c25;
+  border: 1px solid #4d6773;
+  overflow: hidden;
+  cursor: pointer;
+}
+.ce-portrait-grid button.active {
+  border-color: #d9a06a;
+}
+.ce-portrait-grid img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+.ce-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 1px solid #976242;
+  background: #241b18;
+  color: #edc3a1;
+  padding: 0 3px;
+  line-height: 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.ce-preview > strong {
+  font-size: 13px;
+  color: #dfd8ca;
+}
+.ce-preview > p:not(.ce-help) {
+  font-size: 11px;
+  margin: 0;
+  color: #adc3cd;
+}
+.ce-source-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  flex: none;
+}
+.ce-source-grid button {
+  padding: 0;
+  aspect-ratio: 1;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #516a76;
+  background: #0b1a23;
+  cursor: pointer;
+}
+.ce-source-grid button:disabled {
+  opacity: 0.35;
+}
+.ce-source-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+.ce-error {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: #3b2520;
+  color: #f4bf9f;
+  font-size: 11px;
+}
+.ce-error button {
+  padding: 4px;
+  background: #13242e;
+  border: 1px solid #6a7b81;
+  color: #ddd;
+}
+.ce-portrait img {
+  display: block;
+  max-height: 100%;
+  min-width: 0;
+}
+.ce-editor .ed-footer {
+  min-height: 48px;
+  padding: 8px 12px;
+  flex: none;
+}
+.ce-editor .ed-submit {
+  background: linear-gradient(#784c2e, #38261c);
+  border-color: #bb8856;
+}
+@media (max-height: 800px) {
+  .ce-inputs {
+    gap: 6px;
+  }
+  .ce-fields input:not([type="checkbox"]),
+  .ce-fields select {
+    padding: 5px;
+  }
+  .ce-fields h3 {
+    padding: 4px 0;
+  }
+  .ce-fields textarea.ce-paths {
+    height: 120px;
+  }
+  .ce-fields textarea {
+    height: 115px;
+  }
+  .ce-form {
+    padding: 8px;
+  }
+  .ce-list .ed-record {
+    min-height: 59px;
+  }
+  .ce-list .ed-thumbnail {
+    width: 44px;
+    height: 44px;
+  }
+}
+@media (max-width: 1050px) {
+  .ed-shell:has(.ce-editor) {
+    grid-template-columns: 130px 180px minmax(0, 1fr);
+  }
+  .ce-fields {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 8px;
+  }
+  .ce-inputs {
+    gap: 6px;
+  }
+  .ce-fields label {
+    font-size: 10px;
+  }
+  .ce-roster .ed-record-name strong {
+    font-size: 11px;
+  }
+  .ce-list .ed-thumbnail {
+    width: 40px;
+    height: 40px;
+  }
+  .ce-editor .ed-tabs button {
+    font-size: 10px;
+  }
+  .ce-help {
+    font-size: 9px;
+  }
+  .ce-two {
+    gap: 4px;
+  }
+  .ce-editor .ed-editor-head > span {
+    display: none;
+  }
+}
