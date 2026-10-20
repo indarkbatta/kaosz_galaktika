@@ -34,3 +34,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
         run: node tools/qa/world-map-browser.mjs
+      - name: Validate square grid, pan, wheel zoom and route editing
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
+        run: node tools/qa/world-map-viewport-browser.mjs
