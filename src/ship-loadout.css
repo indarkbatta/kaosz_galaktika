@@ -414,3 +414,17 @@
     font-size: 8px;
   }
 }
+
+.sh-stock-panel.compatible {
+  border-color: #7fdbb4;
+}
+.sh-stock-panel.compatible .sh-cell {
+  border-color: #7fdbb4;
+}
+.sh-cell[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+}
+.sh-cell small {
+  pointer-events: none;
+}

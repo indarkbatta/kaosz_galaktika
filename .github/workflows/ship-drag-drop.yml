@@ -1,0 +1,35 @@
+name: Ship drag and drop regression
+on:
+  pull_request:
+    paths:
+      - 'src/ShipLoadout.tsx'
+      - 'src/ship-loadout.css'
+      - 'tools/qa/ship-dnd-*'
+      - '.github/workflows/ship-drag-drop.yml'
+permissions:
+  contents: read
+jobs:
+  native-browser-drag:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: cmd
+    env:
+      SHIP_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-browser-tools
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install application dependencies
+        run: npm ci --no-fund --no-audit
+      - name: Install isolated pinned browser tools
+        run: npm install --prefix "%SHIP_BROWSER_TOOLS%" --no-save --no-fund --no-audit playwright@1.56.1
+      - name: Install test browsers
+        run: node "%SHIP_BROWSER_TOOLS%\node_modules\playwright\cli.js" install chromium firefox
+      - name: Verify native drag and drop in Chromium and Firefox
+        run: node tools/qa/ship-dnd-browser.mjs

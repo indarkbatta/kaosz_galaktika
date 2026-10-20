@@ -113,7 +113,8 @@ export default function ShipLoadout({
     [drag, setDrag] = useState<Drag | null>(null),
     [dismiss, setDismiss] = useState<CrewIdentity | null>(null);
   const generation = useRef(0),
-    mutation = useRef(false);
+    mutation = useRef(false),
+    activeDrag = useRef<Drag | null>(null);
   const refresh = useCallback(async () => {
     const ticket = ++generation.current;
     const r = await supabase.rpc("get_ship_loadout");
@@ -200,49 +201,94 @@ export default function ShipLoadout({
     } finally {
       mutation.current = false;
       setBusy(false);
-      setDrag(null);
+      clearDrag();
     }
   }
+  function clearDrag() {
+    activeDrag.current = null;
+    setDrag(null);
+  }
   function start(e: DragEvent, payload: Drag) {
+    if (busy || mutation.current) {
+      e.preventDefault();
+      return;
+    }
+    activeDrag.current = payload;
     e.dataTransfer.setData(DRAG, JSON.stringify(payload));
     e.dataTransfer.effectAllowed = "move";
     setDrag(payload);
   }
-  function compatible(s: Slot) {
-    if (!drag || !data) return false;
-    return drag.kind === "crew"
-      ? data.crew.some((c) => c.id === drag.crew && qualifies(c, s))
-      : data.modules.some((m) => m.item_id === drag.item && fits(m, s));
+  function readDrag(e: DragEvent): Drag | null {
+    // Dragover protects getData in some browsers; keep a synchronous local copy.
+    const encoded = e.dataTransfer.getData(DRAG);
+    if (!encoded) return activeDrag.current;
+    try {
+      const value = JSON.parse(encoded);
+      if (value?.kind === "crew" && typeof value.crew === "string")
+        return { kind: "crew", crew: value.crew };
+      if (value?.kind === "cargo" && typeof value.item === "string")
+        return { kind: "cargo", item: value.item };
+      if (value?.kind === "fitted" && typeof value.item === "string" && typeof value.slot === "string")
+        return { kind: "fitted", item: value.item, slot: value.slot };
+    } catch {
+      // Ignore foreign or malformed payloads.
+    }
+    return null;
+  }
+  function compatible(s: Slot, payload: Drag | null = drag) {
+    if (!payload || !data) return false;
+    return payload.kind === "crew"
+      ? data.crew.some((c) => c.id === payload.crew && qualifies(c, s))
+      : data.modules.some((m) => m.item_id === payload.item && fits(m, s));
+  }
+  function canReturn(kind: "module" | "crew", payload: Drag | null = drag) {
+    if (!payload || !data || busy) return false;
+    return kind === "module"
+      ? payload.kind === "fitted" && data.slots.some(
+          (s) => s.slot_key === payload.slot && s.item_id === payload.item,
+        )
+      : payload.kind === "crew" && data.slots.some((s) => s.crew_id === payload.crew);
+  }
+  function allowDrop(e: DragEvent, accepted: boolean) {
+    if (!accepted || busy || mutation.current) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
   }
   function drop(e: DragEvent, s: Slot) {
+    const payload = readDrag(e);
     e.preventDefault();
     e.stopPropagation();
-    if (!drag || !compatible(s) || busy) return;
-    if (drag.kind === "crew")
+    clearDrag();
+    if (!payload || !compatible(s, payload) || busy) return;
+    if (payload.kind === "crew") {
+      if (s.crew_id === payload.crew) return;
       void mutate("assign_ship_crew", {
         p_slot: s.slot_key,
-        p_crew: drag.crew,
+        p_crew: payload.crew,
       });
-    else if (drag.kind === "fitted")
+    } else if (payload.kind === "fitted") {
+      if (s.slot_key === payload.slot) return;
       void mutate("move_ship_module", {
-        p_from_slot: drag.slot,
+        p_from_slot: payload.slot,
         p_to_slot: s.slot_key,
       });
-    else
-      void mutate("set_ship_module", { p_slot: s.slot_key, p_item: drag.item });
-    setDrag(null);
+    } else {
+      void mutate("set_ship_module", { p_slot: s.slot_key, p_item: payload.item });
+    }
   }
   function returnToStock(e: DragEvent, kind: "module" | "crew") {
+    const payload = readDrag(e);
     e.preventDefault();
-    if (!data || !drag || busy) return;
-    if (kind === "module" && drag.kind === "fitted")
-      void mutate("set_ship_module", { p_slot: drag.slot, p_item: null });
-    if (kind === "crew" && drag.kind === "crew") {
-      const s = data.slots.find((s) => s.crew_id === drag.crew);
+    e.stopPropagation();
+    clearDrag();
+    if (!data || !payload || !canReturn(kind, payload)) return;
+    if (kind === "module" && payload.kind === "fitted")
+      void mutate("set_ship_module", { p_slot: payload.slot, p_item: null });
+    if (kind === "crew" && payload.kind === "crew") {
+      const s = data.slots.find((s) => s.crew_id === payload.crew);
       if (s)
         void mutate("assign_ship_crew", { p_slot: s.slot_key, p_crew: null });
     }
-    setDrag(null);
   }
   function picture(
     m: Module | undefined,
@@ -393,10 +439,8 @@ export default function ShipLoadout({
               ? start(e, { kind: "fitted", item: m.item_id, slot: s.slot_key })
               : c && start(e, { kind: "crew", crew: c.id })
           }
-          onDragEnd={() => setDrag(null)}
-          onDragOver={(e) => {
-            if (compatible(s)) e.preventDefault();
-          }}
+          onDragEnd={clearDrag}
+          onDragOver={(e) => allowDrop(e, compatible(s, activeDrag.current))}
           onDrop={(e) => drop(e, s)}
           onClick={() => chooseSlot(s)}
         >
@@ -502,10 +546,8 @@ export default function ShipLoadout({
         </div>
         <aside className="sh-stock">
           <section
-            className="sh-stock-panel"
-            onDragOver={(e) => {
-              if (drag?.kind === "fitted") e.preventDefault();
-            }}
+            className={"sh-stock-panel" + (canReturn("module") ? " compatible" : "")}
+            onDragOverCapture={(e) => allowDrop(e, canReturn("module", activeDrag.current))}
             onDrop={(e) => returnToStock(e, "module")}
           >
             <header>
@@ -518,7 +560,8 @@ export default function ShipLoadout({
                 return (
                   <button
                     key={i}
-                    disabled={!m || busy}
+                    disabled={busy}
+                    tabIndex={m ? 0 : -1}
                     className={
                       "sh-cell " +
                       (m?.rarity || "") +
@@ -536,7 +579,7 @@ export default function ShipLoadout({
                     onDragStart={(e) =>
                       m && start(e, { kind: "cargo", item: m.item_id })
                     }
-                    onDragEnd={() => setDrag(null)}
+                    onDragEnd={clearDrag}
                     onClick={() => m && chooseStock("module", m.item_id)}
                   >
                     {m && picture(m, undefined)}
@@ -553,10 +596,8 @@ export default function ShipLoadout({
             )}
           </section>
           <section
-            className="sh-stock-panel"
-            onDragOver={(e) => {
-              if (drag?.kind === "crew") e.preventDefault();
-            }}
+            className={"sh-stock-panel" + (canReturn("crew") ? " compatible" : "")}
+            onDragOverCapture={(e) => allowDrop(e, canReturn("crew", activeDrag.current))}
             onDrop={(e) => returnToStock(e, "crew")}
           >
             <header>
@@ -572,7 +613,8 @@ export default function ShipLoadout({
                 return (
                   <button
                     key={i}
-                    disabled={!c || busy}
+                    disabled={busy}
+                    tabIndex={c ? 0 : -1}
                     className={
                       "sh-cell " +
                       (c?.rarity || "") +
@@ -592,7 +634,7 @@ export default function ShipLoadout({
                     onDragStart={(e) =>
                       c && start(e, { kind: "crew", crew: c.id })
                     }
-                    onDragEnd={() => setDrag(null)}
+                    onDragEnd={clearDrag}
                     onClick={() => c && chooseStock("crew", c.id)}
                   >
                     {c && picture(undefined, c)}
@@ -731,8 +773,8 @@ export default function ShipLoadout({
                       "Select a compatible module or crew member.",
                     )
                   : tr(
-                      "Húzd a modult vagy a portrét a megfelelő helyre. Kattintással is felszerelhetsz.",
-                      "Drag a module or portrait to a compatible slot. Click to equip as well.",
+                      "Húzd a modult vagy a portrét a megfelelő helyre. Levételhez húzd vissza a raktérbe vagy a tartalékba.",
+                      "Drag a module or portrait to a compatible slot. Drag it back to cargo or reserve to remove it.",
                     )}
               </p>
             )}
