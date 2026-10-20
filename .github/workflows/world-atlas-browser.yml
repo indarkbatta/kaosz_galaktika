@@ -1,0 +1,36 @@
+name: World atlas browser regression
+on:
+  pull_request:
+    paths:
+      - 'src/WorldMapEditor.tsx'
+      - 'src/GalaxyEditor.tsx'
+      - 'src/world-map-editor.css'
+      - 'src/world-atlas-editor.css'
+      - 'tools/qa/world-map-*'
+      - '.github/workflows/world-atlas-browser.yml'
+permissions:
+  contents: read
+jobs:
+  world-map-browser:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
+      - name: Install isolated browser tools
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-world-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1
+      - name: Install browsers
+        run: node "%RUNNER_TEMP%\hatarvilag-world-browser-tools\node_modules\playwright\cli.js" install chromium firefox
+      - name: Native world-map drag and browser checks
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
+        run: node tools/qa/world-map-browser.mjs
