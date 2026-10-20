@@ -38,7 +38,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
  async function load(keep?:string){
   const [p,r,a,placements,langs,system]=await Promise.all([
    supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,is_published,game_locations_i18n(locale,name,description)').order('slug'),
-   supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost'),
+   supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published'),
    supabase.from('game_actions').select('id,slug,game_actions_i18n(locale,name)').order('sort_order'),
    supabase.from('game_location_actions').select('location_id,action_id'),
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order'),
