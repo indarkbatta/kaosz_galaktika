@@ -4,7 +4,7 @@ import {notify} from './lib/toast';
 import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
 import {LucidePlus,LucideZap} from './components/LucideSigns';
 import {attributes,toDice} from './lib/d6';
-import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery} from './SectorMap';
+import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery,type WorldGalaxy,type WorldQuadrant,type WorldSector} from './SectorMap';
 import Cantina,{type CrewMember} from './Cantina';
 import CraftingPanel from './CraftingPanel';
 import EquipmentInventory from './EquipmentInventory';
@@ -33,6 +33,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [progress,setProgress]=useState<Progress|null>(null),[rules,setRules]=useState<Rules|null>(null);
  const [actions,setActions]=useState<Action[]>([]),[logs,setLogs]=useState<Log[]>([]),[travelLogs,setTravelLogs]=useState<TravelLog[]>([]);
  const [locations,setLocations]=useState<SectorLocation[]>([]),[routes,setRoutes]=useState<SectorRoute[]>([]);
+ const [galaxies,setGalaxies]=useState<WorldGalaxy[]>([]),[quadrants,setQuadrants]=useState<WorldQuadrant[]>([]),[sectors,setSectors]=useState<WorldSector[]>([]);
  const [position,setPosition]=useState(''),[discoveries,setDiscoveries]=useState<SectorDiscovery[]>([]);
  const [placements,setPlacements]=useState<{location_id:string;action_id:string}[]>([]);
  const [inventory,setInventory]=useState<InventoryRow[]>([]);
@@ -44,7 +45,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [busy,setBusy]=useState(false);
  const [time,setTime]=useState(Date.now()),[confirmReset,setConfirmReset]=useState(false),[resetWord,setResetWord]=useState('');
  const refresh=useCallback(async()=>{
-  const [p,r,a,l,u,pos,dis,loc,rou,placement,travelHistory,inv,crewData,loadout]=await Promise.all([
+  const [p,r,a,l,u,pos,dis,loc,rou,placement,travelHistory,inv,crewData,loadout,gals,quads,sys]=await Promise.all([
     supabase.from('character_progress').select('level,xp_total,energy,energy_at,upgrade_points').eq('character_id',captain.id).single(),
     supabase.from('gameplay_rules').select('energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
     supabase.from('game_actions').select('id,slug,energy_cost,target_number,skill_id,game_actions_i18n(locale,name,description,success_message,failure_message)').eq('is_published',true).order('sort_order'),
@@ -52,19 +53,23 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     supabase.from('character_skill_upgrades').select('skill_id,bonus_pips').eq('character_id',captain.id),
     supabase.from('character_positions').select('location_id').eq('character_id',captain.id).single(),
     supabase.from('character_location_discoveries').select('location_id,discovered_at').eq('character_id',captain.id),
-    supabase.from('game_locations').select('id,slug,kind,x,y,is_published,game_locations_i18n(locale,name,description)').eq('is_published',true),
+    supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,is_published,game_locations_i18n(locale,name,description)').eq('is_published',true),
     supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published').eq('is_published',true),
     supabase.from('game_location_actions').select('location_id,action_id'),
     supabase.from('character_travel_log').select('id,origin_id,destination_id,energy_spent,traveled_at').eq('character_id',captain.id).order('id',{ascending:false}).limit(8),
     supabase.from('character_inventory').select('item_id,quantity,game_items(slug,rarity,category,game_items_i18n(locale,name,description))').eq('character_id',captain.id),
     supabase.from('character_crew').select('id,position,name,specialty,aptitude,species_slug,portrait_path,rarity,class_id').eq('character_id',captain.id),
-    supabase.rpc('get_ship_loadout')
+    supabase.rpc('get_ship_loadout'),
+    supabase.from('game_galaxies').select('id,slug,name_hu,name_en').eq('is_published',true),
+    supabase.from('game_quadrants').select('id,galaxy_id,slug,name_hu,name_en,x,y').eq('is_published',true),
+    supabase.from('game_sectors').select('id,quadrant_id,slug,name_hu,name_en,x,y').eq('is_published',true)
   ]);
-  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error||inv.error||crewData.error||loadout.error;
+  const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error||inv.error||crewData.error||loadout.error||gals.error||quads.error||sys.error;
   if(problem){notify(problem.message,'error');return;}
   setProgress(p.data as Progress);setRules(r.data as Rules);setActions(a.data as Action[]);setLogs(l.data as Log[]);setUpgrades(u.data||[]);
   setPosition(pos.data?.location_id||'');setDiscoveries((dis.data||[]) as SectorDiscovery[]);
   setLocations((loc.data||[]) as unknown as SectorLocation[]);setRoutes((rou.data||[]) as SectorRoute[]);
+  setGalaxies((gals.data||[]) as WorldGalaxy[]);setQuadrants((quads.data||[]) as WorldQuadrant[]);setSectors((sys.data||[]) as WorldSector[]);
   setPlacements(placement.data||[]);setTravelLogs((travelHistory.data||[]) as TravelLog[]);setInventory((inv.data||[]) as unknown as InventoryRow[]);setActiveCrew((crewData.data||[]) as CrewMember[]);setShipStatus(loadout.data?.stats||null);
  },[captain.id]);
  useEffect(()=>{void refresh();},[refresh]);
@@ -155,7 +160,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
 
    </>}
    {tab==='map'&&<><div className="cmd-title"><h2>{tr('SZAKASZTÉRKÉP // SX-001','SECTOR MAP // SX-001')}</h2><small>{hereName}</small></div>
-    <SectorMap locale={locale} locations={locations} routes={routes.map(r=>({...r,energy_cost:Math.max(1,Math.ceil(r.energy_cost*(shipStatus?.base_speed||1)/(shipStatus?.speed||1)))}))} shipReady={shipStatus?.ready??false} discovered={discoveries} currentId={position} energy={energy} busy={busy} onTravel={destination=>void travel(destination)}/>
+    <SectorMap locale={locale} galaxies={galaxies} quadrants={quadrants} sectors={sectors} locations={locations} routes={routes.map(r=>({...r,energy_cost:Math.max(1,Math.ceil(r.energy_cost*(shipStatus?.base_speed||1)/(shipStatus?.speed||1)))}))} shipReady={shipStatus?.ready??false} discovered={discoveries} currentId={position} energy={energy} busy={busy} onTravel={destination=>void travel(destination)}/>
    </>}
    {tab==='character'&&<><div className="cmd-title"><h2>{tr('KARAKTERFEJLŐDÉS','CHARACTER PROGRESSION')}</h2><small>{tr('Szabad pontok','Free points')}: {progress?.upgrade_points||0}</small></div>
     <div className="cmd-attributes">{attributes.map(a=><div key={a}><AttributeArt attribute={a}/><b>{attributeNames[lang][a]}</b><span>{toDice(captain.attribute_pips[a]||3)}</span></div>)}</div>
