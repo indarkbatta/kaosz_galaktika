@@ -4,9 +4,9 @@ export type SectorLocale={locale:string;name:string;description:string};
 export type SectorLocation={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';x:number;y:number;is_published:boolean;game_locations_i18n:SectorLocale[]};
 export type SectorRoute={id:string;origin_id:string;destination_id:string;energy_cost:number;is_published:boolean};
 export type SectorDiscovery={location_id:string;discovered_at:string};
-export default function SectorMap({locale,locations,routes,discovered,currentId,energy,busy,onTravel}:{
+export default function SectorMap({locale,locations,routes,discovered,currentId,energy,busy,shipReady=true,onTravel}:{
  locale:string;locations:SectorLocation[];routes:SectorRoute[];discovered:SectorDiscovery[];
- currentId:string;energy:number;busy:boolean;onTravel:(target:string)=>void
+ currentId:string;energy:number;busy:boolean;shipReady?:boolean;onTravel:(target:string)=>void
 }){
  const en=locale==='en',t=(hu:string,eng:string)=>en?eng:hu;
  const [selected,setSelected]=useState(currentId);
@@ -18,7 +18,7 @@ export default function SectorMap({locale,locations,routes,discovered,currentId,
  const connection=paths.find(r=>(r.origin_id===currentId&&r.destination_id===chosen?.id)||(r.destination_id===currentId&&r.origin_id===chosen?.id));
  const name=(loc:SectorLocation|undefined)=>loc?.game_locations_i18n.find(x=>x.locale===(en?'en':'hu'))||loc?.game_locations_i18n.find(x=>x.locale==='hu');
  const known=chosen?found.has(chosen.id):false;
- const canGo=!!connection&&!busy&&energy>=connection.energy_cost;
+ const canGo=!!connection&&!busy&&shipReady&&energy>=connection.energy_cost;
  const emblem=(kind:SectorLocation['kind'])=>({station:'✦',wreck:'◇',planet:'●',anomaly:'◈'})[kind];
  return <div className="sector-shell">
   <div className="sector-chart">
@@ -50,7 +50,7 @@ export default function SectorMap({locale,locations,routes,discovered,currentId,
    <div className="sector-coordinates">X: {chosen?.x??'--'} // Y: {chosen?.y??'--'}</div>
    <div className="sector-distance">{chosen?.id===currentId?t('JELENLEGI POZÍCIÓ','CURRENT LOCATION'):connection?t('UTAZÁSI KÖLTSÉG','TRAVEL COST')+': ⚡ '+connection.energy_cost:t('NINCS KÖZVETLEN ÚTVONAL','NO DIRECT ROUTE')}</div>
    <button type="button" className="sector-travel" disabled={!canGo} onClick={()=>chosen&&onTravel(chosen.id)}>
-    {busy?t('NAVIGÁCIÓ…','NAVIGATING…'):chosen?.id===currentId?t('ITT TARTÓZKODSZ','YOU ARE HERE'):connection&&energy<connection.energy_cost?t('NINCS ELÉG ENERGIA','INSUFFICIENT ENERGY'):t('UTAZÁS INDÍTÁSA','INITIATE TRAVEL')} <span>→</span>
+    {!shipReady?t('A HAJÓ NEM ÜZEMKÉPES','SHIP NOT OPERATIONAL'):busy?t('NAVIGÁCIÓ…','NAVIGATING…'):chosen?.id===currentId?t('ITT TARTÓZKODSZ','YOU ARE HERE'):connection&&energy<connection.energy_cost?t('NINCS ELÉG ENERGIA','INSUFFICIENT ENERGY'):t('UTAZÁS INDÍTÁSA','INITIATE TRAVEL')} <span>→</span>
    </button>
    <div className="sector-current"><small>{t('AKTUÁLIS HELYSZÍN','CURRENT LOCATION')}</small><strong>{name(current)?.name||'—'}</strong></div>
   </aside>
