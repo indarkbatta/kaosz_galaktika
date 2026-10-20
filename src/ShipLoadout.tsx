@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type DragEvent,
+  type KeyboardEvent,
 } from "react";
 import { supabase } from "./lib/supabase";
 import { notify } from "./lib/toast";
@@ -203,6 +204,11 @@ export default function ShipLoadout({
       setBusy(false);
       clearDrag();
     }
+  }
+  function activate(e: KeyboardEvent, action: () => void) {
+    if (busy || (e.key !== "Enter" && e.key !== " ")) return;
+    e.preventDefault();
+    action();
   }
   function clearDrag() {
     activeDrag.current = null;
@@ -422,7 +428,9 @@ export default function ShipLoadout({
           {slotName(s)}
           {s.required ? " *" : ""}
         </span>
-        <button
+        <div
+          role="button"
+          tabIndex={busy ? -1 : 0}
           className={
             "sh-cell " +
             (c?.rarity || m?.rarity || "") +
@@ -430,7 +438,7 @@ export default function ShipLoadout({
             (s.required && !valid ? " missing" : "") +
             (compatible(s) ? " compatible" : "")
           }
-          disabled={busy}
+          aria-disabled={busy}
           title={`${slotName(s)} · ${m ? name(m) : c?.name || tr("Üres", "Empty")}`}
           aria-label={`${slotName(s)}: ${m ? name(m) : c?.name || tr("Üres", "Empty")}`}
           draggable={!!(m || c) && !busy}
@@ -442,7 +450,8 @@ export default function ShipLoadout({
           onDragEnd={clearDrag}
           onDragOver={(e) => allowDrop(e, compatible(s, activeDrag.current))}
           onDrop={(e) => drop(e, s)}
-          onClick={() => chooseSlot(s)}
+          onClick={() => !busy && chooseSlot(s)}
+          onKeyDown={(e) => activate(e, () => chooseSlot(s))}
         >
           {picture(m, c, s)}
           <small>
@@ -452,7 +461,7 @@ export default function ShipLoadout({
                 ? "◆" + c.aptitude
                 : "≥" + s.min_aptitude}
           </small>
-        </button>
+        </div>
         {s.kind === "crew" && (
           <em title={c?.name}>{c?.name || tr("Üres állás", "Vacant")}</em>
         )}
@@ -558,10 +567,11 @@ export default function ShipLoadout({
               {Array.from({ length: 10 }, (_, i) => {
                 const m = stock[mp * 10 + i];
                 return (
-                  <button
+                  <div
+                    role="button"
                     key={i}
-                    disabled={busy}
-                    tabIndex={m ? 0 : -1}
+                    aria-disabled={busy}
+                    tabIndex={m && !busy ? 0 : -1}
                     className={
                       "sh-cell " +
                       (m?.rarity || "") +
@@ -580,11 +590,12 @@ export default function ShipLoadout({
                       m && start(e, { kind: "cargo", item: m.item_id })
                     }
                     onDragEnd={clearDrag}
-                    onClick={() => m && chooseStock("module", m.item_id)}
+                    onClick={() => !busy && m && chooseStock("module", m.item_id)}
+                    onKeyDown={(e) => activate(e, () => m && chooseStock("module", m.item_id))}
                   >
                     {m && picture(m, undefined)}
                     {m && <small>×{m.quantity}</small>}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -611,10 +622,11 @@ export default function ShipLoadout({
               {Array.from({ length: 10 }, (_, i) => {
                 const c = reserve[rp * 10 + i];
                 return (
-                  <button
+                  <div
+                    role="button"
                     key={i}
-                    disabled={busy}
-                    tabIndex={c ? 0 : -1}
+                    aria-disabled={busy}
+                    tabIndex={c && !busy ? 0 : -1}
                     className={
                       "sh-cell " +
                       (c?.rarity || "") +
@@ -635,11 +647,12 @@ export default function ShipLoadout({
                       c && start(e, { kind: "crew", crew: c.id })
                     }
                     onDragEnd={clearDrag}
-                    onClick={() => c && chooseStock("crew", c.id)}
+                    onClick={() => !busy && c && chooseStock("crew", c.id)}
+                    onKeyDown={(e) => activate(e, () => c && chooseStock("crew", c.id))}
                   >
                     {c && picture(undefined, c)}
                     {c && <small>◆{c.aptitude}</small>}
-                  </button>
+                  </div>
                 );
               })}
             </div>

@@ -428,3 +428,17 @@
 .sh-cell small {
   pointer-events: none;
 }
+
+/* Native form controls swallow dragstart in Firefox; slots keep button semantics. */
+.sh-cell[role="button"] {
+  font: inherit;
+  border-radius: 0;
+  cursor: pointer;
+}
+.sh-cell[role="button"][draggable="true"] {
+  cursor: grab;
+}
+.sh-cell[aria-disabled="true"] {
+  cursor: default;
+  opacity: 0.5;
+}

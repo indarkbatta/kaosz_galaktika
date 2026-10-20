@@ -96,6 +96,7 @@ for(const [browserName,browserType] of [["chromium",chromium],["firefox",firefox
   const page=await browser.newPage({viewport:{width:1450,height:900}});
   const errors=[];page.on("pageerror",e=>errors.push(e.message));
   try{
+    console.log("Testing native drag in "+browserName);
     await ready(page);
     const cargo=page.locator(".sh-stock-panel").nth(0), reserve=page.locator(".sh-stock-panel").nth(1);
     const station=name=>page.getByRole("button",{name,exact:true});
@@ -150,6 +151,7 @@ for(const [browserName,browserType] of [["chromium",chromium],["firefox",firefox
     assert.equal(await page.locator(".sh-stock-panel.compatible").count(),0);
     assert.deepEqual(errors,[]);
     await page.screenshot({path:join(scratch,browserName+".png")});
+    console.log(browserName+": PASS");
     reports.push(browserName+": PASS native module/crew return to empty and occupied cells, equip, move, panel return, invalid/cancel, server rejection");
   }finally{await browser.close()}
 }
