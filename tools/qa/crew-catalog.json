@@ -1,0 +1,1850 @@
+{
+  "sets": [
+    {
+      "id": "017528c8-293a-44ae-a01e-a0febd261b3d",
+      "slug": "species_ferron",
+      "name_en": "ferron portraits",
+      "name_hu": "ferron portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "fde4e159-ab19-4f86-aafb-71d03ccdc0f5",
+      "image_paths": [
+        "hatarvilag/species/torchlight-v1/ferron.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "a267e034-f470-4b67-b5a1-2397a56b3f9e",
+      "slug": "species_karszid",
+      "name_en": "karszid portraits",
+      "name_hu": "karszid portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "d36b7ccb-5680-4501-bc0d-810c388bed92",
+      "image_paths": [
+        "hatarvilag/species/torchlight-v1/karszid.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "c90a3fa6-8245-4c0b-81cb-3859bb45ba26",
+      "slug": "species_mycelion",
+      "name_en": "mycelion portraits",
+      "name_hu": "mycelion portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "870e1ffa-0d14-48a7-8427-92e25e831b39",
+      "image_paths": [
+        "hatarvilag/species/torchlight-v1/mycelion.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "acc1f441-60e6-455a-9156-fb3e4629ff77",
+      "slug": "species_noxari",
+      "name_en": "noxari portraits",
+      "name_hu": "noxari portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "15635936-59f5-417f-8294-29632a9d23f2",
+      "image_paths": [
+        "hatarvilag/species/torchlight-v1/noxari.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "ad393519-9754-49a3-99e9-71993632d53f",
+      "slug": "species_vektorita",
+      "name_en": "vektorita portraits",
+      "name_hu": "vektorita portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "595bd14c-8b23-4cc0-87f7-a7580c599db0",
+      "image_paths": [
+        "hatarvilag/species/torchlight-v1/vektorita.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "091ee273-fe3b-428f-a774-579cd91af6f6",
+      "slug": "species_ember",
+      "name_en": "ember portraits",
+      "name_hu": "ember portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "f778e377-612e-41c3-ab45-ad07da3af84d",
+      "slug": "species_voxari",
+      "name_en": "voxari portraits",
+      "name_hu": "voxari portrék",
+      "class_id": null,
+      "revision": 0,
+      "species_id": "fc896aff-7a01-40cb-bf0f-994e5ada4739",
+      "image_paths": [
+        "hatarvilag/species/torchlight-v1/voxari.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "feb7158b-3130-4bc4-9a63-02fec97e3a6f",
+      "slug": "human_arnyugynok",
+      "name_en": "arnyugynok portraits",
+      "name_hu": "arnyugynok portrék",
+      "class_id": "b1014952-c1bf-43ae-8ea3-76884d6aae61",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "37fed9f7-4a8a-41ce-9f7b-bf5d76355c50",
+      "slug": "human_felderito",
+      "name_en": "felderito portraits",
+      "name_hu": "felderito portrék",
+      "class_id": "cb96c1ec-a715-425a-84a7-f7be6bd427f2",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "5b567a88-0b51-4f19-bc5f-529ae121b108",
+      "slug": "human_hadur",
+      "name_en": "hadur portraits",
+      "name_hu": "hadur portrék",
+      "class_id": "42b44415-64bd-44f9-8472-25d6020d5e33",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "4eb5bb33-b429-4de5-9864-65ad262a5ef6",
+      "slug": "human_hangkovacs",
+      "name_en": "hangkovacs portraits",
+      "name_hu": "hangkovacs portrék",
+      "class_id": "24ea5315-bb13-4173-8f06-25a9ee5be045",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "5ed32ad0-9ad3-4a3f-af7d-6268c4a3058f",
+      "slug": "human_navigator",
+      "name_en": "navigator portraits",
+      "name_hu": "navigator portrék",
+      "class_id": "1f931688-de9c-45ac-91b0-40795b1618a6",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "062ea8c2-2f7b-46cb-a06f-47cc44e4d54a",
+      "slug": "human_pszion",
+      "name_en": "pszion portraits",
+      "name_hu": "pszion portrék",
+      "class_id": "dde508bf-f56f-44a0-991f-e03ca629b4a6",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    },
+    {
+      "id": "ba1d0472-7630-46bc-983d-97cde00c08cc",
+      "slug": "human_muszeresz",
+      "name_en": "muszeresz portraits",
+      "name_hu": "muszeresz portrék",
+      "class_id": "0671d136-acd6-43c3-8b00-5c6b49bf5465",
+      "revision": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "image_paths": [
+        "hatarvilag/crew/portraits-v1/mara.webp",
+        "hatarvilag/crew/portraits-v1/aren.webp"
+      ],
+      "is_published": true
+    }
+  ],
+  "ship": {
+    "id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+    "hull": 100,
+    "slug": "vagabond",
+    "cargo": 80,
+    "speed": 5,
+    "revision": 0,
+    "image_path": "hatarvilag/ships/torchlight-v1/vagabond.webp",
+    "is_published": true
+  },
+  "slots": [
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Engine",
+      "name_hu": "Hajtómű",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": true,
+      "slot_key": "engine_1",
+      "crew_role": null,
+      "sort_order": 1,
+      "module_kind": "engine",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Reactor",
+      "name_hu": "Reaktor",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": true,
+      "slot_key": "reactor_1",
+      "crew_role": null,
+      "sort_order": 2,
+      "module_kind": "reactor",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Hull",
+      "name_hu": "Burkolat",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": true,
+      "slot_key": "hull_1",
+      "crew_role": null,
+      "sort_order": 3,
+      "module_kind": "hull",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Shield",
+      "name_hu": "Pajzs",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "shield_1",
+      "crew_role": null,
+      "sort_order": 4,
+      "module_kind": "shield",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Weapon",
+      "name_hu": "Fegyverzet",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "weapon_1",
+      "crew_role": null,
+      "sort_order": 5,
+      "module_kind": "weapon",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Sensor",
+      "name_hu": "Szenzor",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "sensor_1",
+      "crew_role": null,
+      "sort_order": 6,
+      "module_kind": "sensor",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Utility 1",
+      "name_hu": "Segédrendszer 1",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "utility_1",
+      "crew_role": null,
+      "sort_order": 7,
+      "module_kind": "utility",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "module",
+      "size": 2,
+      "name_en": "Utility 2",
+      "name_hu": "Segédrendszer 2",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "utility_2",
+      "crew_role": null,
+      "sort_order": 8,
+      "module_kind": "utility",
+      "min_aptitude": 1
+    },
+    {
+      "kind": "crew",
+      "size": 1,
+      "name_en": "Pilot",
+      "name_hu": "Pilóta",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": true,
+      "slot_key": "crew_pilot",
+      "crew_role": "pilot",
+      "sort_order": 9,
+      "module_kind": null,
+      "min_aptitude": 2
+    },
+    {
+      "kind": "crew",
+      "size": 1,
+      "name_en": "Navigator",
+      "name_hu": "Navigátor",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": true,
+      "slot_key": "crew_navigator",
+      "crew_role": "navigator",
+      "sort_order": 10,
+      "module_kind": null,
+      "min_aptitude": 2
+    },
+    {
+      "kind": "crew",
+      "size": 1,
+      "name_en": "Engineer",
+      "name_hu": "Gépész",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "crew_engineer",
+      "crew_role": "engineer",
+      "sort_order": 11,
+      "module_kind": null,
+      "min_aptitude": 2
+    },
+    {
+      "kind": "crew",
+      "size": 1,
+      "name_en": "Medic",
+      "name_hu": "Orvos",
+      "ship_id": "0d47ff35-21f6-4e95-9385-70083ce644df",
+      "required": false,
+      "slot_key": "crew_medic",
+      "crew_role": "medic",
+      "sort_order": 12,
+      "module_kind": null,
+      "min_aptitude": 2
+    }
+  ],
+  "classes": [
+    {
+      "id": "b1014952-c1bf-43ae-8ea3-76884d6aae61",
+      "slug": "arnyugynok",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/arnyugynok.webp",
+      "updated_at": "2026-10-19T17:29:54.702142+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Árnyügynök",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "b1014952-c1bf-43ae-8ea3-76884d6aae61",
+          "description": "Kapcsolatrendszereket és álidentitásokat használ, amikor az erő kevés.",
+          "gameplay_role": "Beszivárgó és hírszerzési specialista.",
+          "starting_equipment": "Álcagenerátor\nKódfejtő\nKönnyű fegyver"
+        },
+        {
+          "name": "Shadow Agent",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "b1014952-c1bf-43ae-8ea3-76884d6aae61",
+          "description": "Uses networks and false identities when force is not enough.",
+          "gameplay_role": "Infiltration and intelligence specialist.",
+          "starting_equipment": "Camouflage generator\nCodebreaker\nLight weapon"
+        }
+      ],
+      "primary_attribute": "social",
+      "secondary_attribute": "soul"
+    },
+    {
+      "id": "cb96c1ec-a715-425a-84a7-f7be6bd427f2",
+      "slug": "felderito",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/felderito.webp",
+      "updated_at": "2026-10-19T17:59:14.818586+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Felderítő",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "cb96c1ec-a715-425a-84a7-f7be6bd427f2",
+          "description": "A veszélyes térségek gyors felderítője és nyomolvasója.",
+          "gameplay_role": "Mozgékony felderítő és nyomkereső.",
+          "starting_equipment": "Könnyű felderítőruha\nSzenzor\nKézi fegyver"
+        },
+        {
+          "name": "Scout",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "cb96c1ec-a715-425a-84a7-f7be6bd427f2",
+          "description": "A swift explorer and tracker of hazardous sectors.",
+          "gameplay_role": "Mobile scout and tracker.",
+          "starting_equipment": "Light recon suit\nScanner\nSidearm"
+        }
+      ],
+      "primary_attribute": "body",
+      "secondary_attribute": "mind"
+    },
+    {
+      "id": "42b44415-64bd-44f9-8472-25d6020d5e33",
+      "slug": "hadur",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/hadur.webp",
+      "updated_at": "2026-10-19T18:01:21.884989+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Hadúr",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "42b44415-64bd-44f9-8472-25d6020d5e33",
+          "description": "Parancsnok, aki tartja a frontot és félelmet kelt az ellenségben.",
+          "gameplay_role": "Harctéri irányító és csapaterősítő.",
+          "starting_equipment": "Nehéz mellvért\nOldalfegyver\nTaktikai jeladó"
+        },
+        {
+          "name": "Warlord",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "42b44415-64bd-44f9-8472-25d6020d5e33",
+          "description": "Commander who holds the line and strikes fear into enemies.",
+          "gameplay_role": "Battlefield commander and morale amplifier.",
+          "starting_equipment": "Heavy breastplate\nSidearm\nTactical beacon"
+        }
+      ],
+      "primary_attribute": "morale",
+      "secondary_attribute": "body"
+    },
+    {
+      "id": "24ea5315-bb13-4173-8f06-25a9ee5be045",
+      "slug": "hangkovacs",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/hangkovacs.webp",
+      "updated_at": "2026-10-19T18:02:53.137012+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Hangkovács",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "24ea5315-bb13-4173-8f06-25a9ee5be045",
+          "description": "A rezgés és kommunikáció mestere, hangalapú fegyverek használója.",
+          "gameplay_role": "Hangalapú irányító és kommunikációs támogató.",
+          "starting_equipment": "Hangmodulátor\nRezonátor\nUniverzális kommunikátor"
+        },
+        {
+          "name": "Soundforger",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "24ea5315-bb13-4173-8f06-25a9ee5be045",
+          "description": "Master of vibration and communication who wields sonic weapons.",
+          "gameplay_role": "Sonic controller and communications support.",
+          "starting_equipment": "Sound modulator\nResonator\nUniversal communicator"
+        }
+      ],
+      "primary_attribute": "social",
+      "secondary_attribute": "morale"
+    },
+    {
+      "id": "1f931688-de9c-45ac-91b0-40795b1618a6",
+      "slug": "navigator",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/navigator.webp",
+      "updated_at": "2026-10-19T18:08:39.560179+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Navigátor",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "1f931688-de9c-45ac-91b0-40795b1618a6",
+          "description": "Kiszámítja az útvonalakat, érzékeli az anomáliákat és biztosítja az áthaladást.",
+          "gameplay_role": "Útvonal-tervező és anomáliafelderítő.",
+          "starting_equipment": "Navigációs modul\nCsillagtérkép\nKommunikátor"
+        },
+        {
+          "name": "Navigator",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "1f931688-de9c-45ac-91b0-40795b1618a6",
+          "description": "Charts routes, senses anomalies and ensures safe passage.",
+          "gameplay_role": "Route planner and anomaly finder.",
+          "starting_equipment": "Navigation module\nStar chart\nCommunicator"
+        }
+      ],
+      "primary_attribute": "mind",
+      "secondary_attribute": "soul"
+    },
+    {
+      "id": "dde508bf-f56f-44a0-991f-e03ca629b4a6",
+      "slug": "pszion",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/pszion.webp",
+      "updated_at": "2026-10-19T18:51:01.787887+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Pszion",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "dde508bf-f56f-44a0-991f-e03ca629b4a6",
+          "description": "Pszionikus eszközökre és mentális kapcsolatra specializálódott.",
+          "gameplay_role": "Pszionikus támadó és mentális specialista.",
+          "starting_equipment": "Pszionikus fókusz\nMentális árnyékoló"
+        },
+        {
+          "name": "Psion",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "dde508bf-f56f-44a0-991f-e03ca629b4a6",
+          "description": "Specialist in psionic devices and mental attunement.",
+          "gameplay_role": "Psionic attacker and mental specialist.",
+          "starting_equipment": "Psionic focus\nMental shielding"
+        }
+      ],
+      "primary_attribute": "soul",
+      "secondary_attribute": "mind"
+    },
+    {
+      "id": "0671d136-acd6-43c3-8b00-5c6b49bf5465",
+      "slug": "muszeresz",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/classes/torchlight-banner-v1/muszeresz.webp",
+      "updated_at": "2026-10-19T19:10:38.084584+00:00",
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Mérnök",
+          "locale": "hu",
+          "traits": "Szakterületi jártasság\nInduló képességcsomag",
+          "class_id": "0671d136-acd6-43c3-8b00-5c6b49bf5465",
+          "description": "Meghibásodott rendszereket állít helyre és különleges eszközöket épít.",
+          "gameplay_role": "Technikai támogató, javító és eszközfejlesztő.",
+          "starting_equipment": "Szerszámkészlet\nDiagnosztikai szkenner"
+        },
+        {
+          "name": "Engineer",
+          "locale": "en",
+          "traits": "Domain expertise\nStarter skill package",
+          "class_id": "0671d136-acd6-43c3-8b00-5c6b49bf5465",
+          "description": "Repairs failing systems and builds specialised devices.",
+          "gameplay_role": "Technical support, repair and equipment development.",
+          "starting_equipment": "Tool kit\nDiagnostic scanner"
+        }
+      ],
+      "primary_attribute": "mind",
+      "secondary_attribute": "body"
+    }
+  ],
+  "locales": [
+    {
+      "code": "hu",
+      "name_en": "Hungarian",
+      "is_enabled": true,
+      "sort_order": 0,
+      "native_name": "Magyar"
+    },
+    {
+      "code": "en",
+      "name_en": "English",
+      "is_enabled": true,
+      "sort_order": 1,
+      "native_name": "English"
+    }
+  ],
+  "modules": [
+    {
+      "size": 1,
+      "slug": "ship_drive_standard",
+      "rarity": "common",
+      "item_id": "d5cc231e-f83d-4c17-b41f-076815dfb03b",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/engine.webp",
+      "is_starter": true,
+      "power_draw": 3,
+      "cargo_bonus": 0,
+      "module_kind": "engine",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Határvidéki hajtómű",
+          "locale": "hu",
+          "item_id": "d5cc231e-f83d-4c17-b41f-076815dfb03b",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Frontier drive",
+          "locale": "en",
+          "item_id": "d5cc231e-f83d-4c17-b41f-076815dfb03b",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 1,
+      "slug": "ship_reactor_standard",
+      "rarity": "common",
+      "item_id": "4bf5b8a3-f919-4787-8193-54041cff9e72",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/reactor.webp",
+      "is_starter": true,
+      "power_draw": 0,
+      "cargo_bonus": 0,
+      "module_kind": "reactor",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 24,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Kompakt reaktor",
+          "locale": "hu",
+          "item_id": "4bf5b8a3-f919-4787-8193-54041cff9e72",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Compact reactor",
+          "locale": "en",
+          "item_id": "4bf5b8a3-f919-4787-8193-54041cff9e72",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 1,
+      "slug": "ship_shield_standard",
+      "rarity": "common",
+      "item_id": "50867a35-46b3-4e5c-9595-cceffd01bdbe",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/shield.webp",
+      "is_starter": true,
+      "power_draw": 2,
+      "cargo_bonus": 0,
+      "module_kind": "shield",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 20,
+      "translations": [
+        {
+          "name": "Deflektorpajzs",
+          "locale": "hu",
+          "item_id": "50867a35-46b3-4e5c-9595-cceffd01bdbe",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Deflector shield",
+          "locale": "en",
+          "item_id": "50867a35-46b3-4e5c-9595-cceffd01bdbe",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 1,
+      "slug": "ship_weapon_standard",
+      "rarity": "common",
+      "item_id": "0493dbc2-e62f-42c3-b6c0-cab0f3d2ed59",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/weapon.webp",
+      "is_starter": true,
+      "power_draw": 2,
+      "cargo_bonus": 0,
+      "module_kind": "weapon",
+      "speed_bonus": 0,
+      "damage_bonus": 6,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Pulzuslöveg",
+          "locale": "hu",
+          "item_id": "0493dbc2-e62f-42c3-b6c0-cab0f3d2ed59",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Pulse cannon",
+          "locale": "en",
+          "item_id": "0493dbc2-e62f-42c3-b6c0-cab0f3d2ed59",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 1,
+      "slug": "ship_hull_standard",
+      "rarity": "common",
+      "item_id": "bba06d5d-35cd-441c-977f-0acfd751ea2e",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/hull.webp",
+      "is_starter": true,
+      "power_draw": 0,
+      "cargo_bonus": 0,
+      "module_kind": "hull",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Alap burkolat",
+          "locale": "hu",
+          "item_id": "bba06d5d-35cd-441c-977f-0acfd751ea2e",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Standard hull plating",
+          "locale": "en",
+          "item_id": "bba06d5d-35cd-441c-977f-0acfd751ea2e",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 1,
+      "slug": "ship_sensor_standard",
+      "rarity": "common",
+      "item_id": "2c585add-031c-4894-ab86-c059cb43e944",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/sensor.webp",
+      "is_starter": true,
+      "power_draw": 1,
+      "cargo_bonus": 0,
+      "module_kind": "sensor",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Navigációs szenzor",
+          "locale": "hu",
+          "item_id": "2c585add-031c-4894-ab86-c059cb43e944",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Navigation sensor",
+          "locale": "en",
+          "item_id": "2c585add-031c-4894-ab86-c059cb43e944",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 1,
+      "slug": "ship_cargo_pod",
+      "rarity": "uncommon",
+      "item_id": "14656102-e983-432f-8b02-68cf435f91d8",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/utility.webp",
+      "is_starter": false,
+      "power_draw": 1,
+      "cargo_bonus": 20,
+      "module_kind": "utility",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Külső raktérmodul",
+          "locale": "hu",
+          "item_id": "14656102-e983-432f-8b02-68cf435f91d8",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "External cargo pod",
+          "locale": "en",
+          "item_id": "14656102-e983-432f-8b02-68cf435f91d8",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 2,
+      "slug": "ship_drive_boost",
+      "rarity": "uncommon",
+      "item_id": "8458e188-625e-4335-9681-fa0f25f4763b",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/engine.webp",
+      "is_starter": false,
+      "power_draw": 6,
+      "cargo_bonus": 0,
+      "module_kind": "engine",
+      "speed_bonus": 3,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Túltöltött hajtómű",
+          "locale": "hu",
+          "item_id": "8458e188-625e-4335-9681-fa0f25f4763b",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Boosted drive",
+          "locale": "en",
+          "item_id": "8458e188-625e-4335-9681-fa0f25f4763b",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 2,
+      "slug": "ship_shield_heavy",
+      "rarity": "uncommon",
+      "item_id": "df61615a-b482-4116-830b-4743474343a8",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/shield.webp",
+      "is_starter": false,
+      "power_draw": 5,
+      "cargo_bonus": 0,
+      "module_kind": "shield",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 45,
+      "translations": [
+        {
+          "name": "Nehéz pajzsgenerátor",
+          "locale": "hu",
+          "item_id": "df61615a-b482-4116-830b-4743474343a8",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Heavy shield generator",
+          "locale": "en",
+          "item_id": "df61615a-b482-4116-830b-4743474343a8",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 2,
+      "slug": "ship_weapon_heavy",
+      "rarity": "uncommon",
+      "item_id": "3acb43a4-5293-4bf3-b9a8-d3bd72d99784",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/weapon.webp",
+      "is_starter": false,
+      "power_draw": 5,
+      "cargo_bonus": 0,
+      "module_kind": "weapon",
+      "speed_bonus": 0,
+      "damage_bonus": 15,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Nehéz sugárágyú",
+          "locale": "hu",
+          "item_id": "3acb43a4-5293-4bf3-b9a8-d3bd72d99784",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Heavy beam cannon",
+          "locale": "en",
+          "item_id": "3acb43a4-5293-4bf3-b9a8-d3bd72d99784",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 2,
+      "slug": "ship_reactor_high",
+      "rarity": "uncommon",
+      "item_id": "9c76f1f7-d66d-4a8e-a0fd-9a478f48cd4e",
+      "hull_bonus": 0,
+      "image_path": "hatarvilag/items/ship-loadout-v1/reactor.webp",
+      "is_starter": false,
+      "power_draw": 0,
+      "cargo_bonus": 0,
+      "module_kind": "reactor",
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 40,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Nagy teljesítményű reaktor",
+          "locale": "hu",
+          "item_id": "9c76f1f7-d66d-4a8e-a0fd-9a478f48cd4e",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "High-output reactor",
+          "locale": "en",
+          "item_id": "9c76f1f7-d66d-4a8e-a0fd-9a478f48cd4e",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    },
+    {
+      "size": 2,
+      "slug": "ship_hull_reinforced",
+      "rarity": "uncommon",
+      "item_id": "240d28ff-e27b-4b30-8450-b4cc02880958",
+      "hull_bonus": 40,
+      "image_path": "hatarvilag/items/ship-loadout-v1/hull.webp",
+      "is_starter": false,
+      "power_draw": 0,
+      "cargo_bonus": 0,
+      "module_kind": "hull",
+      "speed_bonus": -1,
+      "damage_bonus": 0,
+      "is_published": true,
+      "power_output": 0,
+      "shield_bonus": 0,
+      "translations": [
+        {
+          "name": "Megerősített burkolat",
+          "locale": "hu",
+          "item_id": "240d28ff-e27b-4b30-8450-b4cc02880958",
+          "description": "Űrhajómodul. Csak megfelelő típusú és méretű hajóslotba szerelhető."
+        },
+        {
+          "name": "Reinforced hull plating",
+          "locale": "en",
+          "item_id": "240d28ff-e27b-4b30-8450-b4cc02880958",
+          "description": "Starship module. Requires a compatible slot type and size."
+        }
+      ]
+    }
+  ],
+  "species": [
+    {
+      "id": "fde4e159-ab19-4f86-aafb-71d03ccdc0f5",
+      "slug": "ferron",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/ferron.webp",
+      "updated_at": "2026-10-19T10:49:00.425009+00:00",
+      "resistances": [
+        {
+          "code": "kinetic",
+          "value": 10
+        },
+        {
+          "code": "thermal",
+          "value": 10
+        }
+      ],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Ferron",
+          "locale": "hu",
+          "passives": "Természetes páncél\nKitartó szervezet",
+          "species_id": "fde4e159-ab19-4f86-aafb-71d03ccdc0f5",
+          "description": "Kohóvilágokon született, fémmel megerősített túlélők. Rendíthetetlenek és kitartók."
+        },
+        {
+          "name": "Ferron",
+          "locale": "en",
+          "passives": "Natural armour\nEnduring physiology",
+          "species_id": "fde4e159-ab19-4f86-aafb-71d03ccdc0f5",
+          "description": "Forge-world survivors reinforced with metal. Unyielding and enduring."
+        }
+      ],
+      "primary_attribute": "body",
+      "secondary_attribute": "morale"
+    },
+    {
+      "id": "d36b7ccb-5680-4501-bc0d-810c388bed92",
+      "slug": "karszid",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/karszid.webp",
+      "updated_at": "2026-10-19T10:55:46.033016+00:00",
+      "resistances": [
+        {
+          "code": "fear",
+          "value": 20
+        }
+      ],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Karszid",
+          "locale": "hu",
+          "passives": "Félelmetes megjelenés\nKlánfegyelem",
+          "species_id": "d36b7ccb-5680-4501-bc0d-810c388bed92",
+          "description": "Kietlen peremvidékek harcedzett klánjai, akik fegyelemmel törik meg ellenfeleiket."
+        },
+        {
+          "name": "Karsid",
+          "locale": "en",
+          "passives": "Intimidating presence\nClan discipline",
+          "species_id": "d36b7ccb-5680-4501-bc0d-810c388bed92",
+          "description": "Battle-hardened clans from harsh rim worlds who break their foes through discipline."
+        }
+      ],
+      "primary_attribute": "morale",
+      "secondary_attribute": "body"
+    },
+    {
+      "id": "870e1ffa-0d14-48a7-8427-92e25e831b39",
+      "slug": "mycelion",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/mycelion.webp",
+      "updated_at": "2026-10-19T10:58:31.803+00:00",
+      "resistances": [
+        {
+          "code": "terror",
+          "value": 10
+        },
+        {
+          "code": "chemical",
+          "value": 15
+        }
+      ],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Mycelion",
+          "locale": "hu",
+          "passives": "Biológiai hálózat\nSpóraérzékelés",
+          "species_id": "870e1ffa-0d14-48a7-8427-92e25e831b39",
+          "description": "Biológiai hálózatokból született érzékeny lények, a közösségi emlékezet őrzői."
+        },
+        {
+          "name": "Mycelion",
+          "locale": "en",
+          "passives": "Biological network\nSpore sensing",
+          "species_id": "870e1ffa-0d14-48a7-8427-92e25e831b39",
+          "description": "Sensitive beings born from living networks, keepers of collective memory."
+        }
+      ],
+      "primary_attribute": "soul",
+      "secondary_attribute": "social"
+    },
+    {
+      "id": "15635936-59f5-417f-8294-29632a9d23f2",
+      "slug": "noxari",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/noxari.webp",
+      "updated_at": "2026-10-19T11:06:12.004598+00:00",
+      "resistances": [
+        {
+          "code": "psionic",
+          "value": 25
+        },
+        {
+          "code": "occult",
+          "value": 10
+        }
+      ],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Noxari",
+          "locale": "hu",
+          "passives": "Fokozott mentális érzékelés\nTermészetes empátia",
+          "species_id": "15635936-59f5-417f-8294-29632a9d23f2",
+          "description": "A tudat mélyrétegeire hangolódott, különös érzékelésű vándorok."
+        },
+        {
+          "name": "Noxari",
+          "locale": "en",
+          "passives": "Heightened mental perception\nNatural empathy",
+          "species_id": "15635936-59f5-417f-8294-29632a9d23f2",
+          "description": "Wanderers attuned to deeper layers of consciousness, with uncanny perception."
+        }
+      ],
+      "primary_attribute": "soul",
+      "secondary_attribute": "mind"
+    },
+    {
+      "id": "595bd14c-8b23-4cc0-87f7-a7580c599db0",
+      "slug": "vektorita",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/vektorita.webp",
+      "updated_at": "2026-10-19T11:08:26.909196+00:00",
+      "resistances": [
+        {
+          "code": "chemical",
+          "value": 25
+        }
+      ],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Vektorita",
+          "locale": "hu",
+          "passives": "Gépi számítás\nRendszerdiagnosztika",
+          "species_id": "595bd14c-8b23-4cc0-87f7-a7580c599db0",
+          "description": "Precíz géptestekben élő technológiai tudatok, a számítás és a mérnöki munka mesterei."
+        },
+        {
+          "name": "Vectorite",
+          "locale": "en",
+          "passives": "Machine computation\nSystem diagnostics",
+          "species_id": "595bd14c-8b23-4cc0-87f7-a7580c599db0",
+          "description": "Technological minds inhabiting precise mechanical bodies, masters of computation and engineering."
+        }
+      ],
+      "primary_attribute": "mind",
+      "secondary_attribute": "body"
+    },
+    {
+      "id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "slug": "ember",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/ember.webp",
+      "updated_at": "2026-10-19T11:11:19.129805+00:00",
+      "resistances": [],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Ember",
+          "locale": "hu",
+          "passives": "Rugalmas alkalmazkodás\nGyors tanulás",
+          "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+          "description": "Alkalmazkodó határvidéki nép. Szívós, kíváncsi és változatos kultúrájú."
+        },
+        {
+          "name": "Human",
+          "locale": "en",
+          "passives": "Flexible adaptation\nRapid learning",
+          "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+          "description": "Adaptive frontier people, resilient, curious and culturally diverse."
+        }
+      ],
+      "primary_attribute": "body",
+      "secondary_attribute": "social"
+    },
+    {
+      "id": "fc896aff-7a01-40cb-bf0f-994e5ada4739",
+      "slug": "voxari",
+      "created_at": "2026-10-16T22:00:50.547572+00:00",
+      "image_path": "hatarvilag/species/torchlight-v1/voxari.webp",
+      "updated_at": "2026-10-19T11:11:19.129805+00:00",
+      "resistances": [
+        {
+          "code": "sonic",
+          "value": 25
+        }
+      ],
+      "is_published": true,
+      "translations": [
+        {
+          "name": "Voxari",
+          "locale": "hu",
+          "passives": "Rezonancia érzékelés\nHangrezisztencia",
+          "species_id": "fc896aff-7a01-40cb-bf0f-994e5ada4739",
+          "description": "Rezonanciával kommunikáló nép, akik a hangot diplomáciára és befolyásolásra is használják."
+        },
+        {
+          "name": "Voxari",
+          "locale": "en",
+          "passives": "Resonance sensing\nSonic resistance",
+          "species_id": "fc896aff-7a01-40cb-bf0f-994e5ada4739",
+          "description": "A resonance-speaking people who wield sound for diplomacy and influence."
+        }
+      ],
+      "primary_attribute": "social",
+      "secondary_attribute": "morale"
+    }
+  ],
+  "templates": [
+    {
+      "id": "0a7f6d86-efe9-4ce7-acbe-bddeebf62024",
+      "kind": "generated",
+      "slug": "recruit_pilot_common",
+      "rarity": "common",
+      "source": "cantina",
+      "weight": 60,
+      "aptitude": 2,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "pilot",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "pilot",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "pilot",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "54eda6b2-a783-4985-8e61-35438e24ed81",
+      "kind": "generated",
+      "slug": "recruit_pilot_uncommon",
+      "rarity": "uncommon",
+      "source": "cantina",
+      "weight": 25,
+      "aptitude": 3,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "pilot",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "pilot",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "pilot",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "a2faddd0-3763-424c-b78a-bb2642b12ead",
+      "kind": "generated",
+      "slug": "recruit_pilot_rare",
+      "rarity": "rare",
+      "source": "cantina",
+      "weight": 10,
+      "aptitude": 4,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "pilot",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "pilot",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "pilot",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "6d4a011a-b0e3-43e9-802d-ab6b4155409f",
+      "kind": "generated",
+      "slug": "recruit_pilot_epic",
+      "rarity": "epic",
+      "source": "cantina",
+      "weight": 2,
+      "aptitude": 5,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "pilot",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "pilot",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "pilot",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "efb3c572-a1a1-4dc4-8ef7-b207669e82ef",
+      "kind": "generated",
+      "slug": "recruit_navigator_common",
+      "rarity": "common",
+      "source": "cantina",
+      "weight": 60,
+      "aptitude": 2,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "navigator",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "navigator",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "navigator",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "9c247cc3-af9f-4224-9024-958017ddc2c6",
+      "kind": "generated",
+      "slug": "recruit_navigator_uncommon",
+      "rarity": "uncommon",
+      "source": "cantina",
+      "weight": 25,
+      "aptitude": 3,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "navigator",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "navigator",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "navigator",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "75983f4d-ecae-493b-9f8f-7024dd460505",
+      "kind": "generated",
+      "slug": "recruit_navigator_rare",
+      "rarity": "rare",
+      "source": "cantina",
+      "weight": 10,
+      "aptitude": 4,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "navigator",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "navigator",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "navigator",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "36ef31dd-d9be-4aea-9982-5319e4e19ec8",
+      "kind": "generated",
+      "slug": "recruit_navigator_epic",
+      "rarity": "epic",
+      "source": "cantina",
+      "weight": 2,
+      "aptitude": 5,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "navigator",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "navigator",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "navigator",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "8aaffdfa-1c55-4b85-8be5-ddf734a8662c",
+      "kind": "generated",
+      "slug": "recruit_engineer_common",
+      "rarity": "common",
+      "source": "cantina",
+      "weight": 60,
+      "aptitude": 2,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "engineer",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "engineer",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "engineer",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "e7ed4a95-8795-452a-b9e8-d40449dee87f",
+      "kind": "generated",
+      "slug": "recruit_engineer_uncommon",
+      "rarity": "uncommon",
+      "source": "cantina",
+      "weight": 25,
+      "aptitude": 3,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "engineer",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "engineer",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "engineer",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "21711e59-98ca-4f6d-99e4-3332589b771d",
+      "kind": "generated",
+      "slug": "recruit_engineer_rare",
+      "rarity": "rare",
+      "source": "cantina",
+      "weight": 10,
+      "aptitude": 4,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "engineer",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "engineer",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "engineer",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "18fb1ef4-d991-43e7-aaff-50ba25a78283",
+      "kind": "generated",
+      "slug": "recruit_engineer_epic",
+      "rarity": "epic",
+      "source": "cantina",
+      "weight": 2,
+      "aptitude": 5,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "engineer",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "engineer",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "engineer",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "22cdd687-bd5b-41ad-9a99-7055c80ce709",
+      "kind": "generated",
+      "slug": "recruit_security_common",
+      "rarity": "common",
+      "source": "cantina",
+      "weight": 60,
+      "aptitude": 2,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "security",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "security",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "security",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "181e7dce-9d4d-44e7-b0f3-a326f91cc56e",
+      "kind": "generated",
+      "slug": "recruit_security_uncommon",
+      "rarity": "uncommon",
+      "source": "cantina",
+      "weight": 25,
+      "aptitude": 3,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "security",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "security",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "security",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "53167707-d4dd-49d4-ba7c-ad8908a669e5",
+      "kind": "generated",
+      "slug": "recruit_security_rare",
+      "rarity": "rare",
+      "source": "cantina",
+      "weight": 10,
+      "aptitude": 4,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "security",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "security",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "security",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "fffed4ed-8d55-4b91-bd80-71e8af81cc21",
+      "kind": "generated",
+      "slug": "recruit_security_epic",
+      "rarity": "epic",
+      "source": "cantina",
+      "weight": 2,
+      "aptitude": 5,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "security",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "security",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "security",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "4fe53b0a-495b-422f-a786-0c45aeeeeab9",
+      "kind": "generated",
+      "slug": "recruit_medic_common",
+      "rarity": "common",
+      "source": "cantina",
+      "weight": 60,
+      "aptitude": 2,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "medic",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "medic",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "medic",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "21dbc91f-f0c5-4c79-a5d3-d1386c70ee91",
+      "kind": "generated",
+      "slug": "recruit_medic_uncommon",
+      "rarity": "uncommon",
+      "source": "cantina",
+      "weight": 25,
+      "aptitude": 3,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "medic",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "medic",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "medic",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "cf08e6bf-9eaa-4d2b-88a4-7c8ede380069",
+      "kind": "generated",
+      "slug": "recruit_medic_rare",
+      "rarity": "rare",
+      "source": "cantina",
+      "weight": 10,
+      "aptitude": 4,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "medic",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "medic",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "medic",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "86b184c7-aa57-45ad-84da-db50b62c0efa",
+      "kind": "generated",
+      "slug": "recruit_medic_epic",
+      "rarity": "epic",
+      "source": "cantina",
+      "weight": 2,
+      "aptitude": 5,
+      "class_id": null,
+      "revision": 0,
+      "specialty": "medic",
+      "hull_bonus": 0,
+      "species_id": null,
+      "speed_bonus": 0,
+      "damage_bonus": 0,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "medic",
+          "description": "Recruitable crew member."
+        },
+        "hu": {
+          "name": "medic",
+          "description": "Toborozható legénységi tag."
+        }
+      },
+      "portrait_path": null,
+      "portrait_set_id": null,
+      "max_per_character": 0
+    },
+    {
+      "id": "60e3fb75-fa83-41b1-aff1-17f6f8593712",
+      "kind": "named",
+      "slug": "kael_ross",
+      "rarity": "rare",
+      "source": "cantina",
+      "weight": 3,
+      "aptitude": 4,
+      "class_id": "42b44415-64bd-44f9-8472-25d6020d5e33",
+      "revision": 0,
+      "specialty": "security",
+      "hull_bonus": 0,
+      "species_id": "2ff86a1c-09d3-40d5-9c44-1f8e2f06b485",
+      "speed_bonus": 0,
+      "damage_bonus": 2,
+      "is_published": true,
+      "shield_bonus": 0,
+      "translations": {
+        "en": {
+          "name": "Kael Ross",
+          "description": "Veteran security officer from the frontier."
+        },
+        "hu": {
+          "name": "Kael Ross",
+          "description": "Tapasztalt biztonsági tiszt a határvidékről."
+        }
+      },
+      "portrait_path": "hatarvilag/crew/portraits-v1/kael.webp",
+      "portrait_set_id": null,
+      "max_per_character": 1
+    }
+  ]
+}

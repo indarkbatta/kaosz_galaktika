@@ -1,4 +1,4 @@
-import {useEffect,useState,type FormEvent,type CSSProperties} from 'react';
+import {lazy,Suspense,useEffect,useState,type FormEvent,type CSSProperties} from 'react';
 import type {User} from '@supabase/supabase-js';
 import {supabase,type Role} from './lib/supabase';
 import {dictionaries,rememberLocale,storedLocale,type Locale,type Key} from './i18n';
@@ -13,10 +13,12 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'skills'|'gameplay'|'sector'|'items'|'ships'|'admin';
+type Page='dashboard'|'editor'|'skills'|'gameplay'|'sector'|'items'|'ships'|'crew'|'admin';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
+
+const CrewEditor=lazy(()=>import('./CrewEditor'));
 
 function App(){
  const [locale,setLocale]=useState<Locale>(storedLocale);
@@ -155,12 +157,13 @@ function App(){
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>
     </main>
-    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')} onGameplay={()=>setPage('gameplay')} onSector={()=>setPage('sector')} onItems={()=>setPage('items')} onShips={()=>setPage('ships')}/>
+    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')} onGameplay={()=>setPage('gameplay')} onSector={()=>setPage('sector')} onItems={()=>setPage('items')} onShips={()=>setPage('ships')} onCrew={()=>setPage('crew')}/>
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onBack={()=>setPage('editor')}/>
     :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onBack={()=>setPage('editor')}/>
+    :page==='crew'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CrewEditor locale={locale} onBack={()=>setPage('editor')}/></Suspense>
     :page==='dashboard'?<div className="ch-v2-mount"><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>
     :<main className="terminal in-game">
       <nav className="tabs">

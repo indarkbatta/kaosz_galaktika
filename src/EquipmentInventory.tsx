@@ -5,6 +5,7 @@ import {crewPositionName,type CrewMember} from './Cantina';
 import {ItemHoverTooltip} from './components/ItemDetailView';
 import {itemAssetUrl,itemName,itemDescription,type ItemCatalogEntry} from './lib/itemPresentation';
 import './equipment-inventory.css';
+import {crewAssetUrl} from './lib/crewPresentation';
 
 type Item=ItemCatalogEntry;
 type Store='personal'|'cargo';
@@ -25,7 +26,7 @@ function ItemPicture({item,placeholder=false}:{item:Item|undefined;placeholder?:
 export default function EquipmentInventory({characterId,captainName,locale,crew,onChanged,initialData}:{characterId:string;captainName:string;locale:string;crew:CrewMember[];onChanged:()=>Promise<void>;initialData?:StorageSnapshot}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [data,setData]=useState<StorageSnapshot|null>(initialData||null),[error,setError]=useState(''),[target,setTarget]=useState('captain'),[busy,setBusy]=useState(false);
- const [selected,setSelected]=useState<Selection|null>(null),[dragged,setDragged]=useState<DragData|null>(null),[hover,setHover]=useState(''),[cargoPage,setCargoPage]=useState(0),[bagPage,setBagPage]=useState(0),[quantity,setQuantity]=useState(1);
+ const [selected,setSelected]=useState<Selection|null>(null),[dragged,setDragged]=useState<DragData|null>(null),[hover,setHover]=useState(''),[cargoPage,setCargoPage]=useState(0),[bagPage,setBagPage]=useState(0),[crewPage,setCrewPage]=useState(0),[quantity,setQuantity]=useState(1);
  const [tip,setTip]=useState<{item:Item;quantity?:number;equipped:boolean;storage?:Store;x:number;y:number}|null>(null);
  const guard=useRef(false),generation=useRef(0),root=useRef<HTMLElement>(null);
  const [compact,setCompact]=useState(false);
@@ -80,13 +81,14 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  const cargoPages=Math.max(1,Math.ceil(data.cargo_capacity/cargoPageSize)),cp=Math.min(cargoPage,cargoPages-1),bonus=Math.max(0,data.personal_capacity-6),bagPages=Math.max(1,Math.ceil(bonus/12)),bp=Math.min(bagPage,bagPages-1);
  const base=personal.slice(0,6),bag=personal.slice(6+bp*12,18+bp*12);
  const shipName=data.ship?.translations?.find(t=>t.locale===locale)?.name||data.ship?.translations?.find(t=>t.locale==='hu')?.name||'—';
+ const crewPageSize=compact?2:4,crewPages=Math.max(1,Math.ceil(crew.length/crewPageSize)),crewCurrentPage=Math.min(crewPage,crewPages-1);
  const preferredSlot=selectedItem?.equip_slot||'',canEquip=selected&&'storage'in selected&&fits(selectedItem,preferredSlot,crewId);
  return <section ref={root} className="eq-root" aria-busy={busy} aria-label={tr('Felszerelés és raktér','Equipment and cargo')}>
-  <nav className="eq-tabs" aria-label={tr('Karakter felszerelése','Character equipment')}><button className={!crewId?'active':''} onClick={()=>{setTarget('captain');setSelected(null);}}>{tr('KAPITÁNY','CAPTAIN')}</button>{crew.map(c=><button key={c.id} className={target===c.id?'active':''} title={crewPositionName(c.position,en)} onClick={()=>{setTarget(c.id);setSelected(null);}}>{c.name}</button>)}</nav>
+  <nav className="eq-tabs" aria-label={tr('Karakter felszerelése','Character equipment')}><button className={!crewId?'active':''} onClick={()=>{setTarget('captain');setSelected(null);}}>{tr('KAPITÁNY','CAPTAIN')}</button>{crewPages>1&&<button disabled={!crewCurrentPage} aria-label={tr('Előző legénységi tagok','Previous crew')} onClick={()=>setCrewPage(crewCurrentPage-1)}>‹</button>}{crew.slice(crewCurrentPage*crewPageSize,(crewCurrentPage+1)*crewPageSize).map(c=><button key={c.id} className={target===c.id?'active':''} title={crewPositionName(c.position,en)} onClick={()=>{setTarget(c.id);setSelected(null);}}>{c.name}</button>)}{crewPages>1&&<button disabled={crewCurrentPage===crewPages-1} aria-label={tr('További legénységi tagok','More crew')} onClick={()=>setCrewPage(crewCurrentPage+1)}>› {crewCurrentPage+1}/{crewPages}</button>}</nav>
   {error&&<p role="alert" className="eq-error">{error}</p>}
   <div className="eq-workspace">
    <section className="eq-paperdoll"><header className="eq-pane-head"><strong>{tr('FELSZERELÉS','EQUIPMENT')}</strong><span>{currentName}</span></header>
-    <div className={'eq-doll-grid '+(crewId?'eq-crew-doll':'eq-captain-doll')}><div className="eq-figure-wrap"><img className="eq-figure" src="https://assets.voidnoir.net/hatarvilag/paperdolls/inventory-captain-v1.webp" alt={tr('Karakter felszerelési nézete','Character equipment view')} onError={e=>{const image=e.currentTarget;if(!image.dataset.fallback){image.dataset.fallback='1';image.src='/assets/captain-inventory-v1.webp';}}} draggable={false}/></div>
+    <div className={'eq-doll-grid '+(crewId?'eq-crew-doll':'eq-captain-doll')}><div className="eq-figure-wrap"><img className={"eq-figure"+(crewId?" eq-crew-portrait":"")} src={(crewId&&crewAssetUrl(member?.portrait_path))||"https://assets.voidnoir.net/hatarvilag/paperdolls/inventory-captain-v1.webp"} alt={tr('Karakter felszerelési nézete','Character equipment view')} onError={e=>{const image=e.currentTarget;if(!image.dataset.fallback){image.dataset.fallback='1';image.src='/assets/captain-inventory-v1.webp';}}} draggable={false}/></div>
      {slots.map(slot=>{const worn=positionItem(slot.key,crewId),item=itemById(worn?.item_id||null),active=selectedGear?.slot===slot.key&&selectedGear.crewId===crewId;
       return <div key={slot.key} className={'eq-slot-wrap slot-'+slot.key}><span className="eq-slot-label">{en?slot.en:slot.hu}</span><button type="button" className={'eq-slot '+(item?.rarity||'')+(active?' active':'')+(hover===slot.key?' hover':'')} disabled={busy} aria-label={(en?slot.en:slot.hu)+(item?': '+name(item):'')}
        draggable={!!worn&&!busy} onDragStart={e=>worn&&start(e,{kind:'gear',slot:slot.key,crewId,itemId:worn.item_id})} onDragEnd={clearDrag} onDragOver={e=>{if(dragged&&fits(itemById(dragged.itemId),slot.key,crewId)){e.preventDefault();setHover(slot.key);}}} onDragLeave={()=>setHover('')} onDrop={e=>dropOnSlot(e,slot.key)}

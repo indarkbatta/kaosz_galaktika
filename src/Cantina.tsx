@@ -1,68 +1,228 @@
-import {useEffect,useState} from 'react';
-import {supabase} from './lib/supabase';
-import {notify} from './lib/toast';
-import './cantina.css';
-export type CrewMember={id:string;position:string;name:string;specialty?:string|null;aptitude?:number;species_slug?:string|null};
-type Applicant={id:string;name:string;specialty:string;aptitude:number;species_slug:string;portrait_path:string|null};
-type Roster={candidates:Applicant[];expires_at:string;hire_energy_cost:number;replace_energy_cost:number};
-export const CREW_POSITIONS=['pilot','navigator','engineer','security','medic'] as const;
-export function crewPositionName(position:string,en:boolean){
- const titles:Record<string,[string,string]>={pilot:['Pilóta','Pilot'],navigator:['Navigátor','Navigator'],
- engineer:['Gépész','Engineer'],security:['Biztonsági tiszt','Security'],medic:['Orvos','Medic']};
- return (titles[position]||[position,position])[en?1:0];
+import { useCallback, useEffect, useRef, useState } from "react";
+import { supabase } from "./lib/supabase";
+import { notify } from "./lib/toast";
+import "./cantina.css";
+import { crewAssetUrl } from "./lib/crewPresentation";
+import { itemRarity } from "./lib/itemPresentation";
+export type CrewMember = {
+  id: string;
+  position: string;
+  name: string;
+  specialty?: string | null;
+  aptitude?: number;
+  species_slug?: string | null;
+  portrait_path?: string | null;
+  rarity?: string | null;
+  class_id?: string | null;
+};
+type Applicant = {
+  id: string;
+  name: string;
+  specialty: string;
+  aptitude: number;
+  species_slug: string;
+  portrait_path: string | null;
+  rarity: string;
+  biography?: Record<string, { name: string; description: string }>;
+};
+type Roster = {
+  candidates: Applicant[];
+  expires_at: string;
+  hire_energy_cost: number;
+  replace_energy_cost: number;
+};
+export const CREW_POSITIONS = [
+  "pilot",
+  "navigator",
+  "engineer",
+  "security",
+  "medic",
+] as const;
+export function crewPositionName(position: string, en: boolean) {
+  const titles: Record<string, [string, string]> = {
+    pilot: ["Pilóta", "Pilot"],
+    navigator: ["Navigátor", "Navigator"],
+    engineer: ["Gépész", "Engineer"],
+    security: ["Biztonsági tiszt", "Security"],
+    medic: ["Orvos", "Medic"],
+  };
+  return (titles[position] || [position, position])[en ? 1 : 0];
 }
-export default function Cantina({locale,atStation,crew,energy,onChanged}:{
- locale:string;atStation:boolean;crew:CrewMember[];energy:number;onChanged:()=>Promise<void>
-}){
- const en=locale==='en',tr=(hu:string,english:string)=>en?english:hu;
- const [roster,setRoster]=useState<Roster|null>(null),[busy,setBusy]=useState(false);
- const [positions,setPositions]=useState<Record<string,string>>({});
- const [confirm,setConfirm]=useState<Applicant|null>(null);
- async function load(){
-  if(!atStation){setRoster(null);return;}
-  const r=await supabase.rpc('get_cantina_roster');
-  if(r.error)notify(r.error.message,'error');
-  else setRoster(r.data as Roster);
- }
- useEffect(()=>{void load();},[atStation]);
- const position=(a:Applicant)=>positions[a.id]||a.specialty;
- const replace=(a:Applicant)=>crew.find(c=>c.position===position(a));
- const price=(a:Applicant)=>replace(a)?(roster?.replace_energy_cost||25):(roster?.hire_energy_cost||20);
- async function hire(a:Applicant){
-  if(!atStation||busy||energy<price(a))return;
-  setBusy(true);setConfirm(null);
-  const slot=position(a);
-  const r=await supabase.rpc('hire_cantina_candidate',{p_candidate:a.id,p_position:slot});
-  if(r.error)notify(r.error.message,'error');
-  else{
-   const data=r.data as {name:string;replaced:string|null;energy_spent:number};
-   notify(data.replaced?tr(data.replaced+' helyére '+data.name+' érkezett.','Replaced '+data.replaced+' with '+data.name+'.'):
-    tr(data.name+' csatlakozott a legénységhez.',data.name+' joined your crew.'),'success');
-   await onChanged();await load();
+export default function Cantina({
+  locale,
+  atStation,
+  crew,
+  energy,
+  onChanged,
+}: {
+  locale: string;
+  atStation: boolean;
+  crew: CrewMember[];
+  energy: number;
+  onChanged: () => Promise<void>;
+}) {
+  const en = locale === "en",
+    tr = (hu: string, eng: string) => (en ? eng : hu);
+  const [roster, setRoster] = useState<Roster | null>(null),
+    [busy, setBusy] = useState(false),
+    [error, setError] = useState("");
+  const loading = useRef(0),
+    mutation = useRef(false);
+  const load = useCallback(async () => {
+    const ticket = ++loading.current;
+    if (!atStation) {
+      setRoster(null);
+      return;
+    }
+    const r = await supabase.rpc("get_cantina_roster");
+    if (ticket !== loading.current) return;
+    if (r.error) setError(r.error.message);
+    else {
+      setError("");
+      setRoster(r.data as Roster);
+    }
+  }, [atStation]);
+  useEffect(() => {
+    void load();
+    return () => {
+      loading.current++;
+    };
+  }, [load]);
+  const cost = roster?.hire_energy_cost || 20;
+  const errors: Record<string, string> = {
+    "Crew roster full": tr(
+      "A legénységi névsor megtelt (24 tag).",
+      "Crew roster is full (24 members).",
+    ),
+    "Unique crew limit reached": tr(
+      "Ebből az egyedi karakterből már eléred a megengedett példányszámot.",
+      "You already own the maximum number of this unique crew member.",
+    ),
+    "Insufficient energy": tr("Nincs elég energia.", "Insufficient energy."),
+    "Candidate not available": tr(
+      "A jelentkező már nem érhető el. Frissítsd a kínálatot.",
+      "This applicant is no longer available. Refresh the roster.",
+    ),
+    "No recruitable crew templates available": tr(
+      "Jelenleg nincs elérhető toborzási sablon.",
+      "No recruitable crew templates are currently available.",
+    ),
+  };
+  async function hire(a: Applicant) {
+    if (!atStation || mutation.current || energy < cost) return;
+    mutation.current = true;
+    setBusy(true);
+    try {
+      const r = await supabase.rpc("hire_cantina_candidate", {
+        p_candidate: a.id,
+        p_position: a.specialty,
+      });
+      if (r.error) throw new Error(errors[r.error.message] || r.error.message);
+      notify(
+        r.data.name +
+          tr(
+            " csatlakozott a tartalék legénységhez.",
+            " joined the reserve crew.",
+          ),
+        "success",
+      );
+      await Promise.all([onChanged(), load()]);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : String(e), "error");
+    } finally {
+      setBusy(false);
+      mutation.current = false;
+    }
   }
-  setBusy(false);
- }
- return <section className="cantina-root">
-  {!atStation?<div className="cantina-away"><strong>{tr('A kantin csak a Határvidéki állomáson érhető el.','The cantina is only available at Frontier Station.')}</strong><p>{tr('Utazz vissza az állomásra, hogy új legénységi tagokat toborozz.','Travel back to the station to recruit crew.')}</p></div>:<>
-   <header className="cantina-summary"><span>{tr('JELENTKEZŐK','APPLICANTS')}: {roster?.candidates.length||0} / 3–5</span><span>{roster?.expires_at?tr('Kínálat frissül','Roster refreshes')+': '+new Date(roster.expires_at).toLocaleString(en?'en-GB':'hu-HU'):tr('Kínálat betöltése...','Loading applicants...')}</span></header>
-   <div className="cantina-candidates">{roster?.candidates.map(a=>{
-    const slot=position(a),old=replace(a),cost=price(a);
-    return <article className="cantina-candidate" key={a.id}>
-     <div className="cantina-picture">{a.portrait_path?<img alt="" src={'https://assets.voidnoir.net/'+a.portrait_path}/>:<span>✦</span>}</div>
-     <div className="cantina-identity"><strong>{a.name}</strong><small>{a.species_slug} · {crewPositionName(a.specialty,en)}</small></div>
-     <div className="cantina-ability"><span>{tr('Szaktudás','Aptitude')}</span><strong>{'◆'.repeat(a.aptitude)}{'◇'.repeat(5-a.aptitude)}</strong></div>
-     <label>{tr('Beosztás','Position')}<select value={slot} onChange={e=>setPositions(x=>({...x,[a.id]:e.target.value}))}>{CREW_POSITIONS.map(p=><option key={p} value={p}>{crewPositionName(p,en)}</option>)}</select></label>
-     <button type="button" disabled={busy||energy<cost} onClick={()=>old?setConfirm(a):void hire(a)}>
-      {old?tr('CSERE','REPLACE'):tr('FELVÉTEL','HIRE')} · ⚡ {cost}
-     </button>
-    </article>
-   })}</div>
-   <div className="cantina-crew"><strong>{tr('JELENLEGI LEGÉNYSÉG','CURRENT CREW')}</strong><div>{CREW_POSITIONS.map(slot=>{const member=crew.find(c=>c.position===slot);return <span key={slot}>{crewPositionName(slot,en)}: <b>{member?.name||'—'}</b></span>})}</div></div>
-  </>}
-  {confirm&&<div className="cmd-modal-bg"><div className="cmd-modal" role="dialog" aria-modal="true">
-   <h3>{tr('LEGÉNYSÉGI TAG CSERÉJE','REPLACE CREW MEMBER')}</h3>
-   <p>{tr((replace(confirm)?.name||'')+' helyére '+confirm.name+' kerül a '+crewPositionName(position(confirm),en)+' beosztásban. A régi tag távozik.','Replace '+(replace(confirm)?.name||'')+' with '+confirm.name+' in the '+crewPositionName(position(confirm),en)+' position. The old member departs.')}</p>
-   <div><button type="button" onClick={()=>setConfirm(null)}>{tr('Mégse','Cancel')}</button><button type="button" disabled={busy||energy<price(confirm)} onClick={()=>void hire(confirm)}>{tr('Csere megerősítése','Confirm replacement')} · ⚡ {price(confirm)}</button></div>
-  </div></div>}
- </section>;
+  return (
+    <section className="cantina-root">
+      {!atStation ? (
+        <div className="cantina-away">
+          <strong>
+            {tr(
+              "A kantin a Határvidéki állomáson érhető el.",
+              "The cantina is available at Frontier Station.",
+            )}
+          </strong>
+        </div>
+      ) : (
+        <>
+          <header className="cantina-summary">
+            <span>
+              {tr("JELENTKEZŐK", "APPLICANTS")}:{" "}
+              {roster?.candidates.length || 0} · {tr("LEGÉNYSÉG", "CREW")}:{" "}
+              {crew.length} / 24
+            </span>
+            <span>
+              {roster?.expires_at
+                ? tr("Frissül", "Refreshes") +
+                  ": " +
+                  new Date(roster.expires_at).toLocaleString(
+                    en ? "en-GB" : "hu-HU",
+                  )
+                : tr("Betöltés…", "Loading…")}
+            </span>
+            <button disabled={busy} onClick={() => void load()}>
+              {tr("Frissítés", "Refresh")}
+            </button>
+          </header>
+          {error && (
+            <p className="cantina-error" role="alert">
+              {errors[error] || error}
+            </p>
+          )}
+          <div className="cantina-candidates">
+            {roster?.candidates.map((a) => (
+              <article className={"cantina-candidate " + a.rarity} key={a.id}>
+                <div className="cantina-picture">
+                  {crewAssetUrl(a.portrait_path) && (
+                    <img alt="" src={crewAssetUrl(a.portrait_path)} />
+                  )}
+                </div>
+                <div className="cantina-identity">
+                  <strong>{a.name}</strong>
+                  <small>
+                    {a.species_slug} · {crewPositionName(a.specialty, en)}
+                  </small>
+                  <small>{itemRarity(a.rarity || "common", locale)}</small>
+                </div>
+                <div className="cantina-ability">
+                  <span>{tr("Jártasság", "Aptitude")}</span>
+                  <strong>
+                    {"◆".repeat(a.aptitude)}
+                    {"◇".repeat(5 - a.aptitude)}
+                  </strong>
+                </div>
+                <p className="cantina-biography">
+                  {a.biography?.[locale]?.description ||
+                    a.biography?.hu?.description}
+                </p>
+                <button
+                  type="button"
+                  disabled={busy || energy < cost || crew.length >= 24}
+                  onClick={() => void hire(a)}
+                >
+                  {tr("FELVÉTEL", "HIRE")} · ⚡ {cost}
+                </button>
+              </article>
+            ))}
+          </div>
+          <div className="cantina-crew">
+            <strong>
+              {tr(
+                "A felvett tagokat a Hajó képernyőn húzhatod állásba.",
+                "Drag recruited crew into a station on the Ship screen.",
+              )}
+            </strong>
+            <p>
+              {tr(
+                "A névsorban több azonos szakterületű tag is tartható.",
+                "The roster can hold several crew members with the same specialty.",
+              )}
+            </p>
+          </div>
+        </>
+      )}
+    </section>
+  );
 }
