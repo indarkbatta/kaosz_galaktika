@@ -7,8 +7,8 @@ export function ItemStatGrid({item,locale}:{item:ItemCatalogEntry;locale:string}
   <div key={stat.label}><dt>{stat.label}</dt><dd>{stat.value}</dd></div>)}</dl>;
 }
 
-export function ItemHoverTooltip({item,locale,quantity,equipped,x,y}:{
- item:ItemCatalogEntry;locale:string;quantity?:number;equipped?:boolean;x:number;y:number
+export function ItemHoverTooltip({item,locale,quantity,equipped,storage,x,y}:{
+ item:ItemCatalogEntry;locale:string;quantity?:number;equipped?:boolean;storage?:'cargo'|'personal';x:number;y:number
 }){
  const en=locale==='en',image=itemAssetUrl(item.image_path);
  const description=itemDescription(item,locale);
@@ -21,6 +21,6 @@ export function ItemHoverTooltip({item,locale,quantity,equipped,x,y}:{
   {description&&<p className="hv-tooltip-description">{description}</p>}
   <ItemStatGrid item={item} locale={locale}/>
   <footer>{equipped?(en?'Currently equipped':'Jelenleg felszerelve'):
-    (en?'In cargo':'Raktérben')+': '+(quantity??0)}</footer>
+    (storage==='personal'?(en?'In backpack':'Hátizsákban'):(en?'In cargo':'Raktérben'))+': '+(quantity??0)}</footer>
  </aside>,document.body);
 }

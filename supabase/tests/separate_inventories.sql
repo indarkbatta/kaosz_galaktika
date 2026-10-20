@@ -1,0 +1,88 @@
+-- Rollback-only regression through real player RPCs; no existing player's stock is touched.
+begin;
+do $test$
+declare u uuid:=gen_random_uuid();sid uuid:=gen_random_uuid();source_ship uuid;cid uuid;species uuid;class_id uuid;skill uuid;
+ other_user uuid:=gen_random_uuid();other_cid uuid;bag uuid;ids uuid[];it uuid;packet jsonb;n integer;before_qty bigint;
+begin
+ insert into auth.users(id,email,raw_user_meta_data) values(u,'separate-storage-'||u||'@example.invalid','{}');
+ select id into source_ship from public.game_starter_ships where slug='sparrow';
+ insert into public.game_starter_ships(id,slug,hull,cargo,speed,is_published) select sid,'storage_test_'||replace(u::text,'-',''),hull,8,speed,true from public.game_starter_ships where id=source_ship;
+ insert into public.game_ship_slots select sid,slot_key,kind,module_kind,crew_role,size,min_aptitude,required,sort_order,name_hu,name_en from public.game_ship_slots where ship_id=source_ship;
+ select id into species from public.game_species where is_published order by slug limit 1;
+ select id into class_id from public.game_classes where is_published order by slug limit 1;
+ select id into skill from public.game_skills order by slug limit 1;
+ select id into bag from public.game_items where slug='captain_backpack';
+ select array_agg(id) into ids from(select id from public.game_items where id<>bag and is_published order by slug limit 7)x;
+ perform set_config('request.jwt.claim.sub',u::text,true);
+ execute 'set local role authenticated';
+ cid:=public.create_captain('Storage regression',species,class_id,sid,'{"body":6}',jsonb_build_object(skill::text,6));
+ packet:=public.get_storage_inventory();
+ if(packet->>'personal_capacity')::integer<>6 or(packet->>'cargo_capacity')::integer<>8 then raise exception 'Base capacities incorrect';end if;
+ execute 'set local role postgres';
+ delete from public.character_inventory where character_id=cid;
+ insert into public.character_inventory(character_id,item_id,quantity) values(cid,bag,1);
+ foreach it in array ids loop insert into public.character_inventory(character_id,item_id,quantity) values(cid,it,10);end loop;
+ execute 'set local role authenticated';
+ for n in 1..6 loop perform public.move_storage_item(ids[n],10,'personal');end loop;
+ begin perform public.move_storage_item(ids[7],10,'personal');raise exception 'TEST: seventh base slot allowed';
+ exception when raise_exception then if sqlerrm<>'Personal inventory capacity exceeded' then raise;end if;end;
+ if(select quantity from public.character_inventory where character_id=cid and item_id=ids[7])<>10 then raise exception 'Rejected move lost stock';end if;
+ perform public.set_equipment('backpack',bag,null);
+ packet:=public.get_storage_inventory();
+ if(packet->>'personal_capacity')::integer<>18 or(packet->>'cargo_capacity')::integer<>8 then raise exception 'Backpack expanded wrong inventory';end if;
+ perform public.move_storage_item(ids[7],10,'personal');
+ begin perform public.set_equipment_from_storage('backpack',null,null,'cargo');raise exception 'TEST: overfilled backpack removed';
+ exception when raise_exception then if sqlerrm<>'Personal inventory capacity exceeded' then raise;end if;end;
+ if not exists(select 1 from public.character_equipment where character_id=cid and slot='backpack' and item_id=bag) then raise exception 'Rejected removal lost backpack';end if;
+ -- Removing a bag bonus in the editor is also protected at the transaction boundary.
+ execute 'set local role postgres';
+ begin
+  update public.game_items set capacity_bonus=0 where id=bag;
+  set constraints backpack_catalog_storage_capacity immediate;
+  raise exception 'TEST: occupied backpack bonus reduced';
+ exception when raise_exception then if sqlerrm<>'Personal inventory capacity exceeded' then raise;end if;end;
+ execute 'set local role authenticated';
+ perform public.move_storage_item(ids[7],10,'cargo');
+ perform public.set_equipment_from_storage('backpack',null,null,'cargo');
+ if(public.get_storage_inventory()->>'personal_capacity')::integer<>6 then raise exception 'Backpack capacity did not reset';end if;
+ perform public.move_storage_item(ids[1],3,'cargo');perform public.move_storage_item(ids[1],1,'personal');
+ if(select quantity from public.character_personal_inventory where character_id=cid and item_id=ids[1])<>8 then raise exception 'Partial stack transfer wrong';end if;
+ begin perform public.move_storage_item(ids[1],100,'cargo');raise exception 'TEST: unavailable quantity moved';
+ exception when raise_exception then if sqlerrm<>'Not enough item stock' then raise;end if;end;
+ foreach it in array ids loop
+  select quantity into before_qty from public.character_personal_inventory where character_id=cid and item_id=it;
+  if coalesce(before_qty,0)>0 then perform public.move_storage_item(it,before_qty,'cargo');end if;
+ end loop;
+ perform public.move_storage_item(bag,1,'personal');
+ perform public.set_equipment_from_storage('backpack',bag,null,'personal');
+ if(public.get_storage_inventory()->>'personal_capacity')::integer<>18 then raise exception 'Equip from personal failed';end if;
+ perform public.set_equipment_from_storage('backpack',null,null,'personal');
+ if not exists(select 1 from public.character_personal_inventory where character_id=cid and item_id=bag and quantity=1) then raise exception 'Unequip into personal failed';end if;
+ perform public.set_equipment_from_storage('backpack',bag,null,'personal');
+ perform public.set_equipment_from_storage('backpack',null,null,'cargo');
+ if(select count(*) from public.character_inventory where character_id=cid and quantity>0)<>8 then raise exception 'Final cargo stack count wrong';end if;
+ if(select sum(quantity) from public.character_inventory where character_id=cid and item_id=any(ids))<>70 then raise exception 'Transfer duplicated/lost items';end if;
+ begin insert into public.character_personal_inventory values(cid,ids[1],1,now());raise exception 'TEST: direct player mutation allowed';exception when insufficient_privilege then null;end;
+ execute 'set local role postgres';
+ begin
+  update public.game_starter_ships set cargo=7 where id=sid;
+  set constraints ship_catalog_storage_capacity immediate;
+  raise exception 'TEST: occupied cargo reduced';
+ exception when raise_exception then if sqlerrm<>'Ship cargo capacity exceeded' then raise;end if;end;
+ insert into auth.users(id,email,raw_user_meta_data) values(other_user,'storage-owner-'||other_user||'@example.invalid','{}');
+ perform set_config('request.jwt.claim.sub',other_user::text,true);
+ execute 'set local role authenticated';
+ other_cid:=public.create_captain('Other storage owner',species,class_id,sid,'{"body":6}',jsonb_build_object(skill::text,6));
+ execute 'set local role postgres';
+ insert into public.character_personal_inventory(character_id,item_id,quantity) values(other_cid,ids[1],1);
+ perform set_config('request.jwt.claim.sub',u::text,true);
+ execute 'set local role authenticated';
+ if exists(select 1 from public.character_personal_inventory where character_id=other_cid) then raise exception 'Other owner inventory visible';end if;
+ if jsonb_array_length(public.get_storage_inventory()->'personal')<>0 then raise exception 'Other owner stock leaked via RPC';end if;
+ begin perform public.move_storage_item(ids[1],1,'cargo');raise exception 'TEST: foreign personal stock moved';
+ exception when raise_exception then if sqlerrm<>'Not enough item stock' then raise;end if;end;
+ execute 'set local role postgres';
+ set constraints all immediate;
+ if has_function_privilege('anon','public.move_storage_item(uuid,bigint,text)','execute') then raise exception 'Anonymous transfer allowed';end if;
+end $test$;
+rollback;

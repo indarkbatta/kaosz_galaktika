@@ -37,6 +37,6 @@ export function itemStatRows(item:ItemCatalogEntry,locale:string){
    value:item.equip_owner==='crew'?tr('Legénység','Crew'):tr('Kapitány','Captain')});
  }
  if(item.equip_slot)rows.push({label:tr('Felszerelési hely','Equipment slot'),value:itemSlot(item.equip_slot,locale)});
- if((item.capacity_bonus||0)>0)rows.push({label:tr('Tárhelybónusz','Cargo bonus'),value:'+'+item.capacity_bonus});
+ if((item.capacity_bonus||0)>0)rows.push({label:tr('Hátizsákbónusz','Backpack bonus'),value:'+'+item.capacity_bonus});
  return rows;
 }
