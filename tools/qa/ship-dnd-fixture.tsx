@@ -1,7 +1,7 @@
 import {createRoot} from "react-dom/client";
 import ShipLoadout from "../../src/ShipLoadout";
 const module = (id, kind, quantity) => ({
-  item_id:id, slug:id, image_path:null, rarity:"common", module_kind:kind,
+  item_id:id, slug:id, image_path:"hatarvilag/qa/"+id+".webp", rarity:"common", module_kind:kind,
   size:1, quantity, is_published:true, power_draw:0, power_output:0,
   hull_bonus:0, shield_bonus:0, damage_bonus:0, speed_bonus:0, cargo_bonus:0,
   translations:[{locale:"en",name:id,description:""}],
@@ -16,7 +16,7 @@ window.__snapshot={
   ship_id:"fixture",
   stats:{hull:100,shield:0,damage:0,speed:1,cargo:50,power_draw:0,power_output:10,missing_required:0,ready:true},
   modules:[module("engine","engine",0),module("shield","shield",0)],
-  crew:[{id:"mara",name:"Mara",specialty:"pilot",aptitude:4,rarity:"rare",portrait_path:null}],
+  crew:[{id:"mara",name:"Mara",specialty:"pilot",aptitude:4,rarity:"rare",portrait_path:"hatarvilag/qa/mara.webp"}],
   slots:[
     slot("Engine A","module","engine",null,"engine",null),
     slot("Engine B","module","engine",null,null,null),

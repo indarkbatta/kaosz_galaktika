@@ -51,10 +51,15 @@ async function ready(page){
     for(const type of ["dragstart","dragenter","dragover","drop","dragend"]){
       document.addEventListener(type,event=>{
         const target=event.target.closest?.("button,section")?.getAttribute("aria-label")||event.target.className;
-        queueMicrotask(()=>window.__dragEvents.push({type,target,prevented:event.defaultPrevented,types:[...event.dataTransfer.types],effect:event.dataTransfer.dropEffect}));
+        const types=[...(event.dataTransfer?.types||[])],effect=event.dataTransfer?.dropEffect;
+        queueMicrotask(()=>window.__dragEvents.push({type,target,prevented:event.defaultPrevented,types,effect}));
       },true);
     }
   });
+  await page.route("https://assets.voidnoir.net/**",route=>route.fulfill({
+    contentType:"image/svg+xml",
+    body:'<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#285"/></svg>',
+  }));
   await page.goto(url);
   await page.getByRole("button",{name:"Engine A: engine",exact:true}).waitFor();
 }
@@ -149,6 +154,16 @@ for(const [browserName,browserType] of [["chromium",chromium],["firefox",firefox
       {rpc:"set_ship_module",args:{p_slot:"Engine A",p_item:null}});
     await station("Engine A: engine").waitFor();
     assert.equal(await page.locator(".sh-stock-panel.compatible").count(),0);
+    // The non-form drag surface retains Enter/Space keyboard activation.
+    await page.evaluate(()=>{window.__reject=false});
+    await station("Shield: Empty").focus();
+    await page.keyboard.press("Enter");
+    const beforeKeyboard=await callCount(page);
+    await cargo.getByRole("button",{name:"shield ×1",exact:true}).focus();
+    await page.keyboard.press("Space");
+    await page.waitForFunction(n=>window.__calls.length===n+1,beforeKeyboard);
+    await idle(page);
+    await station("Shield: shield").waitFor();
     assert.deepEqual(errors,[]);
     await page.screenshot({path:join(scratch,browserName+".png")});
     console.log(browserName+": PASS");
