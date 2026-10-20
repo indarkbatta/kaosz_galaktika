@@ -170,16 +170,17 @@ for(const [browserName,browserType] of [["chromium",chromium],["firefox",firefox
     reports.push(browserName+": PASS native module/crew return to empty and occupied cells, equip, move, panel return, invalid/cancel, server rejection");
   }finally{await browser.close()}
 }
-// Demonstrate that the regression specifically catches the old disabled-empty-cell bug.
+// Reproduce the original Firefox failure with the exact pre-fix component.
 html=await bundle(true);
-const browser=await chromium.launch({headless:true});
+const browser=await firefox.launch({headless:true});
 try{
   const page=await browser.newPage({viewport:{width:1450,height:900}});
   await ready(page);
   const target=page.getByRole("button",{name:"Empty module slot",exact:true}).first();
   assert.equal(await target.isDisabled(),true,"baseline has a disabled empty target");
   await nativeDrag(page,page.getByRole("button",{name:"Engine A: engine",exact:true}),target);
-  assert.equal(await callCount(page),0,"baseline native drop on empty cell is lost");
-  reports.push("baseline: REPRODUCED lost drop on disabled empty cargo cell");
+  assert.equal(await callCount(page),0,"original Firefox button drag never reaches the RPC");
+  assert.equal(await page.evaluate(()=>window.__dragEvents.some(e=>e.type==="dragstart")),false);
+  reports.push("baseline Firefox: REPRODUCED missing dragstart on original form-control slot");
 }finally{await browser.close();await new Promise(r=>server.close(r));await rm(scratch,{recursive:true,force:true})}
 reports.forEach(line=>console.log(line));
