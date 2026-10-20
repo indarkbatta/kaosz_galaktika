@@ -1,10 +1,11 @@
-export type EditorSection='species'|'classes'|'skills'|'gameplay'|'sector'|'items'|'crew'|'ships';
+export type EditorSection='species'|'classes'|'skills'|'gameplay'|'galaxy'|'sector'|'items'|'crew'|'ships';
 const sections:{id:EditorSection;icon:string;hu:string;en:string}[]=[
 {id:'species',icon:'◈',hu:'Fajok',en:'Species'},
 {id:'classes',icon:'✥',hu:'Kasztok',en:'Classes'},
 {id:'skills',icon:'✧',hu:'Képességek',en:'Skills'},
 {id:'gameplay',icon:'⚙',hu:'Akciók és szabályok',en:'Actions & rules'},
-{id:'sector',icon:'✦',hu:'Szektorok',en:'Sectors'},
+{id:'galaxy',icon:'◉',hu:'Galaxis és kvadránsok',en:'Galaxy & quadrants'},
+{id:'sector',icon:'✦',hu:'Helyszínek',en:'Locations'},
 {id:'items',icon:'⚒',hu:'Tárgyak',en:'Items'},
 {id:'crew',icon:'♟',hu:'Legénység',en:'Crew'},
 {id:'ships',icon:'◇',hu:'Hajók',en:'Ships'}];
