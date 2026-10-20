@@ -7,7 +7,7 @@ import {
 } from "react";
 import { supabase } from "./lib/supabase";
 import { notify } from "./lib/toast";
-import { EditorFrame, EditorTabs } from "./components/EditorTemplate";
+import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from "./components/EditorTemplate";
 import { EditorNavigation, type EditorSection } from "./components/EditorNavigation";
 import { crewPositionName } from "./Cantina";
 import {
@@ -363,10 +363,10 @@ export default function CrewEditor({
     <EditorFrame>
       <EditorNavigation locale={locale} active="crew" onBack={() => navigate(onBack)}
        onSelect={section => navigate(() => onSectionSelect?.(section))}/>
-      <aside className="ed-roster ce-roster">
+      <EditorRoster className="ce-roster">
         <header className="ed-roster-top">
           <strong>
-            {tr("KATALÓGUS", "CATALOG")} · {rows.length}
+            {tr("Legénység", "Crew")} · {rows.length}
           </strong>
           <button
             disabled={busy || loading}
@@ -377,19 +377,18 @@ export default function CrewEditor({
               })
             }
           >
-            + {tr("ÚJ", "NEW")}
+            ＋ {tr("Új", "New")}
           </button>
         </header>
-        <div className="ce-mode-tabs" role="group" aria-label={tr("Katalógustípus", "Catalog type")}>
-          {(["named", "generated", "set"] as Mode[]).map(m => (
-            <button type="button" key={m} className={mode === m ? "active" : ""}
-              aria-pressed={mode === m} disabled={busy} onClick={() => switchMode(m)}>
-              {m === "named" ? tr("Egyedi", "Named") : m === "generated" ? tr("Sablonok", "Templates") : tr("Portrék", "Portraits")}
-            </button>
-          ))}
-        </div>
+        <EditorTabs variant="catalog" label={tr("Katalógustípus","Catalog type")}
+          selected={mode} onSelect={id=>{if(!busy)switchMode(id as Mode);}}
+          items={[
+            {id:"named",name:tr("Egyedi","Named")},
+            {id:"generated",name:tr("Sablonok","Templates")},
+            {id:"set",name:tr("Portrék","Portraits")}
+          ]}/>
         <input
-          className="ce-search"
+          className="ed-roster-search"
           aria-label={tr("Keresés", "Search")}
           placeholder={tr("Keresés…", "Search…")}
           value={search}
@@ -398,7 +397,7 @@ export default function CrewEditor({
             setPage(0);
           }}
         />
-        <div className="ce-list">
+        <div className="ed-roster-list ce-list">
           {rows.slice(safePage * 5, safePage * 5 + 5).map((r) => {
             const path =
               r.portrait_path ||
@@ -447,7 +446,7 @@ export default function CrewEditor({
             </p>
           )}
         </div>
-        <div className="ce-pager">
+        <div className="ed-pager">
           <button disabled={!safePage} onClick={() => setPage(safePage - 1)}>
             ‹
           </button>
@@ -462,7 +461,7 @@ export default function CrewEditor({
           </button>
         </div>
         <button
-          className="ce-clone"
+          className="ed-roster-action"
           disabled={!draft.id || busy}
           onClick={() =>
             navigate(() => {
@@ -479,14 +478,12 @@ export default function CrewEditor({
         >
           {tr("MÁSOLAT KÉSZÍTÉSE", "DUPLICATE")}
         </button>
-      </aside>
+      </EditorRoster>
       <section className="ed-editor ce-editor">
-        <header className="ed-editor-head">
-          <strong>{tr("LEGÉNYSÉGSZERKESZTŐ", "CREW EDITOR")}</strong>
-          <span>
-            {draft.id ? label(draft) : tr("Új bejegyzés", "New record")}
-          </span>
-        </header>
+        <EditorHeader>
+          <strong>{draft.id ? label(draft) : tr("Új bejegyzés", "New record")}</strong>
+          <span>{tr("Legénység", "Crew")}</span>
+        </EditorHeader>
         <EditorTabs
           label={tr("Legénységszerkesztő fülek", "Crew editor tabs")}
           selected={tab}
@@ -503,7 +500,7 @@ export default function CrewEditor({
           ]}
         />
         {error && (
-          <div className="ce-error" role="alert">
+          <div className="ed-feedback ed-error ce-error" role="alert">
             {error}
             <button
               disabled={busy}
@@ -523,8 +520,8 @@ export default function CrewEditor({
             </button>
           </div>
         )}
-        <form id="crew-editor-form" className="ce-form" onSubmit={save}>
-          <fieldset disabled={busy || loading} className="ce-fields">
+        <form id="crew-editor-form" className="ed-form ce-form" onSubmit={save}>
+          <fieldset disabled={busy || loading} className="ed-form-fields ce-fields">
             <div className="ce-inputs">
               {tab === "general" && (
                 <>
@@ -582,7 +579,7 @@ export default function CrewEditor({
                       />
                     </label>
                   )}
-                  <div className="ce-two">
+                  <div className="ed-two-fields">
                     {optionSelect(
                       "species_id",
                       tr("Faj", "Species"),
@@ -596,7 +593,7 @@ export default function CrewEditor({
                   </div>
                   {mode !== "set" && (
                     <>
-                      <div className="ce-two">
+                      <div className="ed-two-fields">
                         <label>
                           {tr("Szakterület", "Specialty")}
                           <select
@@ -638,7 +635,7 @@ export default function CrewEditor({
                           ))}
                         </select>
                       </label>
-                      <p className="ce-help">
+                      <p className="ed-tab-help ce-help">
                         {tr(
                           "A faj és kaszt az identitás; a szakterület határozza meg a hajóállást.",
                           "Species and class define identity; specialty determines crew station compatibility.",
@@ -646,7 +643,7 @@ export default function CrewEditor({
                       </p>
                     </>
                   )}
-                  <label className="ce-check">
+                  <label className="ed-checkbox ce-check">
                     <input
                       type="checkbox"
                       checked={draft.is_published}
@@ -683,7 +680,7 @@ export default function CrewEditor({
                           }}
                         />
                       </label>
-                      <p className="ce-help">
+                      <p className="ed-tab-help ce-help">
                         {tr(
                           "A képek a meglévő R2 assettárból választhatók vagy útvonallal adhatók hozzá.",
                           "Choose existing R2 catalog artwork or add image paths.",
@@ -753,12 +750,12 @@ export default function CrewEditor({
                       </label>
                       <button
                         type="button"
-                        className="ce-secondary"
+                        className="ed-secondary-button"
                         onClick={() => patch({ portrait_path: null })}
                       >
                         {tr("Vissza a készlethez", "Use portrait set")}
                       </button>
-                      <p className="ce-help">
+                      <p className="ed-tab-help ce-help">
                         {tr(
                           "Faj + kaszt → faj → alapértelmezett portré. A toborzott tag portréja rögzül.",
                           "Species + class → species → default portrait. Recruited portraits are fixed.",
@@ -771,7 +768,7 @@ export default function CrewEditor({
               {tab === "bonuses" && (
                 <>
                   <h3>{tr("AKTÍV ÁLLÁSBÓNUSZOK", "ACTIVE STATION BONUSES")}</h3>
-                  <div className="ce-two">
+                  <div className="ed-two-fields">
                     {crewBonusKeys.map((k) => (
                       <label key={k}>
                         {crewBonusName(k, en)} +
@@ -787,7 +784,7 @@ export default function CrewEditor({
                       </label>
                     ))}
                   </div>
-                  <p className="ce-help">
+                  <p className="ed-tab-help ce-help">
                     {tr(
                       "A bónusz a hajóállásba helyezett tagnál érvényesül.",
                       "Bonuses apply when the crew member occupies a ship station.",
@@ -806,7 +803,7 @@ export default function CrewEditor({
                       </option>
                     </select>
                   </label>
-                  <div className="ce-two">
+                  <div className="ed-two-fields">
                     <label>
                       {tr("Megjelenési súly", "Appearance weight")}
                       <input
@@ -835,7 +832,7 @@ export default function CrewEditor({
                       />
                     </label>
                   </div>
-                  <p className="ce-help">
+                  <p className="ed-tab-help ce-help">
                     {tr(
                       "A ritkaság és a megjelenési súly külön beállítás. Eseményforrás nem kerül a kantin kínálatába.",
                       "Rarity and appearance weight are independent. Event sources do not enter the cantina pool.",
@@ -877,7 +874,7 @@ export default function CrewEditor({
                       }
                     />
                   </label>
-                  <p className="ce-help">
+                  <p className="ed-tab-help ce-help">
                     {tr(
                       "A magyar és angol név kötelező.",
                       "Hungarian and English names are required.",
@@ -947,7 +944,7 @@ export default function CrewEditor({
                 ))}
               </div>
               {pictures.length > 6 && (
-                <div className="ce-pager">
+                <div className="ed-pager">
                   <button
                     type="button"
                     disabled={!pp}
@@ -974,7 +971,7 @@ export default function CrewEditor({
                   {crewPositionName(draft.specialty, en)} · ◆{draft.aptitude}
                 </p>
               )}
-              <p className="ce-help">
+              <p className="ed-tab-help ce-help">
                 {tr(
                   "A már toborzott karakterek megőrzik a portréjukat és értékeiket.",
                   "Already recruited crew retain their portrait and stats.",
@@ -983,7 +980,7 @@ export default function CrewEditor({
             </aside>
           </fieldset>
         </form>
-        <footer className="ed-footer">
+        <EditorFooter>
           <span className={dirty ? "ed-unsaved" : "ed-fine"}>
             {dirty
               ? tr("● Nem mentett módosítások", "● Unsaved changes")
@@ -997,7 +994,7 @@ export default function CrewEditor({
           >
             {busy ? "…" : tr("MENTÉS", "SAVE")}
           </button>
-        </footer>
+        </EditorFooter>
       </section>
       {discard && (
         <div className="ed-modal-mask">

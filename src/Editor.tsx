@@ -2,7 +2,7 @@ import {useCallback,useEffect,useMemo,useRef,useState,type FormEvent} from 'reac
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './editor.css';
-import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {SkillArt} from './components/GameArt';
 
@@ -190,7 +190,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
  return <EditorFrame>
    <EditorNavigation locale={locale} active={kind} counts={counts} onBack={()=>navigate(onBack)}
    onSelect={section=>{if(section==='species'||section==='classes')chooseKind(section);else navigate(()=>onSectionSelect(section));}}/>
-   <aside className="ed-roster">
+   <EditorRoster>
      <div className="ed-roster-top"><strong>{kind==='species'?t('species'):t('classes')} ({records.length})</strong>
        <button type="button" onClick={createNew}>＋ {kind==='species'?t('newSpecies'):t('newClass')}</button>
      </div>
@@ -201,11 +201,11 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
          <span className={item.is_published?'ed-pub':'ed-draft'}>{item.is_published?'●':'○'}</span>
        </button>)}
      </div>
-   </aside>
+   </EditorRoster>
    <section className="ed-editor">
-     <header className="ed-editor-head"><strong>{form.id?form.translations[l]?.name||form.translations.hu?.name||form.slug:t('create')}</strong>
+     <EditorHeader><strong>{form.id?form.translations[l]?.name||form.translations.hu?.name||form.slug:t('create')}</strong>
        <span>{kind==='species'?t('species'):t('classes')}</span>
-     </header>
+     </EditorHeader>
      <EditorTabs label={t('title')} items={(['general','skills','dictionary'] as Tab[]).map(id=>({id,name:t(id)}))} selected={tab} onSelect={id=>setTab(id as Tab)}/>
 
      <form className="ed-form" id="ed-form" onSubmit={save}>
@@ -272,10 +272,10 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
          </div>
        </div>}
      </form>
-     <footer className="ed-footer"><span className={dirty?'ed-unsaved':'ed-fine'}>{dirty?'● '+t('edited'):'SPACE D6 FREE · HU / EN'}</span>
+     <EditorFooter><span className={dirty?'ed-unsaved':'ed-fine'}>{dirty?'● '+t('edited'):'SPACE D6 FREE · HU / EN'}</span>
        {form.id&&<button type="button" className="ed-danger" disabled={busy} onClick={()=>setModal('delete')}>{t('delete')}</button>}
        <button type="submit" form="ed-form" className="ed-submit" disabled={busy}>{busy?t('saving'):t('save')}</button>
-     </footer>
+     </EditorFooter>
    </section>
    {modal&&<div className="ed-modal-mask"><div className="ed-modal" role="dialog" aria-modal="true" aria-labelledby="ed-modal-title">
      <h3 id="ed-modal-title">{modal==='delete'?t('delete'):t('unsaved')}</h3><p>{modal==='delete'?t('confirmDelete'):t('confirmLeave')}</p>

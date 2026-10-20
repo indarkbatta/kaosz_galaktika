@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
-import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './skill-editor.css';
 import {SkillArt} from './components/GameArt';
@@ -77,7 +77,7 @@ export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:stri
  const curr={name:names[lang]?.name||'',description:names[lang]?.description||''};
  return <EditorFrame>
    <EditorNavigation locale={locale} active="skills" onBack={onBack} onSelect={onSectionSelect}/>
-   <aside className="ed-roster"><div className="ed-roster-top"><strong>{t.skills} ({items.length})</strong></div>
+   <EditorRoster><div className="ed-roster-top"><strong>{t.skills} ({items.length})</strong></div>
     <div className="ed-roster-list sk-roster">{loading?<p>{t.loading}</p>:group.map(g=><div key={g.attr} className="sk-group">
      <div className="sk-group-name">{l==='hu'?attrsHu[g.attr]:attrsEn[g.attr]}</div>
      {g.items.map(s=><button type="button" className={'ed-record '+(selected===s.id?'selected':'')} onClick={()=>{pick(s);setTab('skills');}} key={s.id}>
@@ -85,8 +85,8 @@ export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:stri
       <span className="ed-record-name"><strong>{trans(s)}</strong><small>{s.is_combat?t.combat:t.general}</small></span>
      </button>)}
     </div>)}</div>
-   </aside>
-   <section className="ed-editor"><header className="ed-editor-head"><strong>{tab==='rules'?t.rules:active?trans(active):t.skills}</strong><span>SPACE D6</span></header>
+   </EditorRoster>
+   <section className="ed-editor"><EditorHeader><strong>{tab==='rules'?t.rules:active?trans(active):t.skills}</strong><span>SPACE D6</span></EditorHeader>
     <EditorTabs label={t.title} selected={tab} onSelect={setTab} items={[{id:'skills',name:t.skills},{id:'rules',name:t.rules}]}/>
 
     <form className="ed-form" id="skills-editor-form" onSubmit={save}>
@@ -106,7 +106,7 @@ export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:stri
       {fields.map(field=><label key={field}>{t[field]}<input type="number" min={field==='base_attribute_pips'?3:field==='max_attribute_pips'?9:field==='max_allocated_skill_pips'?1:0} max={field==='base_attribute_pips'?9:field==='max_attribute_pips'?30:field==='max_allocated_skill_pips'?12:field==='free_attribute_pips'?24:30} value={rules[field]} onChange={e=>setRules(v=>({...v,[field]:Number(e.target.value)}))}/></label>)}
      </div>}
     </form>
-    <footer className="ed-footer"><span className="ed-fine">{t.title}</span><button disabled={busy||loading} type="submit" className="ed-submit" form="skills-editor-form">{t.save}</button></footer>
+    <EditorFooter><span className="ed-fine">{t.title}</span><button disabled={busy||loading} type="submit" className="ed-submit" form="skills-editor-form">{t.save}</button></EditorFooter>
    </section>
  </EditorFrame>;
 }

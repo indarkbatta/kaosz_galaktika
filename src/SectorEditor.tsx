@@ -1,7 +1,7 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
-import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './sector-editor.css';
 type Translation={locale:string;name:string;description:string};
@@ -70,14 +70,14 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
  }
  return <EditorFrame>
   <EditorNavigation locale={locale} active="sector" onBack={onBack} onSelect={onSectionSelect}/>
-  <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Helyszínek','Locations')} ({places.length})</strong><button type="button" onClick={newPlace}>+</button></div>
+  <EditorRoster><div className="ed-roster-top"><strong>{tr('Helyszínek','Locations')} ({places.length})</strong><button type="button" onClick={newPlace}>+</button></div>
    <div className="ed-roster-list">{places.map(p=><button type="button" key={p.id} className={'ed-record '+(draft.id===p.id?'selected':'')} onClick={()=>choose(p,routes,placements)}>
     <span className="ed-thumbnail ge-sector-symbol">{({station:'✦',wreck:'◇',planet:'●',anomaly:'◈'})[p.kind]}</span>
     <span className="ed-record-name"><strong>{label(p)}</strong><small>{p.slug}</small></span>
    </button>)}</div>
-  </aside>
+  </EditorRoster>
   <section className="ed-editor">
-   <header className="ed-editor-head"><strong>{draft.id?label(places.find(x=>x.id===draft.id)||draft):tr('Új helyszín','New location')}</strong><span>M4</span></header>
+   <EditorHeader><strong>{draft.id?label(places.find(x=>x.id===draft.id)||draft):tr('Új helyszín','New location')}</strong><span>M4</span></EditorHeader>
    <EditorTabs label="Sector Editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'dictionary',name:tr('Szótár','Dictionary')},{id:'routes',name:tr('Akciók / útvonalak','Actions / routes')}]}/>
 
    <form className="ed-form sector-editor-form" id="sector-editor-form" onSubmit={save}>
@@ -95,7 +95,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
       <label>⚡<input type="number" min="1" max="500" disabled={!link.enabled} value={link.cost} onChange={e=>setLinks(old=>({...old,[p.id]:{...link,cost:Number(e.target.value)}}))}/></label>
      </div>})}</div></>}
    </form>
-   <footer className="ed-footer"><span className="ed-fine">HU / EN · RLS</span><button type="submit" form="sector-editor-form" className="ed-submit" disabled={busy}>{tr('MENTÉS','SAVE')}</button></footer>
+   <EditorFooter><span className="ed-fine">HU / EN · RLS</span><button type="submit" form="sector-editor-form" className="ed-submit" disabled={busy}>{tr('MENTÉS','SAVE')}</button></EditorFooter>
   </section>
  </EditorFrame>;
 }

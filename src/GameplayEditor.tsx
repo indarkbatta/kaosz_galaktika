@@ -1,7 +1,7 @@
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
-import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {SkillArt} from './components/GameArt';
 import './gameplay-editor.css';
@@ -69,8 +69,8 @@ export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:s
  const na=(field:keyof Action,value:string|number|boolean)=>setEdit(prev=>prev?{...prev,[field]:value}:prev);
  return <EditorFrame>
   <EditorNavigation locale={locale} active="gameplay" onBack={onBack} onSelect={onSectionSelect}/>
-  <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Játékakciók','Game actions')} ({actions.length})</strong></div><div className="ed-roster-list">{actions.map(a=>{const s=skills.find(x=>x.id===a.skill_id);return <button type="button" className={'ed-record '+(chosen===a.id?'selected':'')} onClick={()=>{pick(a);setTab('actions');}} key={a.id}><span className="ed-thumbnail">{s&&<SkillArt slug={s.slug} path={s.icon_path}/>}</span><span className="ed-record-name"><strong>{localized(a)}</strong><small>⚡ {a.energy_cost} · TN {a.target_number}</small></span></button>})}</div></aside>
-  <section className="ed-editor"><header className="ed-editor-head"><strong>{tab==='balance'?tr('Játékszabályok','Game rules'):edit?localized(actions.find(a=>a.id===edit.id)||actions[0]):'—'}</strong><span>M2 / M3</span></header>
+  <EditorRoster><div className="ed-roster-top"><strong>{tr('Játékakciók','Game actions')} ({actions.length})</strong></div><div className="ed-roster-list">{actions.map(a=>{const s=skills.find(x=>x.id===a.skill_id);return <button type="button" className={'ed-record '+(chosen===a.id?'selected':'')} onClick={()=>{pick(a);setTab('actions');}} key={a.id}><span className="ed-thumbnail">{s&&<SkillArt slug={s.slug} path={s.icon_path}/>}</span><span className="ed-record-name"><strong>{localized(a)}</strong><small>⚡ {a.energy_cost} · TN {a.target_number}</small></span></button>})}</div></EditorRoster>
+  <section className="ed-editor"><EditorHeader><strong>{tab==='balance'?tr('Játékszabályok','Game rules'):edit?localized(actions.find(a=>a.id===edit.id)||actions[0]):'—'}</strong><span>M2 / M3</span></EditorHeader>
    <EditorTabs label="Gameplay Editor" selected={tab} onSelect={setTab} items={[{id:'actions',name:tr('Akciók és szótár','Actions & dictionary')},{id:'balance',name:tr('Energia és XP','Energy & XP')},{id:'loot',name:tr('Zsákmány','Loot')}]}/>
 
    <form className="ed-form ge-form" onSubmit={save} id="gameplay-form">
@@ -85,7 +85,7 @@ export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:s
       {([['name',tr('Akciónév','Action name')],['description',tr('Leírás','Description')],['success_message',tr('Siker szövege','Success text')],['failure_message',tr('Kudarc szövege','Failure text')]] as const).map(([key,label])=><label key={key}>{label} ({lang.toUpperCase()}){key==='name'?<input value={langValue[key]} onChange={e=>updateLang(key,e.target.value)}/>:<textarea rows={2} value={langValue[key]} onChange={e=>updateLang(key,e.target.value)}/>}</label>)}
      </>}
    </form>
-   <footer className="ed-footer"><span className="ed-fine">HU / EN</span><button className="ed-submit" type="submit" form="gameplay-form" disabled={busy}>{tr('MENTÉS','SAVE')}</button></footer>
+   <EditorFooter><span className="ed-fine">HU / EN</span><button className="ed-submit" type="submit" form="gameplay-form" disabled={busy}>{tr('MENTÉS','SAVE')}</button></EditorFooter>
   </section>
  </EditorFrame>;
 }
