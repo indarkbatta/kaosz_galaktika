@@ -4,10 +4,10 @@ import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './sector-editor.css';
-import WorldMapEditor from './WorldMapEditor';
+import WorldMapEditor,{type WorldMapRoute} from './WorldMapEditor';
 type Translation={locale:string;name:string;description:string};
 type Place={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';sector_id:string;x:number;y:number;is_published:boolean;game_locations_i18n:Translation[]};
-type Route={id:string;origin_id:string;destination_id:string;energy_cost:number};
+type Route=WorldMapRoute&{id:string};
 type Action={id:string;slug:string;game_actions_i18n:{locale:string;name:string}[]};
 type Local={code:string;native_name:string};
 type Link={enabled:boolean;cost:number};
@@ -114,6 +114,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
   </section>
   {mapOpen&&selectedSector&&<WorldMapEditor locale={locale} level="sector" parentId={selectedSector}
    parentName={locale==='en'?sectors.find(s=>s.id===selectedSector)?.name_en||'—':sectors.find(s=>s.id===selectedSector)?.name_hu||'—'}
+   routes={routes.filter(r=>places.some(p=>p.id===r.origin_id&&p.sector_id===selectedSector)&&places.some(p=>p.id===r.destination_id&&p.sector_id===selectedSector))}
    nodes={places.filter(p=>p.sector_id===selectedSector).map(p=>({id:p.id,slug:p.slug,x:p.x,y:p.y,
     name_hu:p.game_locations_i18n.find(t=>t.locale==='hu')?.name||p.slug,
     name_en:p.game_locations_i18n.find(t=>t.locale==='en')?.name||p.slug}))}
