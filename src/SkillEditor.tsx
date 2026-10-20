@@ -1,7 +1,8 @@
 import {useCallback,useEffect,useMemo,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
-import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
+import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './skill-editor.css';
 import {SkillArt} from './components/GameArt';
 type Attr='body'|'mind'|'soul'|'morale'|'social';
@@ -18,7 +19,7 @@ const tx={
  en:{title:'Skill Editor',back:'Back',skills:'Skills',rules:'Rules',description:'Skill description',name:'Name',icon:'R2 icon key',slot:'Assignment',combat:'Combat skill',general:'General skill',save:'Save',saved:'Saved.',error:'Could not save.',needNames:'Hungarian and English names are required.',iconError:'Only objects inside hatarvilag/skills/ are supported.',noIcon:'No icon',rulesIntro:'These settings control server-side initial captain generation.',base_attribute_pips:'Base attribute (pips)',free_attribute_pips:'Assignable attribute pips',max_attribute_pips:'Max attribute (pips)',free_skill_pips:'Assignable skill pips',max_allocated_skill_pips:'Max free pips per skill',fixed:'The 25 starting skill slots are fixed: each attribute has four general and one combat skill. Names, descriptions and icons are editable.',language:'Dictionary',preview:'Preview',loading:'Loading…'}
 };
 const fields:(Exclude<keyof Rules,'id'>)[]=['base_attribute_pips','free_attribute_pips','max_attribute_pips','free_skill_pips','max_allocated_skill_pips'];
-export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>void}){
+export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const l=locale==='en'?'en':'hu',t=tx[l];
  const [items,setItems]=useState<Skill[]>([]);
  const [allLocales,setAllLocales]=useState<Locale[]>([{code:'hu',native_name:'Magyar'},{code:'en',native_name:'English'}]);
@@ -75,12 +76,8 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
  };
  const curr={name:names[lang]?.name||'',description:names[lang]?.description||''};
  return <EditorFrame>
-   <nav className="ed-nav"><h2>{t.title}</h2><button type="button" onClick={onBack}>⌂　{t.back}</button>
-    <button type="button" className={tab==='skills'?'active':''} onClick={()=>setTab('skills')}>◈　{t.skills}</button>
-    <button type="button" className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>⚙　{t.rules}</button>
-    <div className="ed-nav-bottom">SPACE D6 FREE</div>
-   </nav>
-   <aside className="ed-roster"><div className="ed-roster-top"><strong>{t.skills} ({items.length})</strong></div>
+   <EditorNavigation locale={locale} active="skills" onBack={onBack} onSelect={onSectionSelect}/>
+   <EditorRoster><div className="ed-roster-top"><strong>{t.skills} ({items.length})</strong></div>
     <div className="ed-roster-list sk-roster">{loading?<p>{t.loading}</p>:group.map(g=><div key={g.attr} className="sk-group">
      <div className="sk-group-name">{l==='hu'?attrsHu[g.attr]:attrsEn[g.attr]}</div>
      {g.items.map(s=><button type="button" className={'ed-record '+(selected===s.id?'selected':'')} onClick={()=>{pick(s);setTab('skills');}} key={s.id}>
@@ -88,8 +85,8 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
       <span className="ed-record-name"><strong>{trans(s)}</strong><small>{s.is_combat?t.combat:t.general}</small></span>
      </button>)}
     </div>)}</div>
-   </aside>
-   <section className="ed-editor"><header className="ed-editor-head"><strong>{tab==='rules'?t.rules:active?trans(active):t.skills}</strong><span>SPACE D6</span></header>
+   </EditorRoster>
+   <section className="ed-editor"><EditorHeader><strong>{tab==='rules'?t.rules:active?trans(active):t.skills}</strong><span>SPACE D6</span></EditorHeader>
     <EditorTabs label={t.title} selected={tab} onSelect={setTab} items={[{id:'skills',name:t.skills},{id:'rules',name:t.rules}]}/>
 
     <form className="ed-form" id="skills-editor-form" onSubmit={save}>
@@ -109,7 +106,7 @@ export default function SkillEditor({locale,onBack}:{locale:string;onBack:()=>vo
       {fields.map(field=><label key={field}>{t[field]}<input type="number" min={field==='base_attribute_pips'?3:field==='max_attribute_pips'?9:field==='max_allocated_skill_pips'?1:0} max={field==='base_attribute_pips'?9:field==='max_attribute_pips'?30:field==='max_allocated_skill_pips'?12:field==='free_attribute_pips'?24:30} value={rules[field]} onChange={e=>setRules(v=>({...v,[field]:Number(e.target.value)}))}/></label>)}
      </div>}
     </form>
-    <footer className="ed-footer"><span className="ed-fine">{t.title}</span><button disabled={busy||loading} type="submit" className="ed-submit" form="skills-editor-form">{t.save}</button></footer>
+    <EditorFooter><span className="ed-fine">{t.title}</span><button disabled={busy||loading} type="submit" className="ed-submit" form="skills-editor-form">{t.save}</button></EditorFooter>
    </section>
  </EditorFrame>;
 }
