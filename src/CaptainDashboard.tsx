@@ -13,7 +13,7 @@ import './captain-dashboard.css';
 
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
 type Portrait={id:string;slug:string;image_path:string|null;game_species_i18n?:I18n[];game_classes_i18n?:I18n[]};
-type Ship={id:string;slug:string;hull:number;cargo:number;speed:number;game_starter_ships_i18n:I18n[]};
+type Ship={id:string;slug:string;image_path:string|null;hull:number;cargo:number;speed:number;game_starter_ships_i18n:I18n[]};
 type Skill={id:string;slug:string;attribute:string;icon_path:string|null;game_skills_i18n:I18n[]};
 type Action={id:string;slug:string;energy_cost:number;target_number:number;skill_id:string;game_actions_i18n:I18n[]};
 type Progress={level:number;xp_total:number;energy:number;energy_at:string;upgrade_points:number};
@@ -142,7 +142,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
    <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||100}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}><LucideZap width={15} height={15}/></button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||100))+'%'}}/></div><small>{energy===(rules?.energy_max||100)?tr('Feltöltve','Fully charged'):tr('Következő +1','Next +1')+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
    <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
-   <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||'vagabond'}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
+   <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||''} path={ship?.image_path}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>
   <main className="cmd-body">
    {tab==='bridge'&&<><div className="cmd-title"><h2>{tr('ELÉRHETŐ TEVÉKENYSÉGEK','AVAILABLE ACTIVITIES')}</h2><small>{hereName}</small></div>
@@ -162,7 +162,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     <div className="cmd-group-tabs">{attributes.map(a=><button className={group===a?'active':''} key={a} onClick={()=>setGroup(a)}>{attributeNames[lang][a]}</button>)}</div>
     <div className="cmd-skills">{skills.filter(s=>s.attribute===group).map(s=><div key={s.id}><SkillArt slug={s.slug} path={s.icon_path}/><span>{local(s.game_skills_i18n)?.name}</span><strong>{toDice(pool(s))}</strong><button title={tr('Skill fejlesztése','Upgrade skill')} disabled={busy||!progress?.upgrade_points||(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0)>=12} onClick={()=>void upgrade(s.id)}><LucidePlus/></button></div>)}</div>
    </>}
-   {tab==='ship'&&<ShipLoadout characterId={captain.id} shipSlug={ship?.slug||'vagabond'} shipName={local(ship?.game_starter_ships_i18n)?.name||'—'} locale={locale} onChanged={refresh}/>}
+   {tab==='ship'&&<ShipLoadout characterId={captain.id} shipSlug={ship?.slug||'vagabond'} shipImage={ship?.image_path} shipName={local(ship?.game_starter_ships_i18n)?.name||'—'} locale={locale} onChanged={refresh}/>}
    {tab==='cantina'&&<><div className="cmd-title"><h2>{tr('HATÁRVIDÉKI KANTIN // TOBORZÁS','FRONTIER CANTINA // RECRUITMENT')}</h2><small>⚡ {energy}</small></div><Cantina locale={locale} atStation={here?.slug==='frontier_station'} crew={activeCrew} energy={energy} onChanged={refresh}/></>}
    {tab==='inventory'&&<><div className="cmd-title"><h2>{tr('RAKTÉR ÉS GYÁRTÁS','CARGO AND CRAFTING')}</h2><div className="cmd-cargo-tabs"><button className={cargoView==='stock'?'active':''} onClick={()=>setCargoView('stock')}>{tr('KÉSZLET','INVENTORY')}</button><button className={cargoView==='craft'?'active':''} onClick={()=>setCargoView('craft')}>{tr('GYÁRTÁS','CRAFTING')}</button></div></div>
     {cargoView==='stock'?<EquipmentInventory characterId={captain.id} captainName={captain.captain_name} locale={locale} crew={activeCrew} onChanged={refresh}/>:<CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/>}

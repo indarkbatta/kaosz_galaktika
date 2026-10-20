@@ -2,6 +2,7 @@ import {useCallback,useEffect,useRef,useState,type DragEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {ShipArt} from './components/GameArt';
+import {ShipSystemIcon} from './components/ShipSystemIcon';
 import {crewPositionName} from './Cantina';
 import './ship-loadout.css';
 
@@ -17,15 +18,12 @@ type Loadout={ship_id:string;stats:Stats;slots:Slot[];modules:Module[];crew:Memb
 type Drag={kind:'cargo';item:string}|{kind:'fitted';item:string;slot:string}|{kind:'crew';crew:string};
 const DRAG='application/x-hatarvilag-ship';
 const PAGE_SIZE=4;
+const SLOTS_PER_PAGE=12;
 const kindNames:Record<ModuleKind,[string,string]>={engine:['Hajtómű','Engine'],reactor:['Reaktor','Reactor'],shield:['Pajzs','Shield'],weapon:['Fegyverzet','Weapon'],hull:['Burkolat','Hull'],sensor:['Szenzor','Sensor'],utility:['Segédrendszer','Utility']};
-export function ShipSystemIcon({kind}:{kind:string}){
- const paths:Record<string,string>={engine:'M8 3h8v11H8z M9 14l-3 6m6-6v7m3-7 3 6',reactor:'M12 2 4 14h7l-1 8 10-13h-8z',shield:'M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6z',weapon:'M4 20 16 8m-3-3 6 6M3 14l7 7M16 3h5v5',hull:'M4 7 12 3l8 4v10l-8 4-8-4z M4 7l8 4 8-4m-8 4v10',sensor:'M12 12 20 4M12 3a9 9 0 1 0 9 9M12 7a5 5 0 1 0 5 5',utility:'M3 6h18v14H3z M8 6V3h8v3M3 11h18',crew:'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 22v-5a8 8 0 0 1 16 0v5'};
- return <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={paths[kind]||paths.utility}/></svg>;
-}
-export default function ShipLoadout({characterId,shipSlug,shipName,locale,onChanged}:{characterId:string;shipSlug:string;shipName:string;locale:string;onChanged:()=>Promise<void>}){
+export default function ShipLoadout({characterId,shipSlug,shipName,shipImage,locale,onChanged}:{characterId:string;shipSlug:string;shipName:string;shipImage?:string|null;locale:string;onChanged:()=>Promise<void>}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [data,setData]=useState<Loadout|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
- const [tab,setTab]=useState<'module'|'crew'>('module'),[selected,setSelected]=useState<string|null>(null),[page,setPage]=useState(0),[drag,setDrag]=useState<Drag|null>(null);
+ const [tab,setTab]=useState<'module'|'crew'>('module'),[selected,setSelected]=useState<string|null>(null),[page,setPage]=useState(0),[slotPage,setSlotPage]=useState(0),[drag,setDrag]=useState<Drag|null>(null);
  const generation=useRef(0),mutation=useRef(false);
  const refresh=useCallback(async()=>{
   const ticket=++generation.current;
@@ -39,7 +37,8 @@ export default function ShipLoadout({characterId,shipSlug,shipName,locale,onChan
  const description=(m:Module)=>m.translations?.find(t=>t.locale===(en?'en':'hu'))?.description||'';
  const slotName=(s:Slot)=>en?s.name_en:s.name_hu;
  const slots=data?.slots.filter(s=>s.kind===tab)||[];
- const current=slots.find(s=>s.slot_key===selected)||slots[0];
+ const slotPages=Math.max(1,Math.ceil(slots.length/SLOTS_PER_PAGE)),safeSlotPage=Math.min(slotPage,slotPages-1);
+ const current=slots.find(s=>s.slot_key===selected)||slots[safeSlotPage*SLOTS_PER_PAGE];
  const fitted=current&&data?.modules.find(m=>m.item_id===current.item_id);
  const assigned=current&&data?.crew.find(c=>c.id===current.crew_id);
  const fits=(m:Module,s:Slot)=>s.kind==='module'&&m.module_kind===s.module_kind&&m.size<=s.size;
@@ -85,9 +84,9 @@ export default function ShipLoadout({characterId,shipSlug,shipName,locale,onChan
   <header className="sh-header"><div><strong>{shipName}</strong><small>{tr('RENDSZEREK ÉS ÁLLÁSOK','SYSTEMS AND STATIONS')}</small></div><span className={status.ready?'sh-ready':'sh-warning'}>{status.ready?tr('INDULÁSRA KÉSZ','READY TO DEPART'):tr('NEM ÜZEMKÉPES','NOT OPERATIONAL')}</span></header>
   {error&&<p className="sh-error" role="alert">{errorText(error)}</p>}
   <div className="sh-summary">{[[tr('Burkolat','Hull'),status.hull],[tr('Pajzs','Shield'),status.shield],[tr('Tűzerő','Firepower'),status.damage],[tr('Sebesség','Speed'),status.speed],[tr('Raktér','Cargo'),status.cargo],[tr('Energia','Power'),`${status.power_draw} / ${status.power_output}`]].map(([label,value])=><div key={label}><small>{label}</small><strong>{value}</strong></div>)}</div>
-  <nav className="sh-tabs" aria-label={tr('Hajó konfiguráció','Ship configuration')}>{(['module','crew'] as const).map(t=><button key={t} aria-pressed={tab===t} className={tab===t?'active':''} onClick={()=>{setTab(t);setSelected(null);setPage(0);setDrag(null);}}>{t==='module'?tr('Modulok','Modules'):tr('Legénységi állások','Crew stations')} <b>{data.slots.filter(s=>s.kind===t).length}</b></button>)}</nav>
+  <nav className="sh-tabs" aria-label={tr('Hajó konfiguráció','Ship configuration')}>{(['module','crew'] as const).map(t=><button key={t} aria-pressed={tab===t} className={tab===t?'active':''} onClick={()=>{setTab(t);setSelected(null);setPage(0);setSlotPage(0);setDrag(null);}}>{t==='module'?tr('Modulok','Modules'):tr('Legénységi állások','Crew stations')} <b>{data.slots.filter(s=>s.kind===t).length}</b></button>)}</nav>
   <div className="sh-workspace">
-   <div className="sh-slots">{slots.map(s=>{
+   <div className="sh-slot-browser"><div className="sh-slots">{slots.slice(safeSlotPage*SLOTS_PER_PAGE,safeSlotPage*SLOTS_PER_PAGE+SLOTS_PER_PAGE).map(s=>{
     const m=data.modules.find(m=>m.item_id===s.item_id),c=data.crew.find(c=>c.id===s.crew_id),filled=!!m||!!c;
     const valid=s.kind==='module'?!!m:!!c&&qualifies(c,s);
     return <button type="button" key={s.slot_key} disabled={busy} title={`${slotName(s)} — ${m?name(m):c?.name||tr('Üres','Empty')}`}
@@ -96,8 +95,8 @@ export default function ShipLoadout({characterId,shipSlug,shipName,locale,onChan
      onDragOver={e=>{if(compatible(s)&&!busy)e.preventDefault();}} onDrop={e=>drop(e,s)} onClick={()=>{setSelected(s.slot_key);setPage(0);}}>
       <span className="sh-slot-icon"><ShipSystemIcon kind={s.module_kind||'crew'}/></span><span><strong>{slotName(s)}</strong><small>{m?name(m):c?.name||tr('Üres','Empty')}</small><em>{s.kind==='module'?`${['S','M','L'][s.size-1]} · `:`◆${s.min_aptitude} · `}{s.required?tr('Kötelező','Required'):tr('Opcionális','Optional')}</em></span>
      </button>;
-   })}</div>
-   <div className="sh-diagram"><div className="sh-ship-art"><ShipArt slug={shipSlug}/></div><div className="sh-readiness">
+   })}</div>{slotPages>1&&<nav className="sh-slot-pagination" aria-label={tr('Hajóhelyek lapozása','Browse ship slots')}><button disabled={busy||safeSlotPage===0} onClick={()=>{setSlotPage(safeSlotPage-1);setSelected(null);setPage(0);}} aria-label={tr('Előző helyek','Previous slots')}>‹</button><span>{safeSlotPage+1} / {slotPages}</span><button disabled={busy||safeSlotPage===slotPages-1} onClick={()=>{setSlotPage(safeSlotPage+1);setSelected(null);setPage(0);}} aria-label={tr('További helyek','More slots')}>›</button></nav>}</div>
+   <div className="sh-diagram"><div className="sh-ship-art"><ShipArt slug={shipSlug} path={shipImage}/></div><div className="sh-readiness">
     <strong>{tr('Indulási feltételek','Departure requirements')}</strong>
     <p className={status.missing_required?'sh-warning':''}>{tr('Hiányzó kötelező helyek','Missing required slots')}: {status.missing_required}</p>
     <p className={status.power_draw>status.power_output?'sh-warning':''}>{tr('Reaktortartalék','Reactor reserve')}: {status.power_output-status.power_draw}</p>
