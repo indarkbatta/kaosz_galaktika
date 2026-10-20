@@ -46,6 +46,15 @@ await new Promise(r=>server.listen(0,"127.0.0.1",r));
 const url="http://127.0.0.1:"+server.address().port;
 const reports=[];
 async function ready(page){
+  await page.addInitScript(()=>{
+    window.__dragEvents=[];
+    for(const type of ["dragstart","dragenter","dragover","drop","dragend"]){
+      document.addEventListener(type,event=>{
+        const target=event.target.closest?.("button,section")?.getAttribute("aria-label")||event.target.className;
+        queueMicrotask(()=>window.__dragEvents.push({type,target,prevented:event.defaultPrevented,types:[...event.dataTransfer.types],effect:event.dataTransfer.dropEffect}));
+      },true);
+    }
+  });
   await page.goto(url);
   await page.getByRole("button",{name:"Engine A: engine",exact:true}).waitFor();
 }
@@ -56,7 +65,15 @@ async function callCount(page){return page.evaluate(()=>window.__calls.length)}
 async function drag(page,source,target,expected,position){
   const before=await callCount(page);
   await source.dragTo(target,position?{targetPosition:position}:{});
-  await page.waitForFunction(n=>window.__calls.length===n+1,before,{timeout:5000});
+  try{
+    await page.waitForFunction(n=>window.__calls.length===n+1,before,{timeout:5000});
+  }catch(error){
+    console.log("FAILED DROP",JSON.stringify(expected),JSON.stringify(await page.evaluate(()=>({
+      calls:window.__calls,events:window.__dragEvents,
+      cells:[...document.querySelectorAll(".sh-cell")].slice(0,8).map(e=>({label:e.getAttribute("aria-label"),disabled:e.disabled,rect:e.getBoundingClientRect().toJSON()})),
+    }))));
+    throw error;
+  }
   await idle(page);
   const calls=await page.evaluate(()=>window.__calls);
   assert.equal(calls.length,before+1,"one mutation per native drop");
