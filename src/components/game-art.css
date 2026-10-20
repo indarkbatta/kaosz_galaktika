@@ -8,3 +8,5 @@
 .sk-large-icon .ga-skill{width:100%;height:100%;aspect-ratio:1}
 .sk-gallery .ga-skill{width:100%;height:100%;aspect-ratio:1}
 .ed-thumbnail .ga-skill{width:100%;height:100%;aspect-ratio:1}
+
+.ga-ship-empty{display:grid!important;place-content:center;color:#a7b7c3;font-size:36px}

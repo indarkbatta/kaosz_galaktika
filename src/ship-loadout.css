@@ -4,3 +4,5 @@
 
 .sh-error{padding:6px 9px;margin:0;border:1px solid #b47656;background:#38251d;color:#f0b58c;font-size:12px}.sh-tabs button:focus-visible,.sh-slot:focus-visible,.sh-detail button:focus-visible{outline:2px solid #8ac6ce;outline-offset:2px}
 @media(max-height:820px){.sh-description{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.sh-detail{gap:4px}.sh-module-stats>div{padding:2px 4px}.sh-candidates button{gap:2px}.sh-candidates svg,.sh-candidates img{height:24px;width:24px}}
+
+.sh-slot-browser{display:flex;flex-direction:column;gap:5px;min-height:0;min-width:0}.sh-slot-browser>.sh-slots{flex:1}.sh-slot-pagination{display:flex;align-items:center;justify-content:space-between;gap:5px;color:#a9c0cd;font-size:11px}.sh-slot-pagination button{padding:2px 9px;font-size:16px}

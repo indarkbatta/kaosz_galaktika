@@ -81,3 +81,5 @@
 .ch-v2-captain-portrait img{object-fit:cover!important;object-position:center 20%!important}
 .ch-v2-controls button{display:grid;place-items:center}.ch-v2-controls button svg{width:17px;height:17px}
 .ch-v2-attr-switch .ga-attribute{background-size:cover!important}
+
+.ch-ship-browser{display:flex;flex-direction:column;gap:9px;height:100%;min-height:0}.ch-ship-browser>.ch-v2-ships{flex:1;min-height:0;height:auto}.ch-ship-pagination{display:flex;align-items:center;justify-content:center;gap:16px;flex-shrink:0;color:#c6d6df;font-size:12px}.ch-ship-pagination button{border:1px solid #526977;background:#172730;color:#e0e9ee;padding:7px 14px;cursor:pointer}

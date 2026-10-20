@@ -31,7 +31,7 @@ export function AttributeArt({attribute,className=''}:{attribute:string;classNam
  return <span className={'ga-attribute '+className} aria-hidden="true" style={imageStyle('hatarvilag/attributes/torchlight-v1/'+attr+'.webp','contain')}/>;
 }
 
-export function ShipArt({slug,className=''}:{slug:string;className?:string}){
- const ship=['vagabond','sparrow','bastion'].includes(slug)?slug:'vagabond';
- return <span className={'ga-ship '+className} aria-hidden="true" style={imageStyle('hatarvilag/ships/torchlight-v1/'+ship+'.webp','cover')}/>;
+export function ShipArt({slug,className='',path}:{slug:string;className?:string;path?:string|null}){
+ const key=path||(['vagabond','sparrow','bastion'].includes(slug)?'hatarvilag/ships/torchlight-v1/'+slug+'.webp':null);
+ return key?<span className={'ga-ship '+className} aria-hidden="true" style={imageStyle(key,'cover')}/>:<span className={'ga-ship ga-ship-empty '+className} aria-hidden="true">◇</span>;
 }

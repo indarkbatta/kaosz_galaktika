@@ -8,7 +8,7 @@ import {LucidePlus,LucideMinus} from './components/LucideSigns';
 import CaptainDashboard from './CaptainDashboard';
 import './character-v2.css';
 type Base={id:string;slug:string;image_path:string|null;primary_attribute:Attribute;secondary_attribute:Attribute;game_species_i18n?:{locale:string;name:string;description:string}[];game_classes_i18n?:{locale:string;name:string;description:string}[];game_species_skill_bonuses?:{skill_id:string;bonus_pips:number}[];game_classes_skill_bonuses?:{skill_id:string;bonus_pips:number}[]};
-type Ship={id:string;slug:string;image_path:string|null;hull:number;cargo:number;speed:number;game_starter_ships_i18n:{locale:string;name:string;description:string}[]};
+type Ship={id:string;slug:string;is_published:boolean;image_path:string|null;hull:number;cargo:number;speed:number;game_starter_ships_i18n:{locale:string;name:string;description:string}[]};
 type Skill={id:string;attribute:Attribute;slug:string;icon_path:string|null;game_skills_i18n:{locale:string;name:string}[]};
 type Rules={base_attribute_pips:number;free_attribute_pips:number;max_attribute_pips:number;free_skill_pips:number;max_allocated_skill_pips:number};
 type Captain={id:string;captain_name:string;species_id:string;class_id:string;starter_ship_id:string;attribute_pips:Record<string,number>;skill_bonus_pips:Record<string,number>};
@@ -23,12 +23,13 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
  const [crew,setCrew]=useState<{id:string;position:string;name:string}[]>([]);
  const [speciesId,setSpeciesId]=useState(''),[classId,setClassId]=useState(''),[shipId,setShipId]=useState('');
  const [name,setName]=useState(''),[attr,setAttr]=useState<Record<string,number>>({}),[skillPts,setSkillPts]=useState<Record<string,number>>({});
+ const [shipPage,setShipPage]=useState(0);
  const [step,setStep]=useState(0),[busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState('');
  useEffect(()=>{let active=true;const load=async()=>{
   const [s,c,sh,sk,r,ch]=await Promise.all([
    supabase.from('game_species').select('id,slug,image_path,primary_attribute,secondary_attribute,game_species_i18n(locale,name,description),game_species_skill_bonuses(skill_id,bonus_pips)').eq('is_published',true),
    supabase.from('game_classes').select('id,slug,image_path,primary_attribute,secondary_attribute,game_classes_i18n(locale,name,description),game_classes_skill_bonuses(skill_id,bonus_pips)').eq('is_published',true),
-   supabase.from('game_starter_ships').select('id,slug,image_path,hull,cargo,speed,game_starter_ships_i18n(locale,name,description)').eq('is_published',true),
+   supabase.from('game_starter_ships').select('id,slug,image_path,hull,cargo,speed,is_published,game_starter_ships_i18n(locale,name,description)'),
    supabase.from('game_skills').select('id,slug,attribute,icon_path,game_skills_i18n(locale,name)').order('attribute').order('position'),
    supabase.from('game_rules').select('*').eq('id',1).single(),
    supabase.from('characters').select('id,captain_name,species_id,class_id,starter_ship_id,attribute_pips,skill_bonus_pips').maybeSingle()
@@ -38,7 +39,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   if(problem){setError(problem.message);notify(problem.message,'error');setLoading(false);return;}
   setSpecies(s.data as unknown as Base[]);setClasses(c.data as unknown as Base[]);
   setShips(sh.data as unknown as Ship[]);setSkills(sk.data as unknown as Skill[]);setRules(r.data as Rules);
-  setSpeciesId(s.data?.[0]?.id||'');setClassId(c.data?.[0]?.id||'');setShipId(sh.data?.[0]?.id||'');
+  setSpeciesId(s.data?.[0]?.id||'');setClassId(c.data?.[0]?.id||'');setShipId(sh.data?.find(x=>x.is_published)?.id||'');
   if(ch.data){
    setCaptain(ch.data as Captain);
    const cr=await supabase.from('character_crew').select('id,position,name').eq('character_id',ch.data.id);
@@ -75,6 +76,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   }
   setBusy(false);
  };
+ const publishedShips=ships.filter(s=>s.is_published),shipPages=Math.max(1,Math.ceil(publishedShips.length/3)),safeShipPage=Math.min(shipPage,shipPages-1);
  const steps=en?['Captain','Species','Class','Attributes','Skills','Starship','Confirm']:['Kapitány','Faj','Kaszt','Tulajdonságok','Skillek','Űrhajó','Véglegesítés'];
  const [activeAttribute,setActiveAttribute]=useState<typeof attributes[number]>('body');
  const selectedSkills=skills.filter(s=>s.attribute===activeAttribute);
@@ -92,7 +94,7 @@ export default function CharacterPage({locale,isEditor=false}:{locale:string;isE
   {step===2&&<>{cards(classes,classId,setClassId,true)}<p className="ch-v2-info">{localized(classSelected?.game_classes_i18n)?.description}</p></>}
   {step===3&&<><div className="ch-v2-section-heading"><h2>{steps[3]}</h2><span>{t(en,'Szabad pip','Remaining pips')} <b>{attrRemaining}</b></span></div><div className="ch-v2-attributes">{attributes.map(a=><div className="ch-v2-attribute" key={a}><AttributeArt attribute={a}/><strong>{names[l][a]}</strong><div className="ch-v2-controls"><button disabled={!(attr[a]||0)} onClick={()=>chooseStat(a,-1)} aria-label={t(en,'Csökkentés','Decrease')}><LucideMinus/></button><b>{toDice(currentStats[a]||3)}</b><button disabled={attrRemaining===0||((currentStats[a]||3)>=(rules?.max_attribute_pips||18))} onClick={()=>chooseStat(a,1)} aria-label={t(en,'Növelés','Increase')}><LucidePlus/></button></div><small>+{attr[a]||0} pip</small></div>)}</div></>}
   {step===4&&<><div className="ch-v2-section-heading"><h2>{steps[4]}</h2><span>{t(en,'Szabad pip','Remaining pips')} <b>{skillRemaining}</b></span></div><div className="ch-v2-attr-switch">{attributes.map(a=><button type="button" key={a} className={activeAttribute===a?'active':''} onClick={()=>setActiveAttribute(a)}><AttributeArt attribute={a}/>{names[l][a]}</button>)}</div><div className="ch-v2-skills">{selectedSkills.map(s=><div className="ch-v2-skill" key={s.id}><SkillArt slug={s.slug} path={s.icon_path}/><strong>{localized(s.game_skills_i18n.map(x=>({...x,description:''})))?.name||s.slug}</strong><div className="ch-v2-controls"><button disabled={!(skillPts[s.id]||0)} onClick={()=>chooseSkill(s.id,-1)} aria-label={t(en,'Csökkentés','Decrease')}><LucideMinus/></button><b>{toDice((currentStats[s.attribute]||3)+(skillPts[s.id]||0)+skillBonus(s.id))}</b><button disabled={skillRemaining===0||(skillPts[s.id]||0)>=(rules?.max_allocated_skill_pips||6)} onClick={()=>chooseSkill(s.id,1)} aria-label={t(en,'Növelés','Increase')}><LucidePlus/></button></div><small>+{skillPts[s.id]||0} pip</small></div>)}</div></>}
-  {step===5&&<div className="ch-v2-ships">{ships.map(s=><button type="button" key={s.id} className={'ch-v2-ship '+(shipId===s.id?'selected':'')} onClick={()=>setShipId(s.id)}><div className="ch-v2-ship-art"><ShipArt slug={s.slug}/></div><strong>{localized(s.game_starter_ships_i18n)?.name||s.slug}</strong><small>HP {s.hull} · CARGO {s.cargo} · SPEED {s.speed}</small><p>{localized(s.game_starter_ships_i18n)?.description}</p></button>)}</div>}
+  {step===5&&<div className="ch-ship-browser"><div className="ch-v2-ships">{publishedShips.slice(safeShipPage*3,safeShipPage*3+3).map(s=><button type="button" key={s.id} className={'ch-v2-ship '+(shipId===s.id?'selected':'')} onClick={()=>setShipId(s.id)}><div className="ch-v2-ship-art"><ShipArt slug={s.slug} path={s.image_path}/></div><strong>{localized(s.game_starter_ships_i18n)?.name||s.slug}</strong><small>HP {s.hull} · CARGO {s.cargo} · SPEED {s.speed}</small><p>{localized(s.game_starter_ships_i18n)?.description}</p></button>)}</div>{shipPages>1&&<nav className="ch-ship-pagination" aria-label={t(en,'Hajók lapozása','Browse ships')}><button type="button" disabled={safeShipPage===0} onClick={()=>setShipPage(safeShipPage-1)}>{t(en,'Előző','Previous')}</button><span>{safeShipPage+1} / {shipPages}</span><button type="button" disabled={safeShipPage===shipPages-1} onClick={()=>setShipPage(safeShipPage+1)}>{t(en,'Következő','Next')}</button></nav>}</div>}
   {step===6&&<div className="ch-v2-confirm"><div><h2>{name||'—'}</h2><div className="ch-v2-confirm-images">{[speciesSelected,classSelected].map((v,i)=><div key={i}>{v?.image_path&&<img src={src(v.image_path)} alt=""/>}<strong>{v?selectName(v,i===1):''}</strong></div>)}</div><p>{localized(ships.find(s=>s.id===shipId)?.game_starter_ships_i18n)?.name}</p></div><div className="ch-v2-confirm-stats">{attributes.map(a=><div key={a}><span>{names[l][a]}</span><b>{toDice(currentStats[a]||3)}</b></div>)}<p>{t(en,'Kiosztatlan pip','Unspent pips')}: {attrRemaining} / {skillRemaining}</p><button className="ch-v2-finalize" disabled={busy||!speciesId||!classId||!shipId||name.trim().length<2||attrRemaining!==0||skillRemaining!==0} onClick={()=>void create()}>{busy?'…':t(en,'Kapitány véglegesítése','Finalize captain')}</button></div></div>}
  </main><footer className="ch-v2-footer"><span>SPACE D6 FREE</span><div><button type="button" disabled={step===0} onClick={()=>setStep(v=>Math.max(0,v-1))}>{t(en,'Vissza','Back')}</button>{step!==6&&<button type="button" className="ch-v2-next" onClick={()=>setStep(v=>Math.min(6,v+1))}>{t(en,'Tovább','Next')} →</button>}</div></footer>
  </section>;
