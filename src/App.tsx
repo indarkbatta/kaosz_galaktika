@@ -3,6 +3,7 @@ import type {User} from '@supabase/supabase-js';
 import {supabase,type Role} from './lib/supabase';
 import {dictionaries,rememberLocale,storedLocale,type Locale,type Key} from './i18n';
 import Editor from './Editor';
+import type {EditorSection} from './components/EditorNavigation';
 import SkillEditor from './SkillEditor';
 import GameplayEditor from './GameplayEditor';
 import SectorEditor from './SectorEditor';
@@ -30,6 +31,8 @@ function App(){
  const [profileError,setProfileError]=useState(false);
  const [mode,setMode]=useState<Mode>('login');
  const [page,setPage]=useState<Page>('dashboard');
+ const [editorKind,setEditorKind]=useState<'species'|'classes'>('species');
+ const openEditorSection=(section:EditorSection)=>{if(section==='species'||section==='classes'){setEditorKind(section);setPage('editor');}else setPage(section);};
  const [email,setEmail]=useState('');
  const [password,setPassword]=useState('');
  const [confirm,setConfirm]=useState('');
@@ -157,13 +160,13 @@ function App(){
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>
     </main>
-    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} onBack={()=>setPage('dashboard')} onSkills={()=>setPage('skills')} onGameplay={()=>setPage('gameplay')} onSector={()=>setPage('sector')} onItems={()=>setPage('items')} onShips={()=>setPage('ships')} onCrew={()=>setPage('crew')}/>
-    :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onBack={()=>setPage('editor')}/>
-    :page==='crew'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CrewEditor locale={locale} onBack={()=>setPage('editor')}/></Suspense>
+    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} kind={editorKind} onKindChange={setEditorKind} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='crew'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CrewEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='dashboard'?<div className="ch-v2-mount"><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>
     :<main className="terminal in-game">
       <nav className="tabs">

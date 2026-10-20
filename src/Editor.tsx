@@ -3,6 +3,7 @@ import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './editor.css';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {SkillArt} from './components/GameArt';
 
 type Attr = 'body'|'mind'|'soul'|'morale'|'social';
@@ -92,9 +93,9 @@ function editorSelect(k:Kind){
  const trans=k==='species'?'game_species_i18n(locale,name,description,passives)':'game_classes_i18n(locale,name,description,starting_equipment,traits,gameplay_role)';
  return '*, '+trans+', '+bonusTable(k)+'(skill_id,bonus_pips)';
 }
-export default function Editor({locale,onBack,onSkills,onGameplay,onSector,onItems,onShips,onCrew}:{locale:string;onBack:()=>void;onSkills:()=>void;onGameplay:()=>void;onSector:()=>void;onItems:()=>void;onShips:()=>void;onCrew:()=>void}){
+export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}:{locale:string;onBack:()=>void;kind:Kind;onKindChange:(kind:Kind)=>void;onSectionSelect:(section:EditorSection)=>void}){
  const l=locale==='en'?'en':'hu',dict=ui[l],t=(key:UiKey)=>dict[key];
- const [kind,setKind]=useState<Kind>('species'),[tab,setTab]=useState<Tab>('general');
+ const [tab,setTab]=useState<Tab>('general');
  const [records,setRecords]=useState<CatalogRecord[]>([]);
  const [counts,setCounts]=useState({species:0,classes:0});
  const [skills,setSkills]=useState<Skill[]>([]);
@@ -131,7 +132,7 @@ export default function Editor({locale,onBack,onSkills,onGameplay,onSector,onIte
  },[]);
  useEffect(()=>{void refresh(kind);},[kind,refresh]);
  const navigate=(fn:()=>void)=>{if(dirty){pending.current=fn;setModal('discard');}else fn();};
- const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{setKind(k);setTab('general');setMessage('');setError('');});};
+ const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{onKindChange(k);setTab('general');setMessage('');setError('');});};
  const chooseRecord=(item:CatalogRecord)=>navigate(()=>{setForm(hydrate(item,kind));setDirty(false);setMessage('');setError('');setTab('general');});
  const createNew=()=>navigate(()=>{setForm(emptyForm());setDirty(false);setMessage('');setError('');setTab('general');});
  const update=(patch:Partial<FormBody>)=>{setForm(prev=>({...prev,...patch}));setDirty(true);setMessage('');};
@@ -187,19 +188,8 @@ export default function Editor({locale,onBack,onSkills,onGameplay,onSector,onIte
  const fieldLabels:Record<keyof TranslationBody,string>={name:t('name'),description:t('description'),passives:t('passives'),
    starting_equipment:t('equipment'),traits:t('traits'),gameplay_role:t('role')};
  return <EditorFrame>
-   <nav className="ed-nav" aria-label={t('title')}>
-     <h2>{t('title')}</h2>
-     <button type="button" onClick={()=>navigate(onBack)}>⌂　{t('back')}</button>
-     <button type="button" onClick={()=>navigate(onSkills)}>✧　Skill Editor</button>
-     <button type="button" onClick={()=>navigate(onGameplay)}>⚙　{l==='hu'?'Akció- és szabályeditor':'Actions & Rules'}</button>
-     <button type="button" onClick={()=>navigate(onSector)}>✦　{l==='hu'?'Szektorszerkesztő':'Sector Editor'}</button>
-     <button type="button" onClick={()=>navigate(onItems)}>⚒　{l==='hu'?'Tárgyszerkesztő':'Item Editor'}</button>
-     <button type="button" onClick={()=>navigate(onCrew)}>◈　{l==='hu'?'Legénységszerkesztő':'Crew Editor'}</button>
-     <button type="button" onClick={()=>navigate(onShips)}>◇　{l==='hu'?'Hajószerkesztő':'Ship Editor'}</button>
-     <button type="button" className={kind==='species'?'active':''} onClick={()=>chooseKind('species')}>◈　{t('species')} <span>{counts.species}</span></button>
-     <button type="button" className={kind==='classes'?'active':''} onClick={()=>chooseKind('classes')}>✥　{t('classes')} <span>{counts.classes}</span></button>
-     <div className="ed-nav-bottom"><span className="ed-online"/> EDITOR <p>SPACE D6 FREE</p></div>
-   </nav>
+   <EditorNavigation locale={locale} active={kind} counts={counts} onBack={()=>navigate(onBack)}
+   onSelect={section=>{if(section==='species'||section==='classes')chooseKind(section);else navigate(()=>onSectionSelect(section));}}/>
    <aside className="ed-roster">
      <div className="ed-roster-top"><strong>{kind==='species'?t('species'):t('classes')} ({records.length})</strong>
        <button type="button" onClick={createNew}>＋ {kind==='species'?t('newSpecies'):t('newClass')}</button>

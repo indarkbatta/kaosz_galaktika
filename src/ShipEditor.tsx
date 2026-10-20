@@ -2,6 +2,7 @@ import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {ShipArt} from './components/GameArt';
 import {LucidePlus,LucideMinus} from './components/LucideSigns';
 import {ShipSystemIcon} from './components/ShipSystemIcon';
@@ -23,7 +24,7 @@ const blank=():Ship=>({id:'',slug:'',image_path:null,hull:100,cargo:60,speed:5,i
  ...(['engine','reactor','hull'] as ModuleKind[]).map((k,i)=>({slot_key:k+'_1',kind:'module' as const,module_kind:k,crew_role:null,size:1,min_aptitude:1,required:true,sort_order:i,name_hu:kindLabels[k][0],name_en:kindLabels[k][1]})),
  {slot_key:'crew_pilot',kind:'crew',module_kind:null,crew_role:'pilot',size:1,min_aptitude:2,required:true,sort_order:3,name_hu:'Pilóta',name_en:'Pilot'}]});
 const PAGE=5;
-export default function ShipEditor({locale,onBack}:{locale:string;onBack:()=>void}){
+export default function ShipEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [catalog,setCatalog]=useState<Catalog>({ships:[],starters:[]}),[draft,setDraft]=useState<Ship>(blank);
  const [languages,setLanguages]=useState<{code:string;native_name:string}[]>([]),[language,setLanguage]=useState('hu');
@@ -85,7 +86,7 @@ export default function ShipEditor({locale,onBack}:{locale:string;onBack:()=>voi
  }
  const tabs=[{id:'general',name:tr('Alapadatok','General')},{id:'modules',name:tr('Modulhelyek','Module slots')},{id:'crew',name:tr('Legénység','Crew')},{id:'dictionary',name:tr('Szótár','Dictionary')}];
  return <EditorFrame>
-  <nav className="ed-nav"><h2>{tr('Hajószerkesztő','Ship Editor')}</h2><button type="button" disabled={busy} onClick={()=>navigate(onBack)}>⌂　{tr('Vissza','Back')}</button>{tabs.map(t=><button key={t.id} className={tab===t.id?'active':''} onClick={()=>{setTab(t.id as Tab);setSelected('');setSlotPage(0);}}>{t.name}</button>)}<div className="ed-nav-bottom">{tr('HAJÓK ÉS RENDSZEREK','SHIPS AND SYSTEMS')}</div></nav>
+  <EditorNavigation locale={locale} active="ships" onBack={()=>navigate(onBack)} onSelect={section=>navigate(()=>onSectionSelect(section))}/>
   <aside className="ed-roster se-roster"><div className="ed-roster-top"><strong>{tr('Hajók','Ships')} ({catalog.ships.length})</strong><button type="button" disabled={busy||loading} aria-label={tr('Új hajó','New ship')} title={tr('Új hajó','New ship')} onClick={()=>navigate(()=>{choose(blank());setTab('general');})}><LucidePlus/></button></div>
    <input className="se-search" aria-label={tr('Hajó keresése','Search ships')} placeholder={tr('Hajó keresése…','Search ships…')} value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/>
    <div className="se-ship-list">{filtered.slice(safePage*PAGE,safePage*PAGE+PAGE).map(s=><button type="button" disabled={busy} key={s.id} className={'ed-record '+(draft.id===s.id?'selected':'')} onClick={()=>navigate(()=>choose(s))}><span className="ed-thumbnail"><ShipArt slug={s.slug} path={s.image_path}/></span><span className="ed-record-name"><strong>{name(s)}</strong><small>{s.slots.filter(x=>x.kind==='module').length} / {s.slots.filter(x=>x.kind==='crew').length} · {s.slug}</small></span><span className={s.is_published?'ed-pub':'ed-draft'} aria-label={s.is_published?tr('Publikált','Published'):tr('Piszkozat','Draft')}>{s.is_published?'●':'○'}</span></button>)}{!filtered.length&&!loading&&<p>{tr('Nincs találat.','No matches.')}</p>}{loading&&<p role="status">{tr('Betöltés…','Loading…')}</p>}</div>

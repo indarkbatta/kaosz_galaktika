@@ -2,6 +2,7 @@ import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {SkillArt} from './components/GameArt';
 import './gameplay-editor.css';
 type Lang={code:string;native_name:string};
@@ -12,7 +13,7 @@ type Skill={id:string;slug:string;icon_path:string|null;game_skills_i18n:{locale
 type Item={id:string;slug:string;rarity:string;game_items_i18n:{locale:string;name:string}[]};
 type Drop={action_id:string;item_id:string;chance_percent:number;min_qty:number;max_qty:number};
 type LootConfig={enabled:boolean;chance_percent:number;min_qty:number;max_qty:number};
-export default function GameplayEditor({locale,onBack}:{locale:string;onBack:()=>void}){
+export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [actions,setActions]=useState<Action[]>([]),[skills,setSkills]=useState<Skill[]>([]);
  const [locales,setLocales]=useState<Lang[]>([]),[chosen,setChosen]=useState(''),[lang,setLang]=useState('hu');
@@ -67,7 +68,7 @@ export default function GameplayEditor({locale,onBack}:{locale:string;onBack:()=
  const nr=(field:keyof Rules,number:number)=>setRules(prev=>({...prev,[field]:number}));
  const na=(field:keyof Action,value:string|number|boolean)=>setEdit(prev=>prev?{...prev,[field]:value}:prev);
  return <EditorFrame>
-  <nav className="ed-nav"><h2>{tr('Játékmotor','Gameplay engine')}</h2><button onClick={onBack} type="button">⌂　{tr('Vissza','Back')}</button><button type="button" className={tab==='actions'?'active':''} onClick={()=>setTab('actions')}>◈　{tr('Akciók','Actions')}</button><button type="button" className={tab==='balance'?'active':''} onClick={()=>setTab('balance')}>⚙　{tr('Balansz','Balance')}</button><button type="button" className={tab==='loot'?'active':''} onClick={()=>setTab('loot')}>✦　{tr('Zsákmány','Loot')}</button><div className="ed-nav-bottom">SPACE D6 FREE</div></nav>
+  <EditorNavigation locale={locale} active="gameplay" onBack={onBack} onSelect={onSectionSelect}/>
   <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Játékakciók','Game actions')} ({actions.length})</strong></div><div className="ed-roster-list">{actions.map(a=>{const s=skills.find(x=>x.id===a.skill_id);return <button type="button" className={'ed-record '+(chosen===a.id?'selected':'')} onClick={()=>{pick(a);setTab('actions');}} key={a.id}><span className="ed-thumbnail">{s&&<SkillArt slug={s.slug} path={s.icon_path}/>}</span><span className="ed-record-name"><strong>{localized(a)}</strong><small>⚡ {a.energy_cost} · TN {a.target_number}</small></span></button>})}</div></aside>
   <section className="ed-editor"><header className="ed-editor-head"><strong>{tab==='balance'?tr('Játékszabályok','Game rules'):edit?localized(actions.find(a=>a.id===edit.id)||actions[0]):'—'}</strong><span>M2 / M3</span></header>
    <EditorTabs label="Gameplay Editor" selected={tab} onSelect={setTab} items={[{id:'actions',name:tr('Akciók és szótár','Actions & dictionary')},{id:'balance',name:tr('Energia és XP','Energy & XP')},{id:'loot',name:tr('Zsákmány','Loot')}]}/>

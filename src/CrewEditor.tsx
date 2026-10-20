@@ -8,6 +8,7 @@ import {
 import { supabase } from "./lib/supabase";
 import { notify } from "./lib/toast";
 import { EditorFrame, EditorTabs } from "./components/EditorTemplate";
+import { EditorNavigation, type EditorSection } from "./components/EditorNavigation";
 import { crewPositionName } from "./Cantina";
 import {
   CREW_ROLES,
@@ -89,10 +90,12 @@ const blank = (kind: Mode): CrewDraft => ({
 export default function CrewEditor({
   locale,
   onBack,
+  onSectionSelect,
   initialData,
 }: {
   locale: string;
   onBack: () => void;
+  onSectionSelect?: (section: EditorSection) => void;
   initialData?: CrewCatalog;
 }) {
   const en = locale === "en",
@@ -358,34 +361,8 @@ export default function CrewEditor({
   );
   return (
     <EditorFrame>
-      <nav className="ed-nav">
-        <h2>{tr("SZERKESZTŐ", "EDITOR")}</h2>
-        <button onClick={() => navigate(onBack)}>
-          ← {tr("Editorok", "Editors")}
-        </button>
-        {(["named", "generated", "set"] as Mode[]).map((m) => (
-          <button
-            key={m}
-            className={mode === m ? "active" : ""}
-            onClick={() => switchMode(m)}
-          >
-            {m === "named"
-              ? tr("Egyedi karakterek", "Named crew")
-              : m === "generated"
-                ? tr("Toborzási sablonok", "Recruit templates")
-                : tr("Portrékészletek", "Portrait sets")}
-          </button>
-        ))}
-        <div className="ed-nav-bottom">
-          {tr("LEGÉNYSÉG", "CREW")}
-          <p>
-            {tr(
-              "Faj · Kaszt · Portré · Ritkaság",
-              "Species · Class · Portrait · Rarity",
-            )}
-          </p>
-        </div>
-      </nav>
+      <EditorNavigation locale={locale} active="crew" onBack={() => navigate(onBack)}
+       onSelect={section => navigate(() => onSectionSelect?.(section))}/>
       <aside className="ed-roster ce-roster">
         <header className="ed-roster-top">
           <strong>
@@ -403,6 +380,14 @@ export default function CrewEditor({
             + {tr("ÚJ", "NEW")}
           </button>
         </header>
+        <div className="ce-mode-tabs" role="group" aria-label={tr("Katalógustípus", "Catalog type")}>
+          {(["named", "generated", "set"] as Mode[]).map(m => (
+            <button type="button" key={m} className={mode === m ? "active" : ""}
+              aria-pressed={mode === m} disabled={busy} onClick={() => switchMode(m)}>
+              {m === "named" ? tr("Egyedi", "Named") : m === "generated" ? tr("Sablonok", "Templates") : tr("Portrék", "Portraits")}
+            </button>
+          ))}
+        </div>
         <input
           className="ce-search"
           aria-label={tr("Keresés", "Search")}

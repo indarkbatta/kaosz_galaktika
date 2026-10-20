@@ -2,6 +2,7 @@ import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './sector-editor.css';
 type Translation={locale:string;name:string;description:string};
 type Place={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';x:number;y:number;is_published:boolean;game_locations_i18n:Translation[]};
@@ -10,7 +11,7 @@ type Action={id:string;slug:string;game_actions_i18n:{locale:string;name:string}
 type Local={code:string;native_name:string};
 type Link={enabled:boolean;cost:number};
 const blank:Place={id:'',slug:'',kind:'station',x:50,y:50,is_published:false,game_locations_i18n:[]};
-export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>void}){
+export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,english:string)=>en?english:hu;
  const [places,setPlaces]=useState<Place[]>([]),[routes,setRoutes]=useState<Route[]>([]),[actions,setActions]=useState<Action[]>([]);
  const [placements,setPlacements]=useState<{location_id:string;action_id:string}[]>([]);
@@ -68,12 +69,7 @@ export default function SectorEditor({locale,onBack}:{locale:string;onBack:()=>v
   }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'),'error');}finally{setBusy(false);}
  }
  return <EditorFrame>
-  <nav className="ed-nav"><h2>{tr('Szektorszerkesztő','Sector Editor')}</h2><button onClick={onBack} type="button">⌂　{tr('Vissza','Back')}</button>
-   <button type="button" className={tab==='general'?'active':''} onClick={()=>setTab('general')}>◈　{tr('Alapadatok','General')}</button>
-   <button type="button" className={tab==='dictionary'?'active':''} onClick={()=>setTab('dictionary')}>⊞　{tr('Szótár','Dictionary')}</button>
-   <button type="button" className={tab==='routes'?'active':''} onClick={()=>setTab('routes')}>⌁　{tr('Útvonalak','Routes')}</button>
-   <div className="ed-nav-bottom">HATÁRVIDÉK / M4</div>
-  </nav>
+  <EditorNavigation locale={locale} active="sector" onBack={onBack} onSelect={onSectionSelect}/>
   <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Helyszínek','Locations')} ({places.length})</strong><button type="button" onClick={newPlace}>+</button></div>
    <div className="ed-roster-list">{places.map(p=><button type="button" key={p.id} className={'ed-record '+(draft.id===p.id?'selected':'')} onClick={()=>choose(p,routes,placements)}>
     <span className="ed-thumbnail ge-sector-symbol">{({station:'✦',wreck:'◇',planet:'●',anomaly:'◈'})[p.kind]}</span>

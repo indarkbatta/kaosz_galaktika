@@ -2,6 +2,7 @@ import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs} from './components/EditorTemplate';
+import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {LucidePlus,LucideMinus} from './components/LucideSigns';
 import './item-editor.css';
 
@@ -11,7 +12,7 @@ type Ingredient={item_id:string;quantity:number};
 type RecipeRow={output_item_id:string;ingredient_item_id:string;quantity:number};
 type Lang={code:string;native_name:string};
 const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published:false,image_path:null,equip_owner:null,equip_slot:null,capacity_bonus:0,game_items_i18n:[]};
-export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>void}){
+export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [items,setItems]=useState<Item[]>([]),[recipes,setRecipes]=useState<RecipeRow[]>([]);
  const [languages,setLanguages]=useState<Lang[]>([]),[language,setLanguage]=useState('hu');
@@ -69,13 +70,7 @@ export default function ItemEditor({locale,onBack}:{locale:string;onBack:()=>voi
   setBusy(false);
  }
  return <EditorFrame>
-  <nav className="ed-nav"><h2>{tr('Tárgyszerkesztő','Item Editor')}</h2>
-   <button type="button" onClick={onBack}>⌂　{tr('Vissza','Back')}</button>
-   <button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>◈　{tr('Alapadatok','General')}</button>
-   <button className={tab==='recipe'?'active':''} onClick={()=>setTab('recipe')}>⚒　{tr('Recept','Recipe')}</button>
-   <button className={tab==='dictionary'?'active':''} onClick={()=>setTab('dictionary')}>⊞　{tr('Szótár','Dictionary')}</button>
-   <div className="ed-nav-bottom">M5.4 // INVENTORY</div>
-  </nav>
+  <EditorNavigation locale={locale} active="items" onBack={onBack} onSelect={onSectionSelect}/>
   <aside className="ed-roster"><div className="ed-roster-top"><strong>{tr('Tárgyak','Items')} ({items.length})</strong><button type="button" onClick={newItem} title={tr('Új tárgy','New item')}><LucidePlus/></button></div>
    <div className="ed-roster-list">{items.map(item=><button type="button" className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>choose(item,recipes)}>
     <span className="ed-thumbnail item-editor-symbol">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>

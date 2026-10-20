@@ -129,3 +129,36 @@
 }
 
 .ed-skill-row label{display:flex;align-items:center;gap:8px}.ed-skill-icon{width:34px;height:34px;object-fit:contain;flex-shrink:0;border:1px solid #77564c;background:#09121a}.ed-combat{margin-left:auto}
+
+/* M6: single-level editor sections, larger readable labels and tabs. */
+.ed-layout{font-size:14px}
+.ed-shell{width:min(1240px,82vw);grid-template-columns:208px 232px minmax(0,1fr)}
+.ed-nav{gap:3px;padding:14px 10px;overflow-y:auto;overflow-x:hidden}
+.ed-nav h2{font-size:13px;line-height:1.45;letter-spacing:.055em;padding:10px 8px 14px;margin-bottom:4px}
+.ed-nav-section-label{font-size:12px;letter-spacing:.12em;color:#8fa4b4;padding:10px 10px 6px}
+.ed-nav>button{display:flex;align-items:center;gap:11px;min-height:43px;padding:10px 9px;font-size:14px;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+.ed-nav>button:focus-visible{outline:2px solid #e29d78;outline-offset:-2px}
+.ed-nav-icon{width:20px;flex:none;text-align:center;font-size:17px}
+.ed-nav-label{flex:1;min-width:0}
+.ed-nav-count{flex:none;font-size:12px;color:#aab6c0}
+.ed-nav>button.ed-nav-exit{border-bottom:1px solid #35434e;padding-bottom:14px;margin-bottom:1px;color:#dbe5ee}
+.ed-nav-bottom{font-size:12px;letter-spacing:.035em;line-height:1.4}
+.ed-nav-bottom p{font-size:12px}
+.ed-roster-top strong,.ed-roster-top button{font-size:13px}
+.ed-record-name small{font-size:12px}
+.ed-tabs button{font-size:14px;line-height:1.35;padding:11px 6px}
+.ed-general-grid label,.ed-dictionary-fields label,.ed-language-form label{font-size:12px}
+.ed-general-help,.ed-secondary-button,.ed-skill-row label,.ed-skill-row select{font-size:12px}
+.ed-image-area input{font-size:12px!important}
+.ed-combat{font-size:11px}
+.ed-editor-head>span,.ed-footer>span{font-size:12px}
+@media(max-width:1500px){.ed-shell{width:min(1240px,90vw);grid-template-columns:204px 224px minmax(0,1fr)}}
+@media(max-width:1150px){.ed-shell{width:calc(100vw - 28px);grid-template-columns:198px 222px minmax(0,1fr)}}
+@media(max-width:760px){
+ .ed-shell{width:calc(100vw - 18px);display:flex;flex-direction:column}
+ .ed-nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:4px;padding:8px}
+ .ed-nav h2,.ed-nav-section-label{grid-column:1/-1}
+ .ed-nav>button{min-height:42px;padding:8px 9px;font-size:14px}
+ .ed-nav>button.ed-nav-exit{grid-column:1/-1}
+ .ed-nav-bottom{display:none}
+}

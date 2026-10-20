@@ -1,6 +1,6 @@
 .ed-shell:has(.ce-editor) {
   width: min(1420px, 94vw);
-  grid-template-columns: 160px 230px minmax(0, 1fr);
+  grid-template-columns: 210px 234px minmax(0, 1fr);
   background: #0a141b;
   border-color: #596c75;
 }
@@ -378,7 +378,7 @@
 }
 @media (max-width: 1050px) {
   .ed-shell:has(.ce-editor) {
-    grid-template-columns: 130px 180px minmax(0, 1fr);
+    grid-template-columns: 194px 205px minmax(0, 1fr);
   }
   .ce-fields {
     grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
@@ -410,3 +410,20 @@
     display: none;
   }
 }
+
+.ce-mode-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:8px 8px 2px;flex:none}
+.ce-mode-tabs button{min-width:0;border:1px solid #526572;background:#11212b;color:#c3d5df;font-size:12px;line-height:1.25;padding:9px 3px;cursor:pointer;overflow-wrap:anywhere}
+.ce-mode-tabs button.active{border-color:#c29363;background:#453326;color:#fff}
+.ce-mode-tabs button:focus-visible{outline:2px solid #e0a97b;outline-offset:1px}
+.ce-mode-tabs button:disabled{opacity:.5}
+.ce-pager,.ce-clone{font-size:12px}
+.ce-fields label{font-size:12px}
+.ce-fields h3{font-size:13px}
+.ce-editor .ed-tabs button{font-size:14px}
+@media(max-width:1050px){
+ .ed-shell:has(.ce-editor){grid-template-columns:194px 205px minmax(0,1fr)}
+ .ce-fields label,.ce-roster .ed-record-name strong{font-size:12px}
+ .ce-editor .ed-tabs button{font-size:13px}
+ .ce-help{font-size:12px}
+}
+@media(max-width:760px){.ed-shell:has(.ce-editor){display:flex;flex-direction:column}.ce-mode-tabs button{font-size:13px}}
