@@ -6,14 +6,20 @@ import {resolve,join} from "node:path";
 import {mkdtemp,writeFile,rm} from "node:fs/promises";
 import {tmpdir} from "node:os";
 import {createServer} from "node:http";
-import {execFileSync} from "node:child_process";
 import {build} from "esbuild";
 
 const require=createRequire(join(resolve(process.env.SHIP_BROWSER_TOOLS),"package.json"));
 const {chromium,firefox}=require("playwright");
 const scratch=await mkdtemp(join(tmpdir(),"ship-dnd-"));
 const baselineRef="099870474b7c7260397469a5e15ec1526d8062b2";
+let baselineSource;
+
 async function bundle(baseline=false){
+  if(baseline && !baselineSource){
+    const response=await fetch("https://raw.githubusercontent.com/indarkbatta/kaosz_galaktika/"+baselineRef+"/src/ShipLoadout.tsx");
+    if(!response.ok)throw Error("Cannot fetch pinned baseline: "+response.status);
+    baselineSource=await response.text();
+  }
   const result=await build({
     entryPoints:["tools/qa/ship-dnd-fixture.tsx"],bundle:true,write:false,
     outdir:scratch,format:"iife",jsx:"automatic",define:{"import.meta.env":"{}"},
@@ -24,7 +30,7 @@ async function bundle(baseline=false){
         b.onLoad({filter:/.*/,namespace:"qa"},()=>({contents:
           "export const supabase={rpc:(...args)=>window.__fixtureRpc(...args)};"}));
         if(baseline)b.onLoad({filter:/[\\/]src[\\/]ShipLoadout\.tsx$/},args=>({
-          contents:execFileSync("git",["show",baselineRef+":src/ShipLoadout.tsx"],{encoding:"utf8"}),
+          contents:baselineSource,
           loader:"tsx",resolveDir:resolve("src"),
         }));
       },

@@ -19,12 +19,11 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Install application dependencies
-        run: npm ci --no-fund --no-audit
+        run: npm install --no-fund --no-audit
       - name: Install isolated pinned browser tools
         run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1
       - name: Install test browsers
