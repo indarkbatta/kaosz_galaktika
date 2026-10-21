@@ -9,6 +9,8 @@ on:
       - 'src/components/DiceRollPanel.tsx'
       - 'src/bridge-encounter.css'
       - 'supabase/migrations/*m78*'
+      - 'supabase/migrations/*m79*'
+      - 'tools/qa/energy-*'
       - 'tools/qa/bridge-*'
       - 'src/SkillChallengeEditor.tsx'
       - 'src/skill-challenge*.css'
@@ -48,3 +50,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-challenge-browser-tools
         run: node tools/qa/bridge-database.mjs
+      - name: Verify energy ticks and challenge repetition against PostgreSQL
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-challenge-browser-tools
+        run: node tools/qa/energy-database.mjs

@@ -10,20 +10,21 @@ import {validWorldImage} from './lib/worldImages';
 type Step={name_hu:string;name_en:string;description_hu:string;description_en:string;skill_ids:string[];base_tn:number;energy_cost:number};
 type Challenge={image_path:string|null;difficulty:string;id:string;slug:string;location_id:string;name_hu:string;name_en:string;
  description_hu:string;description_en:string;steps:Step[];xp_full:number;xp_partial:number;xp_failure:number;
- reward_item_id:string|null;reward_qty:number;repeatable:boolean;cooldown_hours:number;is_published:boolean;sort_order:number};
+ reward_item_id:string|null;reward_qty:number;repeat_policy:string;cooldown_ticks:number;is_published:boolean;sort_order:number};
 type Skill={id:string;slug:string;attribute:string;game_skills_i18n:{locale:string;name:string}[]};
 type Location={id:string;slug:string;game_locations_i18n:{locale:string;name:string}[]};
 type Item={id:string;slug:string;game_items_i18n:{locale:string;name:string}[]};
 const fresh=(location_id='',skill_id=''):Challenge=>({image_path:null,difficulty:'normal',id:'',slug:'',location_id,name_hu:'',name_en:'',description_hu:'',
  description_en:'',steps:[0,1,2].map((_,i)=>({name_hu:'',name_en:'',description_hu:'',description_en:'',
  skill_ids:skill_id?[skill_id]:[],base_tn:9+i,energy_cost:7})),
- xp_full:75,xp_partial:30,xp_failure:10,reward_item_id:null,reward_qty:1,repeatable:false,cooldown_hours:24,
+ xp_full:75,xp_partial:30,xp_failure:10,reward_item_id:null,reward_qty:1,repeat_policy:'until_success',cooldown_ticks:1,
  is_published:false,sort_order:0});
 
 export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
  locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void;
 }){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
+ const [tickSeconds,setTickSeconds]=useState(3600);
  const [challenges,setChallenges]=useState<Challenge[]>([]);
  const [skills,setSkills]=useState<Skill[]>([]),[locations,setLocations]=useState<Location[]>([]),[items,setItems]=useState<Item[]>([]);
  const [draft,setDraft]=useState<Challenge>(fresh());
@@ -39,15 +40,16 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
  const load=useCallback(async(keep?:string)=>{
   setLoading(true);
   try{
-   const [c,s,l,i]=await Promise.all([
+   const [c,s,l,i,r]=await Promise.all([
     supabase.from('game_skill_challenges').select('*').order('sort_order'),
     supabase.from('game_skills').select('id,slug,attribute,game_skills_i18n(locale,name)').order('attribute'),
     supabase.from('game_locations').select('id,slug,game_locations_i18n(locale,name)').order('slug'),
-    supabase.from('game_items').select('id,slug,game_items_i18n(locale,name)').eq('is_published',true).order('slug')
+    supabase.from('game_items').select('id,slug,game_items_i18n(locale,name)').eq('is_published',true).order('slug'),
+    supabase.from('gameplay_rules').select('energy_regen_seconds').eq('id',1).single()
    ]);
-   const e=c.error||s.error||l.error||i.error;if(e)throw e;
+   const e=c.error||s.error||l.error||i.error||r.error;if(e)throw e;
    const rows=(c.data||[]) as Challenge[],ss=(s.data||[]) as Skill[],ll=(l.data||[]) as Location[];
-   setChallenges(rows);setSkills(ss);setLocations(ll);setItems((i.data||[]) as Item[]);
+   setTickSeconds(r.data?.energy_regen_seconds||3600);setChallenges(rows);setSkills(ss);setLocations(ll);setItems((i.data||[]) as Item[]);
    const selected=rows.find(x=>x.id===keep)||rows[0];
    setDraft(selected?{...selected,steps:selected.steps.map(step=>({...step,skill_ids:[...step.skill_ids]}))}:fresh(ll[0]?.id,ss[0]?.id));
    setStepIndex(0);setDirty(false);
@@ -72,6 +74,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
   stepPatch({skill_ids:[...new Set(next.filter(Boolean))].slice(0,3)});
  };
  const validate=()=>{
+  if(!['once','until_completed','until_success','unlimited'].includes(draft.repeat_policy)||!Number.isInteger(draft.cooldown_ticks)||draft.cooldown_ticks<0||draft.cooldown_ticks>8760)throw Error(tr('Érvénytelen ismétlési szabály vagy CD.','Invalid repeat policy or cooldown.'));
   if(!validWorldImage(draft.image_path))throw Error(tr('Érvénytelen képútvonal.','Invalid artwork path.'));
   if(!/^[a-z][a-z0-9_]*$/.test(draft.slug)||!draft.location_id||!draft.name_hu.trim()||!draft.name_en.trim())
    throw Error(tr('Azonosító, helyszín és magyar/angol név szükséges.','Slug, location and names required.'));
@@ -86,7 +89,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
    const row={image_path:draft.image_path,difficulty:draft.difficulty,slug:draft.slug,location_id:draft.location_id,name_hu:draft.name_hu.trim(),name_en:draft.name_en.trim(),
     description_hu:draft.description_hu,description_en:draft.description_en,steps:draft.steps,xp_full:draft.xp_full,
     xp_partial:draft.xp_partial,xp_failure:draft.xp_failure,reward_item_id:draft.reward_item_id||null,
-    reward_qty:draft.reward_qty,repeatable:draft.repeatable,cooldown_hours:draft.cooldown_hours,
+    reward_qty:draft.reward_qty,repeat_policy:draft.repeat_policy,cooldown_ticks:draft.cooldown_ticks,
     is_published:draft.is_published,sort_order:draft.sort_order};
    const result=draft.id?await supabase.from('game_skill_challenges').update(row).eq('id',draft.id).select('id').single()
     :await supabase.from('game_skill_challenges').insert(row).select('id').single();
@@ -167,8 +170,14 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
      <label>{tr('Jutalomtárgy teljes sikerért','Full-success reward item')}<select value={draft.reward_item_id||''} onChange={e=>patch({reward_item_id:e.target.value||null})}>
       <option value="">{tr('Nincs tárgyjutalom','No item reward')}</option>{items.map(i=><option key={i.id} value={i.id}>{local(i.game_items_i18n)}</option>)}</select></label>
      {draft.reward_item_id&&<label>{tr('Mennyiség','Quantity')}<input type="number" min={1} max={100} value={draft.reward_qty} onChange={e=>patch({reward_qty:Number(e.target.value)})}/></label>}
-     <label className="sc-check"><input type="checkbox" checked={draft.repeatable} onChange={e=>patch({repeatable:e.target.checked})}/>{tr('Megismételhető kihívás','Repeatable challenge')}</label>
-     {draft.repeatable&&<label>{tr('Várakozási idő (óra)','Cooldown (hours)')}<input type="number" min={0} max={8760} value={draft.cooldown_hours} onChange={e=>patch({cooldown_hours:Number(e.target.value)})}/></label>}
+     <label>{tr('Ismétlési szabály','Repeat policy')}<select aria-label={tr('Ismétlési szabály','Repeat policy')} value={draft.repeat_policy} onChange={e=>patch({repeat_policy:e.target.value})}>
+      <option value="once">{tr('Egyszeri — egy lezárt próbálkozás','Once — one finished attempt')}</option>
+      <option value="until_completed">{tr('Részleges vagy teljes sikerig','Until partial or full success')}</option>
+      <option value="until_success">{tr('Teljes sikerig','Until full success')}</option>
+      <option value="unlimited">{tr('Korlátlanul ismételhető','Unlimited repeats')}</option>
+     </select></label>
+     {draft.repeat_policy!=='once'&&<label>{tr('CD (tick)','Cooldown (ticks)')}<input aria-label={tr('CD (tick)','Cooldown (ticks)')} type="number" min={0} max={8760} step={1} value={draft.cooldown_ticks} onChange={e=>patch({cooldown_ticks:Number(e.target.value)})}/></label>}
+     <p>1 tick = {tickSeconds/60} {tr('perc','minutes')} · {tr('CD','Cooldown')}: {draft.cooldown_ticks} tick = {draft.cooldown_ticks*tickSeconds/60} {tr('perc','minutes')}. {tr('A CD lezáráskor indul; a félbehagyott kihívás folytatható.','Cooldown starts on conclusion; unfinished challenges can be resumed.')}</p>
      <p>{tr('3/4 siker: teljes; 2/4: részleges; különben kudarc. Az XP csak a végén jár.','3/4 successes: full; 2/4: partial; otherwise failure. XP pays out at the end only.')}</p>
     </>}
    </form>

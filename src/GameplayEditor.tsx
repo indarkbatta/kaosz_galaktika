@@ -10,7 +10,7 @@ import {validWorldImage} from './lib/worldImages';
 type Lang={code:string;native_name:string};
 type Local={locale:string;name:string;description:string;success_message:string;failure_message:string};
 type Action={image_path:string|null;id:string;slug:string;energy_cost:number;target_number:number;xp_success:number;xp_failure:number;skill_id:string;is_published:boolean;game_actions_i18n:Local[]};
-type Rules={energy_max:number;energy_regen_seconds:number;xp_level_base:number;skill_points_per_level:number};
+type Rules={energy_per_tick:number;energy_max:number;energy_regen_seconds:number;xp_level_base:number;skill_points_per_level:number};
 type Skill={id:string;slug:string;icon_path:string|null;game_skills_i18n:{locale:string;name:string}[]};
 type Item={id:string;slug:string;rarity:string;game_items_i18n:{locale:string;name:string}[]};
 type Drop={action_id:string;item_id:string;chance_percent:number;min_qty:number;max_qty:number};
@@ -19,7 +19,7 @@ export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:s
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [actions,setActions]=useState<Action[]>([]),[skills,setSkills]=useState<Skill[]>([]);
  const [locales,setLocales]=useState<Lang[]>([]),[chosen,setChosen]=useState(''),[lang,setLang]=useState('hu');
- const [tab,setTab]=useState('actions'),[rules,setRules]=useState<Rules>({energy_max:100,energy_regen_seconds:300,xp_level_base:100,skill_points_per_level:1});
+ const [tab,setTab]=useState('actions'),[rules,setRules]=useState<Rules>({energy_per_tick:1,energy_max:16,energy_regen_seconds:3600,xp_level_base:100,skill_points_per_level:1});
  const [edit,setEdit]=useState<Action|null>(null),[translations,setTranslations]=useState<Record<string,Local>>({});
  const [busy,setBusy]=useState(false);
  const [items,setItems]=useState<Item[]>([]),[drops,setDrops]=useState<Drop[]>([]);
@@ -29,7 +29,7 @@ export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:s
    supabase.from('game_actions').select('id,slug,image_path,energy_cost,target_number,xp_success,xp_failure,skill_id,is_published,game_actions_i18n(locale,name,description,success_message,failure_message)').order('sort_order'),
    supabase.from('game_skills').select('id,slug,icon_path,game_skills_i18n(locale,name)').order('slug'),
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order'),
-   supabase.from('gameplay_rules').select('energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
+   supabase.from('gameplay_rules').select('energy_per_tick,energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
    supabase.from('game_items').select('id,slug,rarity,game_items_i18n(locale,name)').eq('is_published',true).order('slug'),
    supabase.from('game_action_loot').select('action_id,item_id,chance_percent,min_qty,max_qty')
   ]);
@@ -77,8 +77,9 @@ export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:s
    <EditorTabs label="Gameplay Editor" selected={tab} onSelect={setTab} items={[{id:'actions',name:tr('Akciók és szótár','Actions & dictionary')},{id:'balance',name:tr('Energia és XP','Energy & XP')},{id:'loot',name:tr('Zsákmány','Loot')}]}/>
 
    <form className="ed-form ge-form" onSubmit={save} id="gameplay-form">
-    {tab==='balance'&&<><p>{tr('Az értékek szerveroldalon érvényesülnek, Vercel deploy nélkül.','Changes take effect on the server without a Vercel deploy.')}</p>
-     {([['energy_max',tr('Maximális energia','Max energy'),20,1000],['energy_regen_seconds',tr('Regenerációs idő / pont (másodperc)','Seconds per energy point'),30,86400],['xp_level_base',tr('Szintlépési XP-alap','Level XP base'),20,100000],['skill_points_per_level',tr('Skillpip / szint','Skill pips per level'),1,10]] as const).map(([field,label,min,max])=><label key={field}>{label}<input required type="number" min={min} max={max} value={rules[field]} onChange={e=>nr(field,Number(e.target.value))}/></label>)}
+    {tab==='balance'&&<><label>{tr('Tick időtartama (perc)','Tick duration (minutes)')}<input aria-label={tr('Tick időtartama (perc)','Tick duration (minutes)')} required type="number" min={.5} max={1440} step={.5} value={rules.energy_regen_seconds/60} onChange={e=>nr('energy_regen_seconds',Math.round(Number(e.target.value)*60))}/></label><p>{tr('Az értékek szerveroldalon érvényesülnek, Vercel deploy nélkül.','Changes take effect on the server without a Vercel deploy.')}</p>
+     {([['energy_max',tr('Maximális energiatartalék','Maximum energy reserve'),1,1000],['energy_per_tick',tr('Visszatérő energia / tick','Energy restored / tick'),1,1000],['xp_level_base',tr('Szintlépési XP-alap','Level XP base'),20,100000],['skill_points_per_level',tr('Skillpip / szint','Skill pips per level'),1,10]] as const).map(([field,label,min,max])=><label key={field}>{label}<input required type="number" min={min} max={max} value={rules[field]} onChange={e=>nr(field,Number(e.target.value))}/></label>)}
+     <p>{tr('1 tick = ','1 tick = ')}{rules.energy_regen_seconds/60} {tr('perc','minutes')} · +{rules.energy_per_tick} {tr('energia','energy')} · {tr('maximum','maximum')} {rules.energy_max}. {tr('A kihívások CD-je ugyanezt a tickidőt használja.','Challenge cooldowns use this same tick duration.')}</p>
     </>}
     {tab==='loot'&&edit&&<><p>{tr('Sikeres akció után a szerver itt megadott eséllyel osztja ki a jutalmat.','On a successful action, the server awards loot using these probabilities.')}</p><div className="ge-loot-list">{items.map(item=>{const rule=lootRules[item.id]||{enabled:false,chance_percent:100,min_qty:1,max_qty:1};const label=item.game_items_i18n.find(x=>x.locale===locale)?.name||item.game_items_i18n.find(x=>x.locale==='hu')?.name||item.slug;return <div className="ge-loot-row" key={item.id}><label className="ge-checkbox"><input type="checkbox" checked={rule.enabled} onChange={e=>patchLoot(item.id,{enabled:e.target.checked})}/><span>{label}</span></label><label>{tr('Esély %','Chance %')}<input type="number" min="0" max="100" disabled={!rule.enabled} value={rule.chance_percent} onChange={e=>patchLoot(item.id,{chance_percent:Number(e.target.value)})}/></label><label>{tr('Min.','Min.')}<input type="number" min="1" max="100" disabled={!rule.enabled} value={rule.min_qty} onChange={e=>patchLoot(item.id,{min_qty:Number(e.target.value)})}/></label><label>{tr('Max.','Max.')}<input type="number" min="1" max="100" disabled={!rule.enabled} value={rule.max_qty} onChange={e=>patchLoot(item.id,{max_qty:Number(e.target.value)})}/></label></div>})}</div></>}
     {tab==='actions'&&edit&&<><WorldImageField locale={locale} value={edit.image_path} onChange={image_path=>setEdit({...edit,image_path})}/><div className="ge-grid">{([['energy_cost',tr('Energiaköltség','Energy cost'),1,500],['target_number',tr('Célszám (TN)','Target Number (TN)'),2,100],['xp_success',tr('XP siker esetén','XP on success'),0,10000],['xp_failure',tr('XP kudarc esetén','XP on failure'),0,10000]] as const).map(([key,label,min,max])=><label key={key}>{label}<input required type="number" min={min} max={max} value={edit[key]} onChange={e=>na(key,Number(e.target.value))}/></label>)}</div>

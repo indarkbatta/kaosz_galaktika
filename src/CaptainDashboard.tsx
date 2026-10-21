@@ -20,7 +20,7 @@ type Ship={id:string;slug:string;image_path:string|null;hull:number;cargo:number
 type Skill={id:string;slug:string;attribute:string;icon_path:string|null;game_skills_i18n:I18n[]};
 type Action={image_path:string|null;xp_success:number;xp_failure:number;id:string;slug:string;energy_cost:number;target_number:number;skill_id:string;game_actions_i18n:I18n[]};
 type Progress={level:number;xp_total:number;energy:number;energy_at:string;upgrade_points:number};
-type Rules={energy_max:number;energy_regen_seconds:number;xp_level_base:number;skill_points_per_level:number};
+type Rules={energy_per_tick:number;energy_max:number;energy_regen_seconds:number;xp_level_base:number;skill_points_per_level:number};
 type Log=DiceResult & {id:number;action_id:string;performed_at:string;roll_total:number;target_number:number;succeeded:boolean;xp_awarded:number};
 type TravelLog={id:number;origin_id:string;destination_id:string;energy_spent:number;traveled_at:string};
 type InventoryRow={item_id:string;quantity:number;game_items:{slug:string;rarity:string;category:string;game_items_i18n:I18n[]}};
@@ -55,7 +55,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const refresh=useCallback(async()=>{
   const [p,r,a,l,u,pos,dis,loc,rou,placement,travelHistory,inv,crewData,loadout,gals,quads,sys]=await Promise.all([
     supabase.from('character_progress').select('level,xp_total,energy,energy_at,upgrade_points').eq('character_id',captain.id).single(),
-    supabase.from('gameplay_rules').select('energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
+    supabase.from('gameplay_rules').select('energy_per_tick,energy_max,energy_regen_seconds,xp_level_base,skill_points_per_level').eq('id',1).single(),
     supabase.from('game_actions').select('id,slug,image_path,xp_success,xp_failure,energy_cost,target_number,skill_id,game_actions_i18n(locale,name,description,success_message,failure_message)').eq('is_published',true).order('sort_order'),
     supabase.from('character_action_log').select('id,action_id,performed_at,dice,pip_bonus,wild_dice,wild_penalty,wild_cancelled_index,wild_rule,roll_total,target_number,succeeded,xp_awarded').eq('character_id',captain.id).order('id',{ascending:false}).limit(10),
     supabase.from('character_skill_upgrades').select('skill_id,bonus_pips').eq('character_id',captain.id),
@@ -82,7 +82,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  },[captain.id]);
  useEffect(()=>{void refresh();},[refresh]);
  useEffect(()=>{const interval=setInterval(()=>setTime(Date.now()),10000);return()=>clearInterval(interval);},[]);
- const energy=progress&&rules?Math.min(rules.energy_max,progress.energy+Math.max(0,Math.floor((time-Date.parse(progress.energy_at))/(rules.energy_regen_seconds*1000)))):0;
+ const energy=progress&&rules?Math.min(rules.energy_max,progress.energy+Math.max(0,Math.floor((time-Date.parse(progress.energy_at))/(rules.energy_regen_seconds*1000)))*(rules.energy_per_tick||1)):0;
  const elapsed=progress?Math.max(0,Math.floor((time-Date.parse(progress.energy_at))/1000)):0;
  const nextEnergy=rules?rules.energy_regen_seconds-elapsed%rules.energy_regen_seconds:0;
  const level=progress?.level||1, xpThreshold=rules?rules.xp_level_base*level*(level+1)/2:100;
@@ -157,7 +157,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
-   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||100}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}><LucideZap width={15} height={15}/></button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||100))+'%'}}/></div><small>{energy===(rules?.energy_max||100)?tr('Feltöltve','Fully charged'):tr('Következő +1','Next +1')+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
+   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||16}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}><LucideZap width={15} height={15}/></button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||16))+'%'}}/></div><small>{energy===(rules?.energy_max||16)?tr('Feltöltve','Fully charged'):tr('Következő +','Next +')+(rules?.energy_per_tick||1)+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
    <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
    <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||''} path={ship?.image_path}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>

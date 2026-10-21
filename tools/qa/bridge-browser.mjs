@@ -6,13 +6,13 @@ import {createServer} from 'node:http';
 const require=createRequire(join(resolve(process.env.WORLD_BROWSER_TOOLS),'package.json'));
 const {chromium,firefox}=require('playwright');
 const initial={game_actions:[{id:'action',slug:'analysis',skill_id:'skill',energy_cost:6,target_number:9,xp_success:10,xp_failure:2,is_published:true,image_path:null,game_actions_i18n:[{locale:'hu',name:'Próba',description:'Tevékenység'},{locale:'en',name:'Test',description:'Activity'}]}],
- game_skill_challenges:[{id:'challenge',slug:'qa',location_id:'station',name_hu:'Kihívás',name_en:'Challenge',description_hu:'Leírás',description_en:'Description',image_path:null,difficulty:'normal',steps:[0,1].map(i=>({name_hu:'Lépés '+i,name_en:'Step '+i,description_hu:'Teszt',description_en:'Test',skill_ids:['skill'],base_tn:9,energy_cost:6})),xp_full:75,xp_partial:30,xp_failure:10,reward_item_id:null,reward_qty:1,repeatable:false,cooldown_hours:24,is_published:true,sort_order:0}],
- game_skills:[{id:'skill',slug:'analysis',icon_path:null,attribute:'mind',game_skills_i18n:[{locale:'hu',name:'Elemzés'}]}],game_locations:[{id:'station',slug:'station',is_published:true,game_locations_i18n:[{locale:'hu',name:'Állomás'}]}],game_locales:[{code:'hu',native_name:'Magyar',is_enabled:true},{code:'en',native_name:'English',is_enabled:true}],gameplay_rules:[{id:1,energy_max:100,energy_regen_seconds:300,xp_level_base:100,skill_points_per_level:1}],character_progress:[{character_id:'captain',level:1,xp_total:0,energy:100,energy_at:new Date().toISOString(),upgrade_points:0}],character_positions:[{character_id:'captain',location_id:'station'}],game_location_actions:[{location_id:'station',action_id:'action'}],calls:[]};
+ game_skill_challenges:[{id:'challenge',slug:'qa',location_id:'station',name_hu:'Kihívás',name_en:'Challenge',description_hu:'Leírás',description_en:'Description',image_path:null,difficulty:'normal',steps:[0,1].map(i=>({name_hu:'Lépés '+i,name_en:'Step '+i,description_hu:'Teszt',description_en:'Test',skill_ids:['skill'],base_tn:9,energy_cost:6})),xp_full:75,xp_partial:30,xp_failure:10,reward_item_id:null,reward_qty:1,repeat_policy:'once',cooldown_ticks:1,is_published:true,sort_order:0}],
+ game_skills:[{id:'skill',slug:'analysis',icon_path:null,attribute:'mind',game_skills_i18n:[{locale:'hu',name:'Elemzés'}]}],game_locations:[{id:'station',slug:'station',is_published:true,game_locations_i18n:[{locale:'hu',name:'Állomás'}]}],game_locales:[{code:'hu',native_name:'Magyar',is_enabled:true},{code:'en',native_name:'English',is_enabled:true}],gameplay_rules:[{id:1,energy_max:16,energy_regen_seconds:3600,energy_per_tick:1,xp_level_base:100,skill_points_per_level:1}],character_progress:[{character_id:'captain',level:1,xp_total:0,energy:16,energy_at:new Date().toISOString(),upgrade_points:0}],character_positions:[{character_id:'captain',location_id:'station'}],game_location_actions:[{location_id:'station',action_id:'action'}],calls:[]};
 const mock=`const db=window.__fixture;const clone=x=>JSON.parse(JSON.stringify(x));
 export const supabase={from(table){let filters=[],patch=null,single=false;
  const q={select(){return q},eq(k,v){filters.push([k,v]);return q},order(){return q},limit(){return q},single(){single=true;return q},update(x){patch=x;return q},upsert(){return q},
  then(res,rej){let rows=(db[table]||[]).filter(r=>filters.every(([k,v])=>r[k]===v));if(patch)rows.forEach(r=>Object.assign(r,patch));return Promise.resolve({data:clone(single?rows[0]:rows),error:null}).then(res,rej)}};return q;},
- rpc(method,args){db.calls.push({method,args});if(method==='get_ship_loadout')return Promise.resolve({data:{stats:{ready:true}},error:null});
+ rpc(method,args={}){if(method==='get_skill_challenge_availability')return Promise.resolve({data:db.game_skill_challenges.map(c=>({challenge_id:c.id,can_start:true,reason:null,cooldown_until:null,tick_seconds:db.gameplay_rules[0].energy_regen_seconds})),error:null});db.calls.push({method,args});if(method==='get_ship_loadout')return Promise.resolve({data:{stats:{ready:true}},error:null});
  if(method==='perform_game_action'){
  const data={log_id:1,action_id:'action',dice:[6,4],wild_dice:[1],wild_cancelled_index:0,wild_penalty:7,wild_rule:'space_d6_remove_highest_v1',pip_bonus:2,roll_total:6,target_number:9,succeeded:false,xp_awarded:2,level_up:false};
  db.character_action_log=[{...data,id:1,character_id:'captain',performed_at:new Date().toISOString()}];db.character_progress[0].energy-=6;
@@ -32,12 +32,24 @@ try{for(const [name,driver] of [['chromium',chromium],['firefox',firefox]]){
  await image.fill('https://assets.voidnoir.net/hatarvilag/worlds/qa.png');
  await page.getByRole('button',{name:'MENTÉS',exact:true}).click();
  await page.waitForFunction(()=>window.__fixture.game_actions[0].image_path==='hatarvilag/worlds/qa.png');
+ await page.getByRole('button',{name:'Energia és XP',exact:true}).click();
+ assert.equal(await page.getByLabel('Maximális energiatartalék',{exact:true}).inputValue(),'16');
+ assert.equal(await page.getByLabel('Tick időtartama (perc)',{exact:true}).inputValue(),'60');
+ assert.equal(await page.getByLabel('Visszatérő energia / tick',{exact:true}).inputValue(),'1');
+ await page.getByLabel('Tick időtartama (perc)',{exact:true}).fill('30');
+ await page.getByLabel('Visszatérő energia / tick',{exact:true}).fill('2');
+ await page.getByLabel('Maximális energiatartalék',{exact:true}).fill('20');
+ await page.getByRole('button',{name:'MENTÉS',exact:true}).click();
+ await page.waitForFunction(()=>window.__fixture.gameplay_rules[0].energy_regen_seconds===1800&&window.__fixture.gameplay_rules[0].energy_per_tick===2&&window.__fixture.gameplay_rules[0].energy_max===20);
  await page.getByRole('button',{name:'Challenge Editor',exact:true}).click();
  await image.fill('hatarvilag/worlds/challenge.png');
  await page.getByRole('button',{name:'Jutalmak és nehézség'}).click();
  await page.getByLabel('Nehézség',{exact:true}).selectOption('hard');
+ await page.getByLabel('Ismétlési szabály',{exact:true}).selectOption('until_completed');
+ await page.getByLabel('CD (tick)',{exact:true}).fill('2');
+ await page.getByText('1 tick = 30 perc',{exact:false}).waitFor();
  await page.getByRole('button',{name:'MENTÉS',exact:true}).click();
- await page.waitForFunction(()=>window.__fixture.game_skill_challenges[0].difficulty==='hard');
+ await page.waitForFunction(()=>window.__fixture.game_skill_challenges[0].difficulty==='hard'&&window.__fixture.game_skill_challenges[0].repeat_policy==='until_completed'&&window.__fixture.game_skill_challenges[0].cooldown_ticks===2);
  await page.getByRole('button',{name:'Activity Editor',exact:true}).click();await image.waitFor();
  assert.equal(await image.inputValue(),'hatarvilag/worlds/qa.png');
  await page.getByRole('button',{name:'Challenge Editor',exact:true}).click();

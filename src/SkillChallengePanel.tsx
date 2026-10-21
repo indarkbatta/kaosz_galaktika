@@ -10,9 +10,10 @@ import {WorldArtwork} from './components/WorldImageField';
 
 type Step={name_hu:string;name_en:string;description_hu:string;description_en:string;skill_ids:string[];base_tn:number;energy_cost:number};
 type Challenge={image_path:string|null;difficulty:string;id:string;slug:string;location_id:string;name_hu:string;name_en:string;description_hu:string;description_en:string;steps:Step[];
- xp_full:number;xp_partial:number;xp_failure:number;repeatable:boolean;cooldown_hours:number;is_published:boolean};
+ xp_full:number;xp_partial:number;xp_failure:number;repeat_policy:string;cooldown_ticks:number;is_published:boolean};
 type Run={result_seen_through:number;id:string;challenge_id:string;definition:{steps:Step[];location_id:string};difficulty:string;level_at_start:number;
  step_index:number;successes:number;status:string;xp_awarded:number;reward_qty:number;finished_at:string|null;started_at:string};
+type Availability={challenge_id:string;can_start:boolean;reason:string|null;cooldown_until:string|null;tick_seconds:number};
 type Roll=DiceResult & {id:number;step_index:number;skill_id:string;dice:number[];pip_bonus:number;roll_total:number;target_number:number;succeeded:boolean};
 type Skill={id:string;slug:string;attribute:string;icon_path:string|null;game_skills_i18n:{locale:string;name:string}[]};
 const difficulties=[{id:'easy',hu:'Könnyű',en:'Easy',tn:-2,xp:'0,75×'},
@@ -29,6 +30,11 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
  const skillName=(s:Skill)=>s.game_skills_i18n.find(x=>x.locale===locale)?.name||
   s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug;
  const [challenges,setChallenges]=useState<Challenge[]>([]),[runs,setRuns]=useState<Run[]>([]);
+ const [availability,setAvailability]=useState<Availability[]>([]);
+ const [clock,setClock]=useState(Date.now());
+ useEffect(()=>{const timer=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(timer);},[]);
+ const countdown=(until:string|null|undefined)=>{const seconds=Math.max(0,Math.ceil(((until?Date.parse(until):0)-clock)/1000));return Math.floor(seconds/3600)+':'+String(Math.floor(seconds/60)%60).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');};
+ const canStart=(a:Availability|undefined)=>!!a&&(a.can_start||(a.reason==='cooldown'&&!!a.cooldown_until&&Date.parse(a.cooldown_until)<=clock));
  const [logs,setLogs]=useState<Roll[]>([]);
  const [chosen,setChosen]=useState<string|null>(null);
  const gate=useRef(false);
@@ -40,11 +46,12 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
  const [last,setLast]=useState<Roll|null>(null);
  const refresh=useCallback(async()=>{
   const version=++loadVersion.current;
-  const [c,r]=await Promise.all([
+  const [c,r,a]=await Promise.all([
    supabase.from('game_skill_challenges').select('*').eq('is_published',true).order('sort_order'),
-   supabase.from('character_skill_challenge_runs').select('*').eq('character_id',characterId).order('started_at',{ascending:false}).limit(50)
+   supabase.from('character_skill_challenge_runs').select('*').eq('character_id',characterId).order('started_at',{ascending:false}).limit(50),
+   supabase.rpc('get_skill_challenge_availability')
   ]);
-  if(c.error||r.error){notify((c.error||r.error)!.message,'error');return;}
+  if(c.error||r.error||a.error){notify((c.error||r.error||a.error)!.message,'error');return;}
   const ch=(c.data||[]) as Challenge[],history=(r.data||[]) as Run[];
   let nextLogs:Roll[]=[];
   const mission=ch.find(x=>x.id===chosen);
@@ -56,7 +63,7 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
    nextLogs=(result.data||[]) as Roll[];
   }
   if(version!==loadVersion.current)return;
-  setChallenges(ch);setRuns(history);setLogs(nextLogs);setLoadedFor(chosen);setLoaded(true);
+  setAvailability((a.data||[]) as Availability[]);setClock(Date.now());setChallenges(ch);setRuns(history);setLogs(nextLogs);setLoadedFor(chosen);setLoaded(true);
  },[characterId,chosen]);
  useEffect(()=>{void refresh();},[refresh]);
  const active=runs.find(x=>x.status==='active');
@@ -68,10 +75,8 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
  const steps=run?.definition.steps||selected?.steps||[];
  const step=run&&(pending||run.status==='active')?steps[showing!]:null;
  const completed=run&&run.status!=='active'&&!pending;
- const finished=selected&&runs.find(x=>x.challenge_id===selected.id&&x.status!=='active');
- const cooldown=!!finished&&!!selected?.repeatable&&!!finished.finished_at&&
-  Date.now()<Date.parse(finished.finished_at)+selected.cooldown_hours*3600000;
- const locked=!!finished&&!selected?.repeatable||cooldown;
+ const selectedAvailability=availability.find(a=>a.challenge_id===selected?.id);
+ const locked=!canStart(selectedAvailability);
  const tn=(s:Step)=>Math.max(4,s.base_tn+Math.floor(((run?.level_at_start||1)-1)/5)+
   (difficulties.find(d=>d.id===run?.difficulty)?.tn||0));
  const pool=(s:Skill)=>(attributePips[s.attribute]||3)+(skillBonusPips[s.id]||0)+
@@ -111,15 +116,16 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
     const underway=active?.challenge_id===c.id;
     const previous=runs.find(x=>x.challenge_id===c.id&&x.status!=='active');
     const unread=previous&&previous.step_index>(previous.result_seen_through??-1)+1;
-    const unavailable=!!active&&!underway||!!previous&&!c.repeatable&&!unread||
-       !!previous&&c.repeatable&&!unread&&!!previous.finished_at&&Date.now()<Date.parse(previous.finished_at)+c.cooldown_hours*3600000;
+    const status=availability.find(a=>a.challenge_id===c.id);
+    const unavailable=!underway&&!unread&&!canStart(status);
+    const cooling=status?.reason==='cooldown'&&!canStart(status);
     const d=difficulties.find(x=>x.id===(underway?active.difficulty:c.difficulty))||difficulties[1];
     return <BridgeEncounterCard key={c.id} kind="Skill Challenge" title={name(c)} imagePath={c.image_path}
      description={en?c.description_en:c.description_hu}
-     meta={<><span>{c.steps.length} {tr('lépés','steps')}</span><span>{en?d.en:d.hu}</span>
+     meta={<><span>{c.steps.length} {tr('lépés','steps')}</span><span>CD: {c.cooldown_ticks} tick</span><span>{en?d.en:d.hu}</span>
       <span>⚡ {c.steps.reduce((s,x)=>s+x.energy_cost,0)}</span><span>{Math.floor(c.xp_full*({easy:.75,normal:1,hard:1.5,extreme:2}[d.id]))} XP</span></>}
      disabled={busy||unavailable} onAction={()=>enter(c.id)}
-     action={underway||unread?tr('Folytatás','Resume'):previous&&!c.repeatable?tr('Teljesítve','Completed'):tr('Indítás','Start')}/>;
+     action={underway||unread?tr('Folytatás','Resume'):status?.reason==='completed'?tr('Teljesítve','Completed'):cooling?'CD '+countdown(status?.cooldown_until):previous?tr('Újrapróbálás','Retry'):tr('Indítás','Start')}/>;
    })}
    {active&&!available.some(x=>x.id===active.challenge_id)&&<p>{tr('Aktív kihívásod egy másik helyszínen vár.','Your active challenge awaits at another location.')}</p>}
   </div>
@@ -139,12 +145,13 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
        <DiceRollPanel locale={locale} result={log}/></details>)}</div>}
     </section>
     <section className="sc-play-action">
-     {(!run||(completed&&selected.repeatable&&!locked))&&<><h3>{tr('Nehézségi fokozat','Difficulty')}</h3>
+     {(!run||(completed&&selected.repeat_policy!=='once'&&selectedAvailability?.reason!=='completed'))&&<><h3>{tr('Nehézségi fokozat','Difficulty')}</h3>
       <div className="sc-check-info"><span>{difficulties.find(d=>d.id===selected.difficulty)?.[en?'en':'hu']||tr('Normál','Normal')}</span></div>
       <p>{tr('A küldetés befejezésekor jár XP. A lépések energiát fogyasztanak.',
         'XP is awarded at completion. Each test consumes energy.')}</p>
       <button type="button" className="sc-primary" disabled={busy||locked||!!active} onClick={()=>void start()}>
-       {tr('Kihívás indítása','Start challenge')}</button>
+       {run?tr('Újrapróbálás','Retry'):tr('Kihívás indítása','Start challenge')}</button>
+      {selectedAvailability?.reason==='cooldown'&&!canStart(selectedAvailability)&&<p>CD: {countdown(selectedAvailability.cooldown_until)} · {selected.cooldown_ticks} tick</p>}
      </>}
      {run&&step&&<><small>{tr('AKTUÁLIS LÉPÉS','CURRENT STEP')} {(showing??0)+1}/{steps.length}</small>
       <h3>{name(step)}</h3><p>{en?step.description_en:step.description_hu}</p>
