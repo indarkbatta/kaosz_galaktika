@@ -38,7 +38,7 @@ try{
    const page=await engine.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
-    contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90"><rect width="120" height="90" fill="#2a627b"/></svg>'
+    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9YtDGnQAAAAASUVORK5CYII=','base64')
    }));
    await page.goto(url);
    const levels=page.getByRole('navigation',{name:'Világszintek'});
@@ -115,6 +115,7 @@ try{
     assert.equal(await page.getByRole('alert').count(),1,'Reject external image URL');
     await input.fill('https://assets.voidnoir.net/'+key);
     assert.equal(await input.inputValue(),key,'Normalize public R2 link');
+    await page.locator('.world-image-editor-preview img').waitFor({state:'visible'});
     assert.equal(await page.locator('.world-image-editor-preview img').count(),1,'Live artwork preview');
     await page.getByRole('button',{name:'Mentés',exact:true}).click();
     await page.waitForFunction(k=>Object.values(window.__worldFixture.db).some(rows=>rows.some(row=>row.image_path===k)),key);
