@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - 'src/WorldMapEditor.tsx'
+      - 'src/SectorMap.tsx'
+      - 'src/components/WorldImageField.tsx'
+      - 'src/world-image.css'
+      - 'src/sector-map.css'
+      - 'tools/qa/player-map-*'
       - 'src/GalaxyEditor.tsx'
       - 'src/world-map-editor.css'
       - 'src/world-atlas-editor.css'
@@ -38,3 +43,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
         run: node tools/qa/world-map-viewport-browser.mjs
+      - name: Validate player map picture frames and image crops
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
+        run: node tools/qa/player-map-art-browser.mjs
