@@ -87,3 +87,13 @@
  .cmd-head{padding:5px 10px;flex-direction:row}
  .cmd-head>div{max-width:100%;display:grid;justify-content:initial}
 }
+
+/* The former two-row mobile header is unnecessary without horizontal navigation. */
+@media(max-width:760px){
+ .cmd-frame>.cmd-shell{grid-template-rows:54px 112px minmax(0,1fr) 42px}
+ .cmd-head{flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;padding:5px 12px}
+ .cmd-head>div{display:grid;max-width:100%;min-width:0}
+}
+@media(max-height:690px){
+ .cmd-frame>.cmd-shell{grid-template-rows:46px 84px minmax(0,1fr) 34px}
+}
