@@ -15,11 +15,11 @@ type Skill={id:string;slug:string;icon_path:string|null;game_skills_i18n:{locale
 type Item={id:string;slug:string;rarity:string;game_items_i18n:{locale:string;name:string}[]};
 type Drop={action_id:string;item_id:string;chance_percent:number;min_qty:number;max_qty:number};
 type LootConfig={enabled:boolean;chance_percent:number;min_qty:number;max_qty:number};
-export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
+export default function GameplayEditor({locale,onBack,onSectionSelect,initialTab='actions',activeSection='gameplay'}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void;initialTab?:'actions'|'balance';activeSection?:'gameplay'|'balance'}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [actions,setActions]=useState<Action[]>([]),[skills,setSkills]=useState<Skill[]>([]);
  const [locales,setLocales]=useState<Lang[]>([]),[chosen,setChosen]=useState(''),[lang,setLang]=useState('hu');
- const [tab,setTab]=useState('actions'),[rules,setRules]=useState<Rules>({energy_per_tick:1,energy_max:16,energy_regen_seconds:3600,xp_level_base:100,skill_points_per_level:1});
+ const [tab,setTab]=useState(initialTab),[rules,setRules]=useState<Rules>({energy_per_tick:1,energy_max:16,energy_regen_seconds:3600,xp_level_base:100,skill_points_per_level:1});
  const [edit,setEdit]=useState<Action|null>(null),[translations,setTranslations]=useState<Record<string,Local>>({});
  const [busy,setBusy]=useState(false);
  const [items,setItems]=useState<Item[]>([]),[drops,setDrops]=useState<Drop[]>([]);
@@ -71,7 +71,7 @@ export default function GameplayEditor({locale,onBack,onSectionSelect}:{locale:s
  const nr=(field:keyof Rules,number:number)=>setRules(prev=>({...prev,[field]:number}));
  const na=(field:keyof Action,value:string|number|boolean)=>setEdit(prev=>prev?{...prev,[field]:value}:prev);
  return <EditorFrame>
-  <EditorNavigation locale={locale} active="gameplay" onBack={onBack} onSelect={onSectionSelect}/>
+  <EditorNavigation locale={locale} active={activeSection} onBack={onBack} onSelect={onSectionSelect}/>
   <EditorRoster><div className="ed-roster-top"><strong>{tr('Játékakciók','Game actions')} ({actions.length})</strong></div><div className="ed-roster-list">{actions.map(a=>{const s=skills.find(x=>x.id===a.skill_id);return <button type="button" className={'ed-record '+(chosen===a.id?'selected':'')} onClick={()=>{pick(a);setTab('actions');}} key={a.id}><span className="ed-thumbnail">{s&&<SkillArt slug={s.slug} path={s.icon_path}/>}</span><span className="ed-record-name"><strong>{localized(a)}</strong><small>⚡ {a.energy_cost} · {tr('Célszám (TN)','Target Number (TN)')} {a.target_number}</small></span></button>})}</div></EditorRoster>
   <section className="ed-editor"><EditorHeader><strong>{tab==='balance'?tr('Játékszabályok','Game rules'):edit?localized(actions.find(a=>a.id===edit.id)||actions[0]):'—'}</strong><span>M2 / M3</span></EditorHeader>
    <EditorTabs label="Gameplay Editor" selected={tab} onSelect={setTab} items={[{id:'actions',name:tr('Akciók és szótár','Actions & dictionary')},{id:'balance',name:tr('Energia és XP','Energy & XP')},{id:'loot',name:tr('Zsákmány','Loot')}]}/>

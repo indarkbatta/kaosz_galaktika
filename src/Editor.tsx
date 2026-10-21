@@ -103,9 +103,9 @@ function editorSelect(k:Kind){
  const trans=k==='species'?'game_species_i18n(locale,name,description,passives)':'game_classes_i18n(locale,name,description,starting_equipment,traits,gameplay_role)';
  return '*, '+trans+', '+bonusTable(k)+'(skill_id,bonus_pips)';
 }
-export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}:{locale:string;onBack:()=>void;kind:Kind;onKindChange:(kind:Kind)=>void;onSectionSelect:(section:EditorSection)=>void}){
+export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,initialTab='general',activeSection}:{locale:string;onBack:()=>void;kind:Kind;onKindChange:(kind:Kind)=>void;onSectionSelect:(section:EditorSection)=>void;initialTab?:Tab;activeSection?:EditorSection}){
  const l=locale==='en'?'en':'hu',dict=ui[l],t=(key:UiKey)=>dict[key];
- const [tab,setTab]=useState<Tab>('general');
+ const [tab,setTab]=useState<Tab>(initialTab);
  const [records,setRecords]=useState<CatalogRecord[]>([]);
  const [worldGalaxies,setWorldGalaxies]=useState<WorldEntry[]>([]);
  const [worldQuadrants,setWorldQuadrants]=useState<WorldQuadrant[]>([]);
@@ -250,7 +250,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
  const fieldLabels:Record<keyof TranslationBody,string>={name:t('name'),description:t('description'),passives:t('passives'),
    starting_equipment:t('equipment'),traits:t('traits'),gameplay_role:t('role')};
  return <EditorFrame>
-   <EditorNavigation locale={locale} active={kind} counts={counts} onBack={()=>navigate(onBack)}
+   <EditorNavigation locale={locale} active={activeSection||kind} counts={counts} onBack={()=>navigate(onBack)}
    onSelect={section=>{if(section==='species'||section==='classes')chooseKind(section);else navigate(()=>onSectionSelect(section));}}/>
    <EditorRoster>
      <div className="ed-roster-top"><strong>{kind==='species'?t('species'):t('classes')} ({records.length})</strong>
