@@ -110,7 +110,7 @@ try{
     await levels.getByRole('button',{name,exact:true}).click();
     await tabs.getByRole('button',{name:'Alapadatok'}).click();
     const input=page.getByRole('textbox',{name:'Kép útvonala'});
-    const key='hatarvilag/worlds/'+name.toLowerCase()+'.webp';
+    const key='hatarvilag/worlds/'+({Szektor:'sector',Kvadráns:'quadrant',Galaxis:'galaxy'})[name]+'.webp';
     await input.fill('https://evil.example.net/not-our-art.jpg');
     assert.equal(await page.getByRole('alert').count(),1,'Reject external image URL');
     await input.fill('https://assets.voidnoir.net/'+key);
