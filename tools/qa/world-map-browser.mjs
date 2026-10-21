@@ -115,7 +115,14 @@ try{
     assert.equal(await page.getByRole('alert').count(),1,'Reject external image URL');
     await input.fill('https://assets.voidnoir.net/'+key);
     assert.equal(await input.inputValue(),key,'Normalize public R2 link');
-    await page.locator('.world-image-editor-preview img').waitFor({state:'visible'});
+    await page.waitForTimeout(250);
+    const previewImageDebug=await page.evaluate(()=>({
+      html:document.querySelector('.world-image-editor-preview')?.outerHTML,
+      input:document.querySelector('input[aria-label="Kép útvonala"]')?.value,
+      broken:document.querySelector('.world-image-error')?.textContent
+    }));
+    assert.equal(await page.locator('.world-image-editor-preview img').count(),1,
+      'Live image element must render: '+JSON.stringify(previewImageDebug));
     assert.equal(await page.locator('.world-image-editor-preview img').count(),1,'Live artwork preview');
     await page.getByRole('button',{name:'Mentés',exact:true}).click();
     await page.waitForFunction(k=>Object.values(window.__worldFixture.db).some(rows=>rows.some(row=>row.image_path===k)),key);
