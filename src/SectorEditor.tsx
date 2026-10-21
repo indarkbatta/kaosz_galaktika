@@ -8,6 +8,7 @@ import {snapWorldCoordinate} from './lib/worldMapGeometry';
 import WorldMapEditor,{type WorldMapRoute} from './WorldMapEditor';
 import {WorldArtwork,WorldImageField} from './components/WorldImageField';
 import {validWorldImage} from './lib/worldImages';
+import {verifyWorldMapRoutes} from './lib/worldMapRoutes';
 type Translation={locale:string;name:string;description:string};
 type Place={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';sector_id:string;x:number;y:number;image_path:string|null;is_published:boolean;game_locations_i18n:Translation[]};
 type Route=WorldMapRoute&{id:string};
@@ -55,15 +56,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
   if(verify){
    const ids=new Set(rows.filter(row=>row.sector_id===verify.sectorId).map(row=>row.id));
    const persisted=rts.filter(route=>ids.has(route.origin_id)&&ids.has(route.destination_id));
-   const signature=(route:WorldMapRoute)=>
-    [route.origin_id<route.destination_id?route.origin_id+':'+route.destination_id:route.destination_id+':'+route.origin_id,
-     route.energy_cost,route.is_published!==false?1:0].join('|');
-   const expected=verify.routes.map(signature).sort();
-   const actual=persisted.map(signature).sort();
-   if(JSON.stringify(expected)!==JSON.stringify(actual)){
-    throw new Error(tr('A mentett összeköttetések visszaellenőrzése nem sikerült. A térképet újra be kell tölteni.',
-      'Saved links did not match the database. Reload the map before further changes.'));
-   }
+   verifyWorldMapRoutes(verify.routes,persisted,en);
   }
   setPlaces(rows);setRoutes(rts);setActions((a.data||[]) as Action[]);
   setPlacements(ps);setLanguages(langs.data as Local[]);

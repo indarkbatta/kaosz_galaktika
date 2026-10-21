@@ -3,8 +3,9 @@ import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
-import WorldMapEditor,{type WorldMapLevel,type WorldMapNode} from './WorldMapEditor';
+import WorldMapEditor,{type WorldMapLevel,type WorldMapNode,type WorldMapRoute} from './WorldMapEditor';
 import './world-atlas-editor.css';
+import {verifyWorldMapRoutes} from './lib/worldMapRoutes';
 import {snapWorldCoordinate} from './lib/worldMapGeometry';
 import {WorldArtwork,WorldImageField,WorldMapIcon} from './components/WorldImageField';
 import {validWorldImage} from './lib/worldImages';
@@ -28,6 +29,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
  const [quadrants,setQuadrants]=useState<WorldDoc[]>([]);
  const [sectors,setSectors]=useState<WorldDoc[]>([]);
  const [locations,setLocations]=useState<LocationNode[]>([]);
+ const [routes,setRoutes]=useState<WorldMapRoute[]>([]);
  const [level,setLevel]=useState<Level>('galaxies');
  const [draft,setDraft]=useState<WorldDoc>(makeBlank('galaxies'));
  const [tab,setTab]=useState<'general'|'map'>('general');
@@ -38,16 +40,23 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
  const navigate=(next:()=>void)=>{if(dirty){pending.current=next;setDiscard(true);}else next();};
  const list=(which=level):WorldDoc[]=>which==='galaxies'?galaxies:which==='quadrants'?quadrants:sectors;
  const name=(row:WorldDoc|WorldMapNode)=>en?row.name_en:row.name_hu;
- const load=useCallback(async(keepLevel:Level='galaxies',keepId?:string)=>{
+ const load=useCallback(async(keepLevel:Level='galaxies',keepId?:string,verify?:{sectorId:string;routes:WorldMapRoute[]})=>{
   setLoading(true);
   try{
-   const [g,q,s,l]=await Promise.all([
+   const [g,q,s,l,r]=await Promise.all([
     supabase.from('game_galaxies').select('*').order('slug'),
     supabase.from('game_quadrants').select('*').order('slug'),
     supabase.from('game_sectors').select('*').order('slug'),
-    supabase.from('game_locations').select('id,slug,sector_id,x,y,image_path,game_locations_i18n(locale,name)')
+    supabase.from('game_locations').select('id,slug,sector_id,x,y,image_path,game_locations_i18n(locale,name)'),
+    supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published')
    ]);
-   if(g.error||q.error||s.error||l.error)throw new Error((g.error||q.error||s.error||l.error)!.message);
+   if(g.error||q.error||s.error||l.error||r.error)throw new Error((g.error||q.error||s.error||l.error||r.error)!.message);
+   const savedRoutes=(r.data||[]) as WorldMapRoute[];
+   if(verify){
+    const ids=new Set((l.data||[]).filter(row=>row.sector_id===verify.sectorId).map(row=>row.id));
+    verifyWorldMapRoutes(verify.routes,savedRoutes.filter(route=>ids.has(route.origin_id)&&ids.has(route.destination_id)),en);
+   }
+   setRoutes(savedRoutes);
    const galaxies=(g.data||[]) as WorldDoc[],quadrants=(q.data||[]) as WorldDoc[],sectors=(s.data||[]) as WorldDoc[];
    setGalaxies(galaxies);setQuadrants(quadrants);setSectors(sectors);
    setLocations((l.data||[]).map((row:any)=>({
@@ -58,10 +67,10 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
    const current=keepLevel==='galaxies'?galaxies:keepLevel==='quadrants'?quadrants:sectors;
    const selected=current.find(row=>row.id===keepId)||current[0];
    setDraft(selected||makeBlank(keepLevel,keepLevel==='quadrants'?galaxies[0]?.id:quadrants[0]?.id));
-   setDirty(false);
-  }catch(e){notify(e instanceof Error?e.message:String(e),'error');}
+   setDirty(false);return true;
+  }catch(e){if(verify)throw e;notify(e instanceof Error?e.message:String(e),'error');return false;}
   finally{setLoading(false);}
- },[]);
+ },[en]);
  useEffect(()=>{void load();},[load]);
  useEffect(()=>{
   if(!dirty)return;
@@ -108,6 +117,8 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
    :level==='quadrants'
    ?sectors.filter(x=>x.quadrant_id===draft.id).map(x=>({id:x.id,slug:x.slug,name_hu:x.name_hu,name_en:x.name_en,image_path:x.image_path,x:x.x||50,y:x.y||50}))
    :locations.filter(x=>x.sector_id===draft.id);
+ const childIds=new Set(children.map(n=>n.id));
+ const childRoutes=level==='sectors'?routes.filter(r=>childIds.has(r.origin_id)&&childIds.has(r.destination_id)):[];
  const mapLevel:WorldMapLevel=level==='galaxies'?'galaxy':level==='quadrants'?'quadrant':'sector';
  const levelLabels={galaxies:tr('Galaxisok','Galaxies'),quadrants:tr('Kvadránsok','Quadrants'),sectors:tr('Szektorok / naprendszerek','Sectors / star systems')};
  return <EditorFrame>
@@ -148,13 +159,17 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
      <h3>{tr('Csillagtérkép','Starmap')} · {name(draft)||'—'}</h3>
      <p className="ed-tab-help">{level==='galaxies'?tr('Kvadránsok elhelyezése','Place quadrants'):level==='quadrants'?tr('Szektorok elhelyezése','Place sectors'):tr('Helyszínek elhelyezése','Place locations')} · {children.length}</p>
      <div className="wa-map-mini" role="group" aria-label={tr('Négyzetes térképelőnézet','Square starmap preview')}>
+      {level==='sectors'&&<svg className="wa-map-links" viewBox="0 0 100 100" aria-label={tr('Mentett útvonalak','Saved routes')}>
+       {childRoutes.map(r=>{const a=children.find(n=>n.id===r.origin_id)!,b=children.find(n=>n.id===r.destination_id)!;
+        return <line key={r.id||r.origin_id+':'+r.destination_id} x1={snapWorldCoordinate(a.x)} y1={snapWorldCoordinate(a.y)} x2={snapWorldCoordinate(b.x)} y2={snapWorldCoordinate(b.y)}/>;})}
+      </svg>}
       {children.map(node=><div key={node.id} className="wa-map-node" title={en?node.name_en:node.name_hu}
         style={{left:snapWorldCoordinate(node.x)+'%',top:snapWorldCoordinate(node.y)+'%'}}>
         <WorldMapIcon className="wa-map-node-icon" path={node.image_path} fallback="✦" alt=""/>
         <span className="wa-map-node-label">{en?node.name_en:node.name_hu}</span>
       </div>)}
      </div>
-     <button type="button" className="ed-submit wa-open-map" disabled={!draft.id||dirty||loading} onClick={()=>setMapOpen(true)}>{tr('Nagy csillagtérkép szerkesztése','Open large starmap editor')}</button>
+     <button type="button" className="ed-submit wa-open-map" disabled={!draft.id||dirty||loading} onClick={async()=>{if(await load(level,draft.id))setMapOpen(true);}}>{tr('Nagy csillagtérkép szerkesztése','Open large starmap editor')}</button>
      {dirty&&<p>{tr('Előbb mentsd az alapadatokat.','Save changes to this record first.')}</p>}
      {!draft.id&&<p>{tr('Előbb hozd létre a bejegyzést.','Create the record first.')}</p>}
     </div>}
@@ -164,7 +179,9 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
    </EditorFooter>
   </section>
   {mapOpen&&!!draft.id&&<WorldMapEditor locale={locale} level={mapLevel} parentId={draft.id} parentName={name(draft)}
-    nodes={children} onClose={()=>setMapOpen(false)} onSaved={()=>{void load(level,draft.id);}}/>}
+    nodes={children} routes={childRoutes}
+    onClose={()=>setMapOpen(false)} onSaved={async savedRoutes=>{await load(level,draft.id,
+     mapLevel==='sector'?{sectorId:draft.id,routes:savedRoutes!}:undefined);}}/>}
   {discard&&<div className="ed-modal-mask"><section className="ed-modal" role="alertdialog" aria-modal="true">
    <h3>{tr('Nem mentett módosítások','Unsaved changes')}</h3><p>{tr('Elveted a változtatásokat?','Discard your changes?')}</p>
    <div><button type="button" onClick={()=>{setDiscard(false);pending.current=null;}}>{tr('Folytatom','Keep editing')}</button>

@@ -22,9 +22,9 @@ const dedup=(routes:WorldMapRoute[])=>{
  return [...unique.values()];
 };
 
-export default function WorldMapEditor({locale,level,parentId,parentName,nodes,routes=[],onClose,onSaved}:{
+export default function WorldMapEditor({locale,level,parentId,parentName,nodes,routes,onClose,onSaved}:{
  locale:string;level:WorldMapLevel;parentId:string;parentName:string;nodes:WorldMapNode[];
- routes?:WorldMapRoute[];onClose:()=>void;onSaved:(savedRoutes?:WorldMapRoute[])=>void|Promise<void>;
+ routes:WorldMapRoute[];onClose:()=>void;onSaved:(savedRoutes?:WorldMapRoute[])=>void|Promise<void>;
 }){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [positions,setPositions]=useState<WorldMapNode[]>(()=>aligned(nodes));

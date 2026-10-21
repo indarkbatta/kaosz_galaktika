@@ -12,6 +12,8 @@ on:
       - 'tools/qa/sector-link-*'
       - 'supabase/migrations/20261021114500_m76_preserve_location_routes.sql'
       - 'src/GalaxyEditor.tsx'
+      - 'src/lib/worldMapRoutes.ts'
+      - 'tools/qa/atlas-route-*'
       - 'src/world-map-editor.css'
       - 'src/world-atlas-editor.css'
       - 'tools/qa/world-map-*'
@@ -35,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: npm install --no-fund --no-audit
       - name: Install isolated browser tools
-        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-world-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-world-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14
       - name: Install browsers
         run: node "%RUNNER_TEMP%\hatarvilag-world-browser-tools\node_modules\playwright\cli.js" install chromium firefox
       - name: Native world-map drag and browser checks
@@ -54,3 +56,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
         run: node tools/qa/sector-link-browser.mjs
+      - name: Verify both atlas entry points against PostgreSQL
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
+        run: node tools/qa/atlas-route-browser.mjs
