@@ -6,15 +6,17 @@ import {EditorNavigation,type EditorSection} from './components/EditorNavigation
 import WorldMapEditor,{type WorldMapLevel,type WorldMapNode} from './WorldMapEditor';
 import './world-atlas-editor.css';
 import {snapWorldCoordinate} from './lib/worldMapGeometry';
+import {WorldArtwork,WorldImageField} from './components/WorldImageField';
+import {validWorldImage} from './lib/worldImages';
 
 type Level='galaxies'|'quadrants'|'sectors';
 type WorldDoc={
- id:string;slug:string;name_hu:string;name_en:string;description_hu:string;description_en:string;
+ id:string;slug:string;name_hu:string;name_en:string;description_hu:string;description_en:string;image_path:string|null;
  galaxy_id?:string;quadrant_id?:string;x?:number;y?:number;is_published:boolean;
 };
 type LocationNode=WorldMapNode&{sector_id:string};
 const makeBlank=(level:Level,parent?:string):WorldDoc=>({
- id:'',slug:'',name_hu:'',name_en:'',description_hu:'',description_en:'',
+ id:'',slug:'',name_hu:'',name_en:'',description_hu:'',description_en:'',image_path:null,
  is_published:false,x:50,y:50,
  ...(level==='quadrants'?{galaxy_id:parent||''}:level==='sectors'?{quadrant_id:parent||''}:{})
 });
@@ -43,13 +45,13 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
     supabase.from('game_galaxies').select('*').order('slug'),
     supabase.from('game_quadrants').select('*').order('slug'),
     supabase.from('game_sectors').select('*').order('slug'),
-    supabase.from('game_locations').select('id,slug,sector_id,x,y,game_locations_i18n(locale,name)')
+    supabase.from('game_locations').select('id,slug,sector_id,x,y,image_path,game_locations_i18n(locale,name)')
    ]);
    if(g.error||q.error||s.error||l.error)throw new Error((g.error||q.error||s.error||l.error)!.message);
    const galaxies=(g.data||[]) as WorldDoc[],quadrants=(q.data||[]) as WorldDoc[],sectors=(s.data||[]) as WorldDoc[];
    setGalaxies(galaxies);setQuadrants(quadrants);setSectors(sectors);
    setLocations((l.data||[]).map((row:any)=>({
-    id:row.id,slug:row.slug,sector_id:row.sector_id,x:row.x,y:row.y,
+    id:row.id,slug:row.slug,sector_id:row.sector_id,x:row.x,y:row.y,image_path:row.image_path||null,
     name_hu:row.game_locations_i18n?.find((t:{locale:string;name:string})=>t.locale==='hu')?.name||row.slug,
     name_en:row.game_locations_i18n?.find((t:{locale:string;name:string})=>t.locale==='en')?.name||row.slug
    })));
@@ -79,6 +81,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
   if(!/^[a-z][a-z0-9_]*$/.test(draft.slug)||!draft.name_hu.trim()||!draft.name_en.trim()){
    notify(tr('Érvényes azonosító, magyar és angol név szükséges.','Valid slug, Hungarian and English names are required.'),'error');return;
   }
+  if(!validWorldImage(draft.image_path)){notify(tr('Érvénytelen R2 képútvonal.','Invalid R2 image path.'),'error');setTab('general');return;}
   if(level==='quadrants'&&!draft.galaxy_id||level==='sectors'&&!draft.quadrant_id){
    notify(tr('Válassz szülőt!','Choose a parent!'),'error');return;
   }
@@ -86,7 +89,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
   try{
    const body={
     slug:draft.slug,name_hu:draft.name_hu.trim(),name_en:draft.name_en.trim(),
-    description_hu:draft.description_hu,description_en:draft.description_en,
+    description_hu:draft.description_hu,description_en:draft.description_en,image_path:draft.image_path||null,
     is_published:draft.is_published,
     ...(level==='quadrants'?{galaxy_id:draft.galaxy_id,x:snapWorldCoordinate(draft.x??50),y:snapWorldCoordinate(draft.y??50)}:{}),
     ...(level==='sectors'?{quadrant_id:draft.quadrant_id,x:snapWorldCoordinate(draft.x??50),y:snapWorldCoordinate(draft.y??50)}:{})
@@ -101,9 +104,9 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
   finally{setBusy(false);}
  };
  const children:WorldMapNode[]=level==='galaxies'
-   ?quadrants.filter(x=>x.galaxy_id===draft.id).map(x=>({id:x.id,slug:x.slug,name_hu:x.name_hu,name_en:x.name_en,x:x.x||50,y:x.y||50}))
+   ?quadrants.filter(x=>x.galaxy_id===draft.id).map(x=>({id:x.id,slug:x.slug,name_hu:x.name_hu,name_en:x.name_en,image_path:x.image_path,x:x.x||50,y:x.y||50}))
    :level==='quadrants'
-   ?sectors.filter(x=>x.quadrant_id===draft.id).map(x=>({id:x.id,slug:x.slug,name_hu:x.name_hu,name_en:x.name_en,x:x.x||50,y:x.y||50}))
+   ?sectors.filter(x=>x.quadrant_id===draft.id).map(x=>({id:x.id,slug:x.slug,name_hu:x.name_hu,name_en:x.name_en,image_path:x.image_path,x:x.x||50,y:x.y||50}))
    :locations.filter(x=>x.sector_id===draft.id);
  const mapLevel:WorldMapLevel=level==='galaxies'?'galaxy':level==='quadrants'?'quadrant':'sector';
  const levelLabels={galaxies:tr('Galaxisok','Galaxies'),quadrants:tr('Kvadránsok','Quadrants'),sectors:tr('Szektorok / naprendszerek','Sectors / star systems')};
@@ -115,7 +118,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
     {id:'galaxies',name:tr('Galaxis','Galaxy')},{id:'quadrants',name:tr('Kvadráns','Quadrant')},{id:'sectors',name:tr('Szektor','Sector')}
    ]}/>
    <div className="ed-roster-list">{list().map(row=><button type="button" key={row.id} className={'ed-record '+(draft.id===row.id?'selected':'')} onClick={()=>navigate(()=>selectDoc(row))}>
-    <span className="ed-thumbnail">✧</span><span className="ed-record-name"><strong>{name(row)}</strong><small>{row.slug}</small></span>
+    <span className="ed-thumbnail"><WorldArtwork path={row.image_path} fallback="✧" alt=""/></span><span className="ed-record-name"><strong>{name(row)}</strong><small>{row.slug}</small></span>
    </button>)}
     {list().length===0&&<p>{tr('Még nincsenek bejegyzések.','No entries yet.')}</p>}
    </div>
@@ -134,6 +137,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
       <select value={draft.quadrant_id||''} onChange={e=>patch({quadrant_id:e.target.value})}>{quadrants.map(q=><option key={q.id} value={q.id}>{name(q)}</option>)}</select></label>}
      <div className="wa-two"><label>{tr('Magyar név','Hungarian name')}<input required maxLength={120} value={draft.name_hu} onChange={e=>patch({name_hu:e.target.value})}/></label>
       <label>{tr('Angol név','English name')}<input required maxLength={120} value={draft.name_en} onChange={e=>patch({name_en:e.target.value})}/></label></div>
+     <WorldImageField locale={locale} value={draft.image_path} onChange={image_path=>patch({image_path})}/>
      <div className="wa-two"><label>{tr('Magyar leírás','Hungarian description')}<textarea rows={4} value={draft.description_hu} onChange={e=>patch({description_hu:e.target.value})}/></label>
       <label>{tr('Angol leírás','English description')}<textarea rows={4} value={draft.description_en} onChange={e=>patch({description_en:e.target.value})}/></label></div>
      {level!=='galaxies'&&<div className="wa-two"><label>X<input type="number" min={7} max={93} value={draft.x||50} onChange={e=>patch({x:Number(e.target.value)})}/></label>
@@ -146,7 +150,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
      <div className="wa-map-mini" role="group" aria-label={tr('Négyzetes térképelőnézet','Square starmap preview')}>
       {children.map(node=><div key={node.id} className="wa-map-node" title={en?node.name_en:node.name_hu}
         style={{left:snapWorldCoordinate(node.x)+'%',top:snapWorldCoordinate(node.y)+'%'}}>
-        <span className="wa-map-node-icon">✦</span>
+        <span className="wa-map-node-icon"><WorldArtwork path={node.image_path} fallback="✦" alt=""/></span>
         <span className="wa-map-node-label">{en?node.name_en:node.name_hu}</span>
       </div>)}
      </div>

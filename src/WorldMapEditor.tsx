@@ -2,9 +2,10 @@ import {useEffect,useRef,useState,type PointerEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './world-map-editor.css';
+import {WorldArtwork} from './components/WorldImageField';
 import {WORLD_MAP_SIZE,snapWorldCoordinate} from './lib/worldMapGeometry';
 
-export type WorldMapNode={id:string;slug:string;name_hu:string;name_en:string;x:number;y:number};
+export type WorldMapNode={id:string;slug:string;name_hu:string;name_en:string;x:number;y:number;image_path?:string|null};
 export type WorldMapRoute={
  id?:string;origin_id:string;destination_id:string;energy_cost:number;is_published?:boolean;
 };
@@ -203,14 +204,14 @@ export default function WorldMapEditor({locale,level,parentId,parentName,nodes,r
        className={'wm-node '+(selected===n.id?'selected ':'')+(from===n.id?'link-start':'')}
        style={{left:n.x+'%',top:n.y+'%'}}
        aria-label={display(n)+' ('+n.x+', '+n.y+')'} aria-pressed={selected===n.id}>
-       <span className="wm-node-dot">✦</span><span className="wm-node-label">{display(n)}</span>
+       <span className="wm-node-dot"><WorldArtwork path={n.image_path} fallback="✦" alt=""/></span><span className="wm-node-label">{display(n)}</span>
       </button>)}
       {!positions.length&&<div className="wm-empty">{tr('Még nincs objektum. Hozz létre egyet a szerkesztőben.','No nodes yet. Create one in the editor first.')}</div>}
      </div>
     </div>
     <aside className="wm-inspector">
      <strong>{tr('Kijelölt objektum','Selected object')}</strong>
-     {active?<><h3>{display(active)}</h3><p>{active.slug}</p>
+     {active?<><WorldArtwork className="wm-inspector-image" path={active.image_path} fallback="✦" alt={display(active)}/><h3>{display(active)}</h3><p>{active.slug}</p>
       <div className="wm-coord">
        <label>X<input type="number" min={10} max={90} step={5} value={active.x} onChange={e=>updateCoordinate('x',Number(e.target.value))}/></label>
        <label>Y<input type="number" min={10} max={90} step={5} value={active.y} onChange={e=>updateCoordinate('y',Number(e.target.value))}/></label>

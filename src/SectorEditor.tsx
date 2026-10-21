@@ -6,13 +6,15 @@ import {EditorNavigation,type EditorSection} from './components/EditorNavigation
 import './sector-editor.css';
 import {snapWorldCoordinate} from './lib/worldMapGeometry';
 import WorldMapEditor,{type WorldMapRoute} from './WorldMapEditor';
+import {WorldArtwork,WorldImageField} from './components/WorldImageField';
+import {validWorldImage} from './lib/worldImages';
 type Translation={locale:string;name:string;description:string};
-type Place={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';sector_id:string;x:number;y:number;is_published:boolean;game_locations_i18n:Translation[]};
+type Place={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';sector_id:string;x:number;y:number;image_path:string|null;is_published:boolean;game_locations_i18n:Translation[]};
 type Route=WorldMapRoute&{id:string};
 type Action={id:string;slug:string;game_actions_i18n:{locale:string;name:string}[]};
 type Local={code:string;native_name:string};
 type Link={enabled:boolean;cost:number};
-const blank:Place={id:'',slug:'',kind:'station',sector_id:'',x:50,y:50,is_published:false,game_locations_i18n:[]};
+const blank:Place={id:'',slug:'',kind:'station',sector_id:'',x:50,y:50,image_path:null,is_published:false,game_locations_i18n:[]};
 export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,english:string)=>en?english:hu;
  const [places,setPlaces]=useState<Place[]>([]),[routes,setRoutes]=useState<Route[]>([]),[actions,setActions]=useState<Action[]>([]);
@@ -38,7 +40,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
  }
  async function load(keep?:string){
   const [p,r,a,placements,langs,system]=await Promise.all([
-   supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,is_published,game_locations_i18n(locale,name,description)').order('slug'),
+   supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,image_path,is_published,game_locations_i18n(locale,name,description)').order('slug'),
    supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published'),
    supabase.from('game_actions').select('id,slug,game_actions_i18n(locale,name)').order('sort_order'),
    supabase.from('game_location_actions').select('location_id,action_id'),
@@ -66,8 +68,9 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
    if(!/^[a-z][a-z0-9_]*$/.test(draft.slug))throw Error(tr('Érvénytelen technikai azonosító.','Invalid slug.'));
    if(!translations.hu?.name?.trim()||!translations.en?.name?.trim())throw Error(tr('A magyar és angol név kötelező.','Hungarian and English names required.'));
    if(!draft.sector_id)throw Error(tr('Válassz naprendszer-szektort.','Choose a solar-system sector.'));
+   if(!validWorldImage(draft.image_path))throw Error(tr('Érvénytelen R2 képútvonal.','Invalid R2 image path.'));
    if(draft.x<7||draft.x>93||draft.y<7||draft.y>93)throw Error(tr('A koordináták 7 és 93 között lehetnek; mentéskor rácspontra igazítjuk.','Coordinates must be between 7 and 93; saving will snap to the grid.'));
-   const body={slug:draft.slug,kind:draft.kind,sector_id:draft.sector_id,x:snapWorldCoordinate(draft.x),y:snapWorldCoordinate(draft.y),is_published:draft.id?draft.is_published:false};
+   const body={slug:draft.slug,kind:draft.kind,sector_id:draft.sector_id,x:snapWorldCoordinate(draft.x),y:snapWorldCoordinate(draft.y),image_path:draft.image_path||null,is_published:draft.id?draft.is_published:false};
    let id=draft.id;
    if(id){const update=await supabase.from('game_locations').update(body).eq('id',id);if(update.error)throw update.error;}
    else{const insert=await supabase.from('game_locations').insert(body).select('id').single();if(insert.error)throw insert.error;id=insert.data.id;}
@@ -86,7 +89,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
     {sectors.map(s=><option key={s.id} value={s.id}>{locale==='en'?s.name_en:s.name_hu}</option>)}
    </select>
    <div className="ed-roster-list">{places.filter(p=>p.sector_id===selectedSector).map(p=><button type="button" key={p.id} className={'ed-record '+(draft.id===p.id?'selected':'')} onClick={()=>choose(p,routes,placements)}>
-    <span className="ed-thumbnail ge-sector-symbol">{({station:'✦',wreck:'◇',planet:'●',anomaly:'◈'})[p.kind]}</span>
+    <span className="ed-thumbnail ge-sector-symbol"><WorldArtwork path={p.image_path} fallback={({station:'✦',wreck:'◇',planet:'●',anomaly:'◈'})[p.kind]} alt=""/></span>
     <span className="ed-record-name"><strong>{label(p)}</strong><small>{p.slug}</small></span>
    </button>)}</div>
   </EditorRoster>
@@ -98,6 +101,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
    <form className="ed-form sector-editor-form" id="sector-editor-form" onSubmit={save}>
     {tab==='general'&&<><label>{tr('Technikai azonosító','Slug')}<input value={draft.slug} onChange={e=>update('slug',e.target.value.toLowerCase())}/></label>
      <label>{tr('Szektor / naprendszer','Sector / solar system')}<select required value={draft.sector_id} onChange={e=>{update('sector_id',e.target.value);setSelectedSector(e.target.value);setLinks({});}}>{sectors.map(s=><option key={s.id} value={s.id}>{locale==='en'?s.name_en:s.name_hu}</option>)}</select></label>
+     <WorldImageField locale={locale} value={draft.image_path} onChange={image_path=>update('image_path',image_path)}/>
      <label>{tr('Helyszín típusa','Location type')}<select value={draft.kind} onChange={e=>update('kind',e.target.value as Place['kind'])}>{(['station','wreck','planet','anomaly'] as const).map(x=><option value={x} key={x}>{x}</option>)}</select></label>
      <div className="sector-coord-inputs"><label>X (10–90, 5)<input required type="number" min="10" max="90" step="5" value={draft.x} onChange={e=>update('x',Number(e.target.value))}/></label><label>Y (10–90, 5)<input required type="number" min="10" max="90" step="5" value={draft.y} onChange={e=>update('y',Number(e.target.value))}/></label></div>
      <label className="sector-check"><input type="checkbox" checked={draft.is_published} onChange={e=>update('is_published',e.target.checked)}/>{tr('Publikált','Published')}</label>
@@ -116,7 +120,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
   {mapOpen&&selectedSector&&<WorldMapEditor locale={locale} level="sector" parentId={selectedSector}
    parentName={locale==='en'?sectors.find(s=>s.id===selectedSector)?.name_en||'—':sectors.find(s=>s.id===selectedSector)?.name_hu||'—'}
    routes={routes.filter(r=>places.some(p=>p.id===r.origin_id&&p.sector_id===selectedSector)&&places.some(p=>p.id===r.destination_id&&p.sector_id===selectedSector))}
-   nodes={places.filter(p=>p.sector_id===selectedSector).map(p=>({id:p.id,slug:p.slug,x:p.x,y:p.y,
+   nodes={places.filter(p=>p.sector_id===selectedSector).map(p=>({id:p.id,slug:p.slug,x:p.x,y:p.y,image_path:p.image_path,
     name_hu:p.game_locations_i18n.find(t=>t.locale==='hu')?.name||p.slug,
     name_en:p.game_locations_i18n.find(t=>t.locale==='en')?.name||p.slug}))}
    onClose={()=>setMapOpen(false)} onSaved={()=>{void load();}}/>}

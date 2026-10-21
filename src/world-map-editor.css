@@ -60,3 +60,6 @@
 .wm-confirm h3{font-size:18px;margin:0 0 8px}.wm-confirm p{color:#b8c6d0}
 .wm-confirm button{padding:9px;margin-right:8px;border:1px solid #536672;background:#1e2c35;color:#fff;cursor:pointer}
 @media(max-width:850px){.wm-body{grid-template-columns:1fr}.wm-inspector{border-top:1px solid #495864;border-left:0;max-height:200px}.wm-viewport{margin:0 8px}.wm-node-label{font-size:10px}.wm-tools{flex-wrap:wrap}.wm-tools>span{display:none}}
+
+.wm-node-dot .world-art{width:100%;height:100%;font-size:23px;border-radius:50%}
+.wm-inspector .wm-inspector-image{display:grid;width:100%;aspect-ratio:16/9;max-height:160px;border:1px solid #4b6779;font-size:44px}

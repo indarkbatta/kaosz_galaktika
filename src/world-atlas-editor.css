@@ -3,3 +3,4 @@
 .wa-map-node-icon{display:grid;place-items:center;width:25px;height:25px;line-height:1;color:#ffc19a;font-size:24px;text-shadow:0 0 16px #d87153}
 .wa-map-node-label{position:absolute;left:50%;top:calc(100% + 3px);transform:translateX(-50%);white-space:nowrap;font-size:12px;color:#d9e4ed;padding:3px 5px;border:1px solid #4b6171;background:#07121dde}
 .wa-open-map{padding:12px 20px;font-size:14px;cursor:pointer;align-self:flex-start}.wa-open-map:disabled{opacity:.5}.ed-roster .ed-tabs-catalog{padding:6px 6px 0;gap:2px}.ed-roster .ed-tabs-catalog button{font-size:12px;min-height:42px;padding:8px 2px}@media(max-width:900px){.wa-two{grid-template-columns:1fr} .wa-map-mini{width:min(100%,calc(100vh - 310px),370px)}}
+.wa-map-node-icon .world-art{width:25px;height:25px;font-size:21px;border-radius:50%}
