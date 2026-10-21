@@ -2,6 +2,7 @@ import {useEffect,useRef,useState,type PointerEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './world-map-editor.css';
+import {WORLD_MAP_SIZE,snapWorldCoordinate} from './lib/worldMapGeometry';
 
 export type WorldMapNode={id:string;slug:string;name_hu:string;name_en:string;x:number;y:number};
 export type WorldMapRoute={
@@ -9,10 +10,9 @@ export type WorldMapRoute={
 };
 export type WorldMapLevel='galaxy'|'quadrant'|'sector';
 type Interaction={kind:'pan'|'node';id?:string;pointerId:number;x:number;y:number;startX:number;startY:number;panX:number;panY:number};
-const MAP_SIZE=800;
-const GRID=5;
+const MAP_SIZE=WORLD_MAP_SIZE;
 const clamp=(n:number,lo:number,hi:number)=>Math.min(hi,Math.max(lo,n));
-const snap=(n:number)=>clamp(Math.round(n/GRID)*GRID,10,90);
+const snap=snapWorldCoordinate;
 const linkKey=(a:string,b:string)=>a<b?a+':'+b:b+':'+a;
 const aligned=(nodes:WorldMapNode[])=>nodes.map(n=>({...n,x:snap(n.x),y:snap(n.y)}));
 const dedup=(routes:WorldMapRoute[])=>{

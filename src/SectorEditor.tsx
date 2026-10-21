@@ -4,6 +4,7 @@ import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './sector-editor.css';
+import {snapWorldCoordinate} from './lib/worldMapGeometry';
 import WorldMapEditor,{type WorldMapRoute} from './WorldMapEditor';
 type Translation={locale:string;name:string;description:string};
 type Place={id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';sector_id:string;x:number;y:number;is_published:boolean;game_locations_i18n:Translation[]};
@@ -65,8 +66,8 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
    if(!/^[a-z][a-z0-9_]*$/.test(draft.slug))throw Error(tr('Érvénytelen technikai azonosító.','Invalid slug.'));
    if(!translations.hu?.name?.trim()||!translations.en?.name?.trim())throw Error(tr('A magyar és angol név kötelező.','Hungarian and English names required.'));
    if(!draft.sector_id)throw Error(tr('Válassz naprendszer-szektort.','Choose a solar-system sector.'));
-   if(draft.x<7||draft.x>93||draft.y<7||draft.y>93)throw Error(tr('A koordináta 7 és 93 közé essen.','Coordinates must be between 7 and 93.'));
-   const body={slug:draft.slug,kind:draft.kind,sector_id:draft.sector_id,x:draft.x,y:draft.y,is_published:draft.id?draft.is_published:false};
+   if(draft.x<7||draft.x>93||draft.y<7||draft.y>93)throw Error(tr('A koordináták 7 és 93 között lehetnek; mentéskor rácspontra igazítjuk.','Coordinates must be between 7 and 93; saving will snap to the grid.'));
+   const body={slug:draft.slug,kind:draft.kind,sector_id:draft.sector_id,x:snapWorldCoordinate(draft.x),y:snapWorldCoordinate(draft.y),is_published:draft.id?draft.is_published:false};
    let id=draft.id;
    if(id){const update=await supabase.from('game_locations').update(body).eq('id',id);if(update.error)throw update.error;}
    else{const insert=await supabase.from('game_locations').insert(body).select('id').single();if(insert.error)throw insert.error;id=insert.data.id;}
@@ -98,7 +99,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
     {tab==='general'&&<><label>{tr('Technikai azonosító','Slug')}<input value={draft.slug} onChange={e=>update('slug',e.target.value.toLowerCase())}/></label>
      <label>{tr('Szektor / naprendszer','Sector / solar system')}<select required value={draft.sector_id} onChange={e=>{update('sector_id',e.target.value);setSelectedSector(e.target.value);setLinks({});}}>{sectors.map(s=><option key={s.id} value={s.id}>{locale==='en'?s.name_en:s.name_hu}</option>)}</select></label>
      <label>{tr('Helyszín típusa','Location type')}<select value={draft.kind} onChange={e=>update('kind',e.target.value as Place['kind'])}>{(['station','wreck','planet','anomaly'] as const).map(x=><option value={x} key={x}>{x}</option>)}</select></label>
-     <div className="sector-coord-inputs"><label>X (7–93)<input required type="number" min="7" max="93" value={draft.x} onChange={e=>update('x',Number(e.target.value))}/></label><label>Y (7–93)<input required type="number" min="7" max="93" value={draft.y} onChange={e=>update('y',Number(e.target.value))}/></label></div>
+     <div className="sector-coord-inputs"><label>X (10–90, 5)<input required type="number" min="10" max="90" step="5" value={draft.x} onChange={e=>update('x',Number(e.target.value))}/></label><label>Y (10–90, 5)<input required type="number" min="10" max="90" step="5" value={draft.y} onChange={e=>update('y',Number(e.target.value))}/></label></div>
      <label className="sector-check"><input type="checkbox" checked={draft.is_published} onChange={e=>update('is_published',e.target.checked)}/>{tr('Publikált','Published')}</label>
      <p>{tr('A koordináták a fix méretű navigációs térképen határozzák meg az elhelyezkedést.','Coordinates define placement on the fixed-size navigation chart.')}</p></>}
     {tab==='dictionary'&&<><div className="ed-language-list">{languages.map(l=><button type="button" key={l.code} className={language===l.code?'active':''} onClick={()=>setLanguage(l.code)}>{l.native_name}</button>)}</div>

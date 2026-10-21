@@ -5,6 +5,7 @@ import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './c
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import WorldMapEditor,{type WorldMapLevel,type WorldMapNode} from './WorldMapEditor';
 import './world-atlas-editor.css';
+import {snapWorldCoordinate} from './lib/worldMapGeometry';
 
 type Level='galaxies'|'quadrants'|'sectors';
 type WorldDoc={
@@ -87,8 +88,8 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
     slug:draft.slug,name_hu:draft.name_hu.trim(),name_en:draft.name_en.trim(),
     description_hu:draft.description_hu,description_en:draft.description_en,
     is_published:draft.is_published,
-    ...(level==='quadrants'?{galaxy_id:draft.galaxy_id,x:draft.x,y:draft.y}:{}),
-    ...(level==='sectors'?{quadrant_id:draft.quadrant_id,x:draft.x,y:draft.y}:{})
+    ...(level==='quadrants'?{galaxy_id:draft.galaxy_id,x:snapWorldCoordinate(draft.x??50),y:snapWorldCoordinate(draft.y??50)}:{}),
+    ...(level==='sectors'?{quadrant_id:draft.quadrant_id,x:snapWorldCoordinate(draft.x??50),y:snapWorldCoordinate(draft.y??50)}:{})
    };
    const result=draft.id
      ?await supabase.from('game_'+level).update(body).eq('id',draft.id).select('id').single()
@@ -142,7 +143,13 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
     </div>:<div className="ed-tab-pane wa-map-preview">
      <h3>{tr('Csillagtérkép','Starmap')} · {name(draft)||'—'}</h3>
      <p className="ed-tab-help">{level==='galaxies'?tr('Kvadránsok elhelyezése','Place quadrants'):level==='quadrants'?tr('Szektorok elhelyezése','Place sectors'):tr('Helyszínek elhelyezése','Place locations')} · {children.length}</p>
-     <div className="wa-map-mini">{children.map(node=><span key={node.id} title={en?node.name_en:node.name_hu} style={{left:node.x+'%',top:node.y+'%'}}>✦</span>)}</div>
+     <div className="wa-map-mini" role="group" aria-label={tr('Négyzetes térképelőnézet','Square starmap preview')}>
+      {children.map(node=><div key={node.id} className="wa-map-node" title={en?node.name_en:node.name_hu}
+        style={{left:snapWorldCoordinate(node.x)+'%',top:snapWorldCoordinate(node.y)+'%'}}>
+        <span className="wa-map-node-icon">✦</span>
+        <span className="wa-map-node-label">{en?node.name_en:node.name_hu}</span>
+      </div>)}
+     </div>
      <button type="button" className="ed-submit wa-open-map" disabled={!draft.id||dirty||loading} onClick={()=>setMapOpen(true)}>{tr('Nagy csillagtérkép szerkesztése','Open large starmap editor')}</button>
      {dirty&&<p>{tr('Előbb mentsd az alapadatokat.','Save changes to this record first.')}</p>}
      {!draft.id&&<p>{tr('Előbb hozd létre a bejegyzést.','Create the record first.')}</p>}

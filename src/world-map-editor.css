@@ -29,12 +29,12 @@
 .wm-line{stroke:#89b2c6;stroke-width:1.9;vector-effect:non-scaling-stroke;stroke-dasharray:8 5;pointer-events:none}
 .wm-line.selected{stroke:#ffac75;stroke-width:3;stroke-dasharray:none}
 .wm-line-hit{stroke:transparent;stroke-width:3;cursor:pointer;fill:none;pointer-events:stroke}
-.wm-node{position:absolute;z-index:2;transform:translate(-50%,-50%);border:1px solid transparent;background:transparent;color:#dbe5ec;display:flex;align-items:center;flex-direction:column;gap:5px;padding:4px;cursor:grab;touch-action:none;user-select:none;min-width:70px;max-width:130px}
+.wm-node{position:absolute;z-index:2;box-sizing:border-box;width:42px;height:42px;min-width:0;max-width:none;transform:translate(-50%,-50%);border:0;background:transparent;color:#dbe5ec;display:block;padding:0;cursor:grab;touch-action:none;user-select:none}
 .wm-node:active{cursor:grabbing}.wm-connecting .wm-node{cursor:crosshair}
-.wm-node-dot{display:grid;place-items:center;width:37px;height:37px;border:1px solid #92b5c9;border-radius:50%;background:#12283a;color:#9bc9e3;box-shadow:0 0 12px #15445c;font-size:23px}
+.wm-node-dot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-sizing:border-box;display:grid;place-items:center;width:38px;height:38px;line-height:1;border:1px solid #92b5c9;border-radius:50%;background:#12283a;color:#9bc9e3;box-shadow:0 0 12px #15445c;font-size:23px}
 .wm-node.selected .wm-node-dot{border-color:#ffab7d;color:#ffd0af;box-shadow:0 0 18px #b46e477d}
 .wm-node.link-start .wm-node-dot{border-color:#66f0bc;background:#1a4b42;box-shadow:0 0 20px #47d8a480}
-.wm-node-label{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#040c14d9;border:1px solid #4c5b68;padding:3px 6px;font-size:12px}
+.wm-node-label{position:absolute;left:50%;top:calc(100% + 5px);transform:translateX(-50%);display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:#040c14ed;border:1px solid #4c5b68;padding:3px 6px;font-size:12px;line-height:1.35;text-align:center;box-sizing:border-box}
 .wm-empty{position:absolute;inset:0;display:grid;place-items:center;color:#98a9b7;font-size:14px;text-align:center;padding:30px}
 .wm-inspector{border-left:1px solid #42525f;background:#0d1721;padding:15px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-width:0}
 .wm-inspector>strong,.wm-items>strong,.wm-route-editor>strong{font-size:13px;color:#ca9e86;text-transform:uppercase;letter-spacing:.07em}
