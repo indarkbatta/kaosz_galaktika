@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {lazy,Suspense,useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
@@ -10,10 +10,12 @@ import SkillChallengePanel from './SkillChallengePanel';
 import CraftingPanel from './CraftingPanel';
 import EquipmentInventory from './EquipmentInventory';
 import ShipLoadout from './ShipLoadout';
+import GameEdgeTabs,{type GameTab} from './components/GameEdgeTabs';
 import './captain-dashboard.css';
 import {BridgeEncounterCard} from './components/BridgeEncounterCard';
 import {DiceRollPanel,type DiceResult} from './components/DiceRollPanel';
 
+const CombatPanel=lazy(()=>import('./CombatPanel'));
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
 type Portrait={id:string;slug:string;image_path:string|null;game_species_i18n?:I18n[];game_classes_i18n?:I18n[]};
 type Ship={id:string;slug:string;image_path:string|null;hull:number;cargo:number;speed:number;game_starter_ships_i18n:I18n[]};
@@ -44,7 +46,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [shipStatus,setShipStatus]=useState<{ready:boolean;base_speed:number;speed:number}|null>(null);
  const [cargoView,setCargoView]=useState<'stock'|'craft'>('stock');
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
- const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'cantina'|'inventory'|'log'>('bridge'),[group,setGroup]=useState('body');
+ const [tab,setTab]=useState<GameTab>('bridge'),[group,setGroup]=useState('body');
  const [busy,setBusy]=useState(false);
  const actionGate=useRef(false);
  const actionRequest=useRef<{slug:string;id:string}|null>(null);
@@ -151,9 +153,11 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   ...travelLogs.map(x=>({key:'travel'+x.id,at:x.traveled_at,title:tr('Utazás','Travel')+' → '+siteName(x.destination_id),detail:siteName(x.origin_id)+' · ⚡ '+x.energy_spent}))
  ].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,9);
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
- return <section className="cmd-shell">
+ return <div className="cmd-frame">
+  <GameEdgeTabs locale={locale} active={tab} onChange={setTab}/>
+  <section className="cmd-shell">
   <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
-   <nav>{(['bridge','map','character','ship','cantina','inventory','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),cantina:tr('Kantin','Cantina'),inventory:tr('Raktér','Cargo'),log:tr('Napló','Log')})[k]}</button>)}</nav>
+
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
@@ -161,7 +165,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
    <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||''} path={ship?.image_path}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>
-  <main className="cmd-body">
+  <main className="cmd-body" id="cmd-tab-panel" role="tabpanel" aria-labelledby={'cmd-tab-'+tab}>
    {tab==='bridge'&&<><div className="cmd-title"><h2>{tr('ELÉRHETŐ TEVÉKENYSÉGEK','AVAILABLE ACTIVITIES')}</h2><small>{hereName}</small></div>
     <SkillChallengePanel locale={locale} characterId={captain.id} locationId={position} energy={energy}
       skills={skills} attributePips={captain.attribute_pips} skillBonusPips={captain.skill_bonus_pips}
@@ -175,6 +179,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     {localActions.length===0&&<p className="cmd-empty">{tr('Itt nincs elérhető akció. Nyisd meg a szektortérképet és indulj tovább!','No actions available here. Open the sector map and travel onward!')}</p>}
 
    </>}
+   {tab==='combat'&&<Suspense fallback={<p>{tr('Harc betöltése…','Loading combat…')}</p>}><CombatPanel locale={locale} locationId={position} onChanged={()=>void refresh()}/></Suspense>}
    {tab==='map'&&<><div className="cmd-title"><h2>{tr('SZAKASZTÉRKÉP // SX-001','SECTOR MAP // SX-001')}</h2><small>{hereName}</small></div>
     <SectorMap locale={locale} galaxies={galaxies} quadrants={quadrants} sectors={sectors} locations={locations} routes={routes.map(r=>({...r,energy_cost:Math.max(1,Math.ceil(r.energy_cost*(shipStatus?.base_speed||1)/(shipStatus?.speed||1)))}))} shipReady={shipStatus?.ready??false} discovered={discoveries} currentId={position} energy={energy} busy={busy} onTravel={destination=>void travel(destination)}/>
    </>}
@@ -199,5 +204,6 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    {diceDone&&<p>{actionRoll.message}</p>}<button disabled={!diceDone||busy} onClick={()=>setActionRoll(null)}>{tr('Vissza a hídra','Back to bridge')}</button>
   </section></div>}
   {confirmReset&&<div className="cmd-modal-bg"><div className="cmd-modal" role="dialog" aria-modal="true"><h3>{tr('Tesztkarakter törlése','Reset test captain')}</h3><p>{tr('Ez csak a saját karakteredet törli! Írd be: RESET','Deletes only your own captain! Type RESET.')}</p><input autoFocus value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/><div><button onClick={()=>setConfirmReset(false)}>{tr('Mégse','Cancel')}</button><button disabled={busy||resetWord!=='RESET'} onClick={()=>void reset()}>{tr('Törlés','Delete')}</button></div></div></div>}
- </section>;
+ </section>
+ </div>;
 }

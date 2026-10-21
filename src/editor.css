@@ -170,3 +170,29 @@
 .ed-homeworld-hint{font-size:12px;line-height:1.45;color:#aac0cc;margin:0}
 .ed-homeworld-warning{color:#f6b08f}
 @media(max-width:1150px){.ed-homeworld-fields{grid-template-columns:1fr}}
+
+/* Two-level editor navigation: heading buttons only expand; leaves route to editors. */
+.ed-nav{overflow:hidden;gap:0}
+.ed-nav-groups{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#495865 #090c10}
+.ed-nav-group{border-bottom:1px solid #202d36}
+.ed-nav-group-trigger{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;padding:10px 8px;border:0;border-left:2px solid transparent;background:transparent;color:#c0ccd6;text-align:left;font:600 13px/1.3 inherit;cursor:pointer}
+.ed-nav-group-trigger>svg:first-child{flex:none;color:#879cab}
+.ed-nav-group-trigger>span{flex:1;min-width:0;overflow-wrap:break-word}
+.ed-nav-group.is-selected>.ed-nav-group-trigger{color:#edf3f6;border-left-color:#bd5549}
+.ed-nav-group-trigger:hover,.ed-nav-group-trigger[aria-expanded=true]{background:#1c2933;color:#fff}
+.ed-nav-chevron{flex:none;transition:transform .16s ease}
+.ed-nav-chevron.open{transform:rotate(90deg)}
+.ed-nav-children{display:flex;flex-direction:column;gap:2px;padding:3px 3px 8px 13px}
+.ed-nav-children[hidden]{display:none}
+.ed-nav-leaf{display:flex;align-items:center;gap:8px;width:100%;min-height:37px;padding:7px 6px;border:1px solid transparent;background:none;color:#aebdc8;font:400 12px/1.3 inherit;text-align:left;cursor:pointer}
+.ed-nav-leaf .ed-nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;flex:none}
+.ed-nav-leaf:hover{background:#26323c;color:#fff}
+.ed-nav-leaf.active{background:linear-gradient(90deg,#782820,#30191c);border-color:#c65043;color:#fff}
+.ed-nav-group-trigger:focus-visible,.ed-nav-leaf:focus-visible{outline:2px solid #e29d78;outline-offset:-2px}
+.ed-nav-bottom{flex:none;margin-top:10px}
+@media(max-width:760px){
+ .ed-nav{display:flex;flex-direction:column;align-items:stretch;max-height:340px;overflow:hidden}
+ .ed-nav-groups{min-height:50px;overflow-y:auto}
+ .ed-nav-group-trigger{min-height:39px}
+ .ed-nav-children{padding-left:14px}
+}

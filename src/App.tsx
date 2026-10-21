@@ -16,11 +16,12 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin'|'factions';
+type Page='dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin'|'factions'|'powers'|'talents'|'combat'|'enemies'|'encounters'|'profiles'|'combat-rules'|'balance'|'languages';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
 
+const CombatEditor=lazy(()=>import('./CombatEditor'));
 const FactionEditor=lazy(()=>import('./FactionEditor'));
 const CrewEditor=lazy(()=>import('./CrewEditor'));
 
@@ -35,7 +36,7 @@ function App(){
  const [mode,setMode]=useState<Mode>('login');
  const [page,setPage]=useState<Page>('dashboard');
  const [editorKind,setEditorKind]=useState<'species'|'classes'>('species');
- const openEditorSection=(section:EditorSection)=>{if(section==='species'||section==='classes'){setEditorKind(section);setPage('editor');}else setPage(section);};
+ const openEditorSection=(section:EditorSection)=>{if(section==='species'||section==='classes'){setEditorKind(section);setPage('editor');}else if(section==='languages'){setEditorKind('species');setPage('languages');}else setPage(section);};
  const [email,setEmail]=useState('');
  const [password,setPassword]=useState('');
  const [confirm,setConfirm]=useState('');
@@ -163,13 +164,14 @@ function App(){
        :<button type="button" className="alternate" onClick={()=>resetMode('login')}>{t('back')}</button>}
      </form>
     </main>
-    :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} kind={editorKind} onKindChange={setEditorKind} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :(page==='editor'||page==='languages')&&(role==='editor'||role==='admin')?<Editor key={page} locale={locale} kind={editorKind} initialTab={page==='languages'?'dictionary':'general'} activeSection={page==='languages'?'languages':undefined} onKindChange={setEditorKind} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='challenges'&&(role==='editor'||role==='admin')?<SkillChallengeEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
-    :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :(page==='gameplay'||page==='balance')&&(role==='editor'||role==='admin')?<GameplayEditor key={page} locale={locale} initialTab={page==='balance'?'balance':'actions'} activeSection={page==='balance'?'balance':'gameplay'} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='galaxy'&&(role==='editor'||role==='admin')?<GalaxyEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :(page==='powers'||page==='talents'||page==='combat'||page==='enemies'||page==='encounters'||page==='profiles'||page==='combat-rules')&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CombatEditor key={page} section={page==='combat'?'enemies':page} locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='factions'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><FactionEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='crew'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CrewEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>

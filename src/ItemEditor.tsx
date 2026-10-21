@@ -5,9 +5,12 @@ import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './c
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import {LucidePlus,LucideMinus} from './components/LucideSigns';
 import './item-editor.css';
+import './combat.css';
+import {ItemCombatFields} from './components/CombatFields';
+import type {ItemCombat,Named} from './lib/combat';
 
 type I18n={locale:string;name:string;description:string};
-type Item={id:string;slug:string;category:string;rarity:string;is_published:boolean;image_path:string|null;equip_owner:string|null;equip_slot:string|null;capacity_bonus:number;manufacturer_faction_id:string|null;manufacturer_company_id:string|null;game_items_i18n:I18n[]};
+type Item={id:string;slug:string;category:string;rarity:string;is_published:boolean;image_path:string|null;equip_owner:string|null;equip_slot:string|null;capacity_bonus:number;manufacturer_faction_id:string|null;manufacturer_company_id:string|null;game_items_i18n:I18n[];game_item_combat?:ItemCombat|null};
 type Ingredient={item_id:string;quantity:number};
 type RecipeRow={output_item_id:string;ingredient_item_id:string;quantity:number};
 type Manufacturer={id:string;name_hu:string;name_en:string};
@@ -17,6 +20,7 @@ const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published
 export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [factions,setFactions]=useState<Manufacturer[]>([]),[plants,setPlants]=useState<Plant[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState('');
+ const [combat,setCombat]=useState<ItemCombat|null>(null),[combatSkills,setCombatSkills]=useState<Named[]>([]);
  const [items,setItems]=useState<Item[]>([]),[recipes,setRecipes]=useState<RecipeRow[]>([]);
  const [languages,setLanguages]=useState<Lang[]>([]),[language,setLanguage]=useState('hu');
  const [draft,setDraft]=useState<Item>(empty),[text,setText]=useState<Record<string,{name:string;description:string}>>({});
@@ -25,6 +29,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
  const itemName=(item:Item)=>item.game_items_i18n.find(x=>x.locale===locale)?.name||
  item.game_items_i18n.find(x=>x.locale==='hu')?.name||item.slug;
  function choose(item:Item,allRecipes:RecipeRow[]){
+  setCombat(item.game_item_combat?structuredClone(item.game_item_combat):null);
   setDraft({...item,manufacturer_faction_id:item.manufacturer_faction_id||null,manufacturer_company_id:item.manufacturer_company_id||null});
   setText(Object.fromEntries(item.game_items_i18n.map(x=>[x.locale,{name:x.name,description:x.description}])));
   setIngredients(allRecipes.filter(x=>x.output_item_id===item.id).map(x=>({item_id:x.ingredient_item_id,quantity:x.quantity})));
@@ -33,14 +38,16 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
  async function load(id?:string,expected?:{faction:string|null;company:string|null}){
   setLoading(true);setLoadError('');
   try{
-  const [i,r,l,f,c]=await Promise.all([
-   supabase.from('game_items').select('id,slug,category,rarity,is_published,image_path,equip_owner,equip_slot,capacity_bonus,manufacturer_faction_id,manufacturer_company_id,game_items_i18n(locale,name,description)').order('slug'),
+  const [i,r,l,f,c,sk]=await Promise.all([
+   supabase.from('game_items').select('id,slug,category,rarity,is_published,image_path,equip_owner,equip_slot,capacity_bonus,manufacturer_faction_id,manufacturer_company_id,game_item_combat(*),game_items_i18n(locale,name,description)').order('slug'),
    supabase.from('game_item_recipes').select('output_item_id,ingredient_item_id,quantity'),
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order'),
    supabase.from('game_factions').select('id,name_hu,name_en').order('slug'),
-   supabase.from('game_faction_companies').select('id,faction_id,name_hu,name_en').order('sort_order')
+   supabase.from('game_faction_companies').select('id,faction_id,name_hu,name_en').order('sort_order'),
+   supabase.from('game_skills').select('id,slug,game_skills_i18n(locale,name)').eq('is_combat',true)
   ]);
-  const error=i.error||r.error||l.error||f.error||c.error;if(error)throw new Error(error.message);
+  const error=i.error||r.error||l.error||f.error||c.error||sk.error;if(error)throw new Error(error.message);
+  setCombatSkills((sk.data||[]).map(s=>({id:s.id,slug:s.slug,texts:s.game_skills_i18n} as Named)));
   setFactions((f.data||[]) as Manufacturer[]);setPlants((c.data||[]) as Plant[]);
   const arr=(i.data||[]) as unknown as Item[],all=(r.data||[]) as RecipeRow[];
   setItems(arr);setRecipes(all);setLanguages((l.data||[]) as Lang[]);
@@ -61,7 +68,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   const first=available.find(x=>!ingredients.some(y=>y.item_id===x.id));
   if(first)setIngredients(p=>[...p,{item_id:first.id,quantity:1}]);
  };
- const newItem=()=>{setDraft({...empty});setText({});setIngredients([]);setTab('general');};
+ const newItem=()=>{setCombat(null);setDraft({...empty});setText({});setIngredients([]);setTab('general');};
  async function save(e:FormEvent){e.preventDefault();if(busy||loading||loadError)return;
   if(draft.manufacturer_company_id&&!plants.some(p=>p.id===draft.manufacturer_company_id&&p.faction_id===draft.manufacturer_faction_id)){notify(tr('Az üzemnek a kiválasztott frakcióhoz kell tartoznia.','The plant must belong to the selected faction.'),'error');setTab('manufacturer');return;}
   if(!text.hu?.name?.trim()||!text.en?.name?.trim()){notify(tr('A magyar és angol név kötelező.','Hungarian and English names are required.'),'error');return;}
@@ -72,9 +79,9 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   setBusy(true);
   try{
   const values=Object.entries(text).filter(([,v])=>v.name.trim()).map(([code,v])=>({locale:code,name:v.name.trim(),description:v.description.trim()}));
-  const r=await supabase.rpc('save_game_item_manufacturer',{p_id:draft.id||null,p_slug:draft.slug,p_category:draft.category,p_rarity:draft.rarity,
+  const r=await supabase.rpc('save_game_item_with_combat',{p_id:draft.id||null,p_slug:draft.slug,p_category:draft.category,p_rarity:draft.rarity,
     p_published:draft.is_published,p_translations:values,p_ingredients:ingredients,
-    p_image_path:draft.image_path||null,p_equip_owner:draft.equip_owner,p_equip_slot:draft.equip_slot,p_bonus:draft.capacity_bonus,p_manufacturer_faction_id:draft.manufacturer_faction_id,p_manufacturer_company_id:draft.manufacturer_company_id});
+    p_image_path:draft.image_path||null,p_equip_owner:draft.equip_owner,p_equip_slot:draft.equip_slot,p_bonus:draft.capacity_bonus,p_manufacturer_faction_id:draft.manufacturer_faction_id,p_manufacturer_company_id:draft.manufacturer_company_id,p_combat:combat});
   if(r.error)notify(r.error.message,'error');
   else{
    const id=(r.data as {id:string}).id;
@@ -92,7 +99,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></EditorHeader>
-   <EditorTabs label="Item editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
+   <EditorTabs label="Item editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
    {loadError&&<div role="alert" className="item-editor-load-error">{loadError}<button type="button" disabled={loading||busy} onClick={()=>void load(draft.id||undefined)}>{tr('Újratöltés','Reload')}</button></div>}
    <form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
     {tab==='general'&&<>
@@ -109,6 +116,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
      <label className="item-editor-checkbox"><input type="checkbox" checked={draft.is_published} onChange={e=>setDraft(x=>({...x,is_published:e.target.checked}))}/>{tr('Publikált','Published')}</label>
      <p>{tr('Az új alapanyagok mentés után automatikusan bekerülnek a receptválasztóba.','New raw materials automatically appear in the recipe selector after saving.')}</p>
     </>}
+    {tab==='combat'&&<ItemCombatFields locale={locale} value={combat} onChange={setCombat} skills={combatSkills}/>}
     {tab==='manufacturer'&&<>
      <label>{tr('Gyártó frakció','Manufacturer faction')}<select aria-label={tr('Gyártó frakció','Manufacturer faction')} disabled={loading||busy} value={draft.manufacturer_faction_id||''} onChange={e=>setDraft(d=>({...d,manufacturer_faction_id:e.target.value||null,manufacturer_company_id:null}))}><option value="">{tr('Nincs megadva','Not specified')}</option>{factions.map(f=><option key={f.id} value={f.id}>{en?f.name_en:f.name_hu}</option>)}</select></label>
      <label>{tr('Gyártó üzem / cég','Manufacturing plant / company')}<select aria-label={tr('Gyártó üzem / cég','Manufacturing plant / company')} disabled={loading||busy||!draft.manufacturer_faction_id} value={draft.manufacturer_company_id||''} onChange={e=>setDraft(d=>({...d,manufacturer_company_id:e.target.value||null}))}><option value="">{tr('Nincs megadva','Not specified')}</option>{plants.filter(p=>p.faction_id===draft.manufacturer_faction_id).map(p=><option key={p.id} value={p.id}>{en?p.name_en:p.name_hu}</option>)}</select></label>

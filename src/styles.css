@@ -38,3 +38,8 @@ html,body,#root{height:100%;overflow:hidden}.shell{height:100dvh;overflow:hidden
 .topbar .spacer{min-width:0}
 @media(max-width:850px){.topbar-account-actions{gap:4px}.topbar-account-actions button{padding:6px 8px;font-size:10px}.topbar{gap:8px}.brand{letter-spacing:.1em}}
 @media(max-width:565px){.topbar .brand{font-size:13px;letter-spacing:.05em}.topbar .sigil{width:30px;max-width:30px}.topbar-account-actions button{padding:5px 6px;font-size:9px}.language{gap:3px}.language button{padding:6px;font-size:10px}}
+
+/* Reserve actual room for protruding file-folder tabs without covering game content. */
+.ch-v2-mount:has(.cmd-frame){width:min(1290px,calc(100vw - 22px));padding-left:clamp(90px,10.2vw,138px);max-width:100%;overflow:visible}
+@media(max-width:870px){.ch-v2-mount:has(.cmd-frame){padding-left:96px}}
+@media(max-width:590px){.ch-v2-mount:has(.cmd-frame){padding-left:60px}}
