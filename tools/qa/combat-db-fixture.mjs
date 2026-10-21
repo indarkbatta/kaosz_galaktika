@@ -1,0 +1,37 @@
+import {readFile} from 'node:fs/promises';
+export async function setupCombatDatabase(db){
+ await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);insert into auth.users values('11111111-1111-4111-8111-111111111111');create schema private;
+ create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+ create function private.can_edit_content() returns boolean language sql stable as $$select coalesce(current_setting('qa.editor',true),'')='yes'$$;
+ grant usage on schema auth,private to authenticated;
+ create table game_locales(code text primary key,native_name text,is_enabled boolean,sort_order int);insert into game_locales values('hu','Magyar',true,0),('en','English',true,1);
+ create table game_species(id uuid primary key default gen_random_uuid(),slug text,primary_attribute text,secondary_attribute text,image_path text,resistances jsonb default '[]',is_published boolean default true);
+ create table game_classes(id uuid primary key default gen_random_uuid(),slug text,primary_attribute text,secondary_attribute text,image_path text,is_published boolean default true);
+ create table game_species_i18n(species_id uuid,locale text,name text);create table game_classes_i18n(class_id uuid,locale text,name text);
+ create table game_items(id uuid primary key default gen_random_uuid(),slug text unique,category text default 'equipment',equip_owner text,equip_slot text,is_published boolean default true,image_path text);
+ insert into game_items(slug,equip_owner,equip_slot) values('captain_rifle','captain','main_weapon'),('captain_vest','captain','body_armor');
+ create table game_items_i18n(item_id uuid,locale text,name text,description text);
+ insert into game_items_i18n select id,'hu',slug,'' from game_items;insert into game_items_i18n select id,'en',slug,'' from game_items;
+ create table game_factions(id uuid primary key default gen_random_uuid());
+ create table game_locations(id uuid primary key default gen_random_uuid(),slug text,is_published boolean default true);create table game_locations_i18n(location_id uuid,locale text,name text);
+ create table game_skills(id uuid primary key default gen_random_uuid(),slug text,attribute text,is_combat boolean,icon_path text);create table game_skills_i18n(skill_id uuid,locale text,name text);
+ create table characters(id uuid primary key default gen_random_uuid(),user_id uuid unique,captain_name text,species_id uuid references game_species(id),class_id uuid references game_classes(id),attribute_pips jsonb,skill_bonus_pips jsonb);
+ create table character_progress(character_id uuid primary key references characters(id),level int default 1,xp_total bigint default 0,upgrade_points int default 0,energy int default 16,energy_at timestamptz default now(),updated_at timestamptz default now());
+ create table gameplay_rules(id int primary key,energy_max int,energy_regen_seconds int,energy_per_tick int,xp_level_base int,skill_points_per_level int);insert into gameplay_rules values(1,16,3600,1,100,1);
+ create table character_positions(character_id uuid,location_id uuid);create table character_equipment(id uuid primary key default gen_random_uuid(),character_id uuid,crew_id uuid,slot text,item_id uuid);
+ create table character_skill_upgrades(character_id uuid,skill_id uuid,bonus_pips int);
+ create table character_inventory(character_id uuid,item_id uuid,quantity int,updated_at timestamptz,unique(character_id,item_id));
+ create table private.qa_dice(id bigint generated always as identity,n int);
+ create function private.secure_d6() returns integer language plpgsql as $$declare n int;begin delete from private.qa_dice where id=(select min(id) from private.qa_dice) returning qa_dice.n into n;return coalesce(n,3);end $$;
+ insert into game_species(slug,primary_attribute,secondary_attribute) values('ember','body','social');insert into game_classes(slug,primary_attribute,secondary_attribute) values('felderito','body','mind');
+ insert into game_species_i18n select id,'hu','Ember' from game_species;insert into game_classes_i18n select id,'hu','Felderítő' from game_classes;
+ insert into game_skills(slug,attribute,is_combat) select x,x,true from unnest(array['body','mind','soul','morale','social'])x;
+ insert into game_skills_i18n select id,'hu',slug from game_skills;
+ insert into game_locations(slug) values('frontier_station');
+ select set_config('request.jwt.claim.sub','11111111-1111-4111-8111-111111111111',false);select set_config('qa.editor','yes',false);
+ insert into characters(user_id,captain_name,species_id,class_id,attribute_pips,skill_bonus_pips) select auth.uid(),'QA',s.id,c.id,'{"body":9,"mind":6,"soul":6,"morale":6,"social":6}','{}' from game_species s cross join game_classes c;
+ insert into character_equipment(character_id,slot,item_id) select c.id,i.equip_slot,i.id from characters c cross join game_items i;
+ insert into character_progress(character_id) select id from characters;insert into character_positions select c.id,l.id from characters c cross join game_locations l;
+ `);
+ await db.exec(await readFile('supabase/migrations/20261021174144_m82_combat_content_and_rules.sql','utf8'));
+}

@@ -1,8 +1,10 @@
+import {toDice} from './d6';
+import {combatLabel,type ItemCombat} from './combat';
 export type ItemLocaleText = {locale:string;name:string;description?:string|null};
 export type ItemCatalogEntry = {
  id:string;slug:string;category:string;rarity:string;image_path:string|null;
  equip_owner?:string|null;equip_slot?:string|null;capacity_bonus?:number|null;
- game_items_i18n:ItemLocaleText[];
+ game_items_i18n:ItemLocaleText[];game_item_combat?:ItemCombat|null;
 };
 export const itemName=(item:ItemCatalogEntry|undefined,locale:string)=>
  item?.game_items_i18n.find(x=>x.locale===locale)?.name||
@@ -38,5 +40,6 @@ export function itemStatRows(item:ItemCatalogEntry,locale:string){
  }
  if(item.equip_slot)rows.push({label:tr('Felszerelési hely','Equipment slot'),value:itemSlot(item.equip_slot,locale)});
  if((item.capacity_bonus||0)>0)rows.push({label:tr('Hátizsákbónusz','Backpack bonus'),value:'+'+item.capacity_bonus});
+ if(item.game_item_combat){const stats=item.game_item_combat;rows.push({label:'Tier',value:String(stats.tier)});if(stats.weapon_pips>0)rows.push({label:tr('Fegyversebzés','Weapon damage'),value:toDice(stats.weapon_pips)+' · '+stats.damage_types.map(t=>combatLabel(t,locale)).join(' / ')});for(const [type,pips] of Object.entries(stats.resistances))if(pips)rows.push({label:combatLabel(type,locale)+' SFE',value:(pips<0?'−':'')+toDice(Math.abs(pips))});}
  return rows;
 }

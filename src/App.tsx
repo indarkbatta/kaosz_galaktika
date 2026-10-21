@@ -16,11 +16,12 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin'|'factions';
+type Page='dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin'|'factions'|'powers'|'talents'|'combat';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
 
+const CombatEditor=lazy(()=>import('./CombatEditor'));
 const FactionEditor=lazy(()=>import('./FactionEditor'));
 const CrewEditor=lazy(()=>import('./CrewEditor'));
 
@@ -170,6 +171,7 @@ function App(){
     :page==='galaxy'&&(role==='editor'||role==='admin')?<GalaxyEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :(page==='powers'||page==='talents'||page==='combat')&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CombatEditor key={page} section={page} locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='factions'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><FactionEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='crew'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CrewEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>

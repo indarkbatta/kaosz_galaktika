@@ -17,7 +17,7 @@ export default function CraftingPanel({locale,inventory,onCrafted}:{locale:strin
  const [page,setPage]=useState(0),[selectedId,setSelectedId]=useState<string|null>(null);
  useEffect(()=>{let alive=true;const load=async()=>{
   const [i,r]=await Promise.all([
-   supabase.from('game_items').select('id,slug,rarity,category,image_path,equip_owner,equip_slot,capacity_bonus,game_items_i18n(locale,name,description)').eq('is_published',true).order('slug'),
+   supabase.from('game_items').select('id,slug,rarity,category,image_path,equip_owner,equip_slot,capacity_bonus,game_item_combat(*),game_items_i18n(locale,name,description)').eq('is_published',true).order('slug'),
    supabase.from('game_item_recipes').select('output_item_id,ingredient_item_id,quantity')
   ]);
   if(!alive)return;

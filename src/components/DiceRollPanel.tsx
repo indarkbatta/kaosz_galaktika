@@ -2,7 +2,7 @@ import {useEffect,useState} from 'react';
 import '../bridge-encounter.css';
 export type DiceResult={dice:number[];pip_bonus:number;roll_total:number;target_number:number;succeeded:boolean;
  wild_dice?:number[];wild_cancelled_index?:number|null;wild_penalty?:number;wild_rule?:string};
-export function DiceRollPanel({locale,result,rolling=false,onComplete}:{locale:string;result:DiceResult|null;rolling?:boolean;onComplete?:()=>void}){
+export function DiceRollPanel({locale,result,rolling=false,onComplete,outcomeLabel,showTarget=true}:{locale:string;result:DiceResult|null;rolling?:boolean;onComplete?:()=>void;outcomeLabel?:string;showTarget?:boolean}){
  const en=locale==='en';
  const [revealed,setRevealed]=useState(false);
  useEffect(()=>{setRevealed(false);if(!result)return;
@@ -15,7 +15,7 @@ export function DiceRollPanel({locale,result,rolling=false,onComplete}:{locale:s
  // Older activity logs did not persist pips; reconstruct them from their authoritative total.
  const pipBonus=result?.pip_bonus??(result?result.roll_total-dice.reduce((a,b)=>a+b,0)-wild.reduce((a,b)=>a+b,0)+(result.wild_penalty||0):0);
  return <section className={'dice-panel '+(spinning?'is-rolling':'is-revealed')} aria-label={en?'Dice roll':'Kockadobás'} aria-busy={spinning}>
-  <strong>{spinning?(en?'Rolling…':'Dobás…'):(result?.succeeded?(en?'SUCCESS':'SIKER'):(en?'FAILURE':'KUDARC'))}</strong>
+  <strong>{spinning?(en?'Rolling…':'Dobás…'):(outcomeLabel||(result?.succeeded?(en?'SUCCESS':'SIKER'):(en?'FAILURE':'KUDARC')))}</strong>
   <div className="dice-tray">{dice.map((v,i)=><div key={'d'+i} className={'dice-cell '+(result?.wild_cancelled_index===i?'cancelled':'')}>
    <Die value={v} spinning={spinning}/><small>D6</small></div>)}
    {wild.map((v,i)=><div key={'w'+i} className={'dice-cell wild '+(result?.wild_penalty&&i===0?'cancelled':'')}>
@@ -24,7 +24,7 @@ export function DiceRollPanel({locale,result,rolling=false,onComplete}:{locale:s
   {!spinning&&result&&<div className="dice-result" aria-live="polite">
    <span>{en?'Pip bonus':'Pip bónusz'}: +{pipBonus}</span>
    {!!result.wild_penalty&&<span>{en?'Wild Die: first 1 and highest die removed':'Wild Die: első 1 és legmagasabb kocka kiesik'} (−{result.wild_penalty})</span>}
-   <b>{en?'Total':'Végösszeg'}: {result.roll_total}</b><span>{en?'Target Number (TN)':'Célszám (TN)'}: {result.target_number}</span>
+   <b>{en?'Total':'Végösszeg'}: {result.roll_total}</b>{showTarget&&<span>{en?'Target Number (TN)':'Célszám (TN)'}: {result.target_number}</span>}
   </div>}
  </section>;
 }

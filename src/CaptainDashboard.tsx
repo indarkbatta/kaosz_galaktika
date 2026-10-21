@@ -1,4 +1,4 @@
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {lazy,Suspense,useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
@@ -14,6 +14,7 @@ import './captain-dashboard.css';
 import {BridgeEncounterCard} from './components/BridgeEncounterCard';
 import {DiceRollPanel,type DiceResult} from './components/DiceRollPanel';
 
+const CombatPanel=lazy(()=>import('./CombatPanel'));
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
 type Portrait={id:string;slug:string;image_path:string|null;game_species_i18n?:I18n[];game_classes_i18n?:I18n[]};
 type Ship={id:string;slug:string;image_path:string|null;hull:number;cargo:number;speed:number;game_starter_ships_i18n:I18n[]};
@@ -44,7 +45,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [shipStatus,setShipStatus]=useState<{ready:boolean;base_speed:number;speed:number}|null>(null);
  const [cargoView,setCargoView]=useState<'stock'|'craft'>('stock');
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
- const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'cantina'|'inventory'|'log'>('bridge'),[group,setGroup]=useState('body');
+ const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'cantina'|'inventory'|'log'|'combat'>('bridge'),[group,setGroup]=useState('body');
  const [busy,setBusy]=useState(false);
  const actionGate=useRef(false);
  const actionRequest=useRef<{slug:string;id:string}|null>(null);
@@ -153,7 +154,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
  return <section className="cmd-shell">
   <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
-   <nav>{(['bridge','map','character','ship','cantina','inventory','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),cantina:tr('Kantin','Cantina'),inventory:tr('Raktér','Cargo'),log:tr('Napló','Log')})[k]}</button>)}</nav>
+   <nav>{(['bridge','combat','map','character','ship','cantina','inventory','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),combat:tr('Harc','Combat'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),cantina:tr('Kantin','Cantina'),inventory:tr('Raktér','Cargo'),log:tr('Napló','Log')})[k]}</button>)}</nav>
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
@@ -175,6 +176,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     {localActions.length===0&&<p className="cmd-empty">{tr('Itt nincs elérhető akció. Nyisd meg a szektortérképet és indulj tovább!','No actions available here. Open the sector map and travel onward!')}</p>}
 
    </>}
+   {tab==='combat'&&<Suspense fallback={<p>{tr('Harc betöltése…','Loading combat…')}</p>}><CombatPanel locale={locale} locationId={position} onChanged={()=>void refresh()}/></Suspense>}
    {tab==='map'&&<><div className="cmd-title"><h2>{tr('SZAKASZTÉRKÉP // SX-001','SECTOR MAP // SX-001')}</h2><small>{hereName}</small></div>
     <SectorMap locale={locale} galaxies={galaxies} quadrants={quadrants} sectors={sectors} locations={locations} routes={routes.map(r=>({...r,energy_cost:Math.max(1,Math.ceil(r.energy_cost*(shipStatus?.base_speed||1)/(shipStatus?.speed||1)))}))} shipReady={shipStatus?.ready??false} discovered={discoveries} currentId={position} energy={energy} busy={busy} onTravel={destination=>void travel(destination)}/>
    </>}

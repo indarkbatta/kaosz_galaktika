@@ -1,10 +1,13 @@
-export type EditorSection='species'|'classes'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'crew'|'ships'|'factions';
+export type EditorSection='species'|'classes'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'crew'|'ships'|'factions'|'powers'|'talents'|'combat';
 const sections:{id:EditorSection;icon:string;hu:string;en:string}[]=[
 {id:'species',icon:'◈',hu:'Fajok',en:'Species'},
 {id:'classes',icon:'✥',hu:'Kasztok',en:'Classes'},
 {id:'skills',icon:'✧',hu:'Képességek',en:'Skills'},
 {id:'gameplay',icon:'⚙',hu:'Akciók és szabályok',en:'Actions & rules'},
 {id:'challenges',icon:'✺',hu:'Skill Challenge-ek',en:'Skill Challenges'},
+{id:'powers',icon:'✧',hu:'Powerek',en:'Powers'},
+{id:'talents',icon:'✥',hu:'Talentek',en:'Talents'},
+{id:'combat',icon:'⚔',hu:'Harc és ellenfelek',en:'Combat & enemies'},
 {id:'factions',icon:'⚑',hu:'Frakciók',en:'Factions'},
 {id:'galaxy',icon:'◉',hu:'Galaxis és kvadránsok',en:'Galaxy & quadrants'},
 {id:'sector',icon:'✦',hu:'Helyszínek',en:'Locations'},
