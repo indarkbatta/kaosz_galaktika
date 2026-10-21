@@ -8,7 +8,7 @@ import {createServer} from 'node:http';
 import {build} from 'esbuild';
 const require=createRequire(join(resolve(process.env.WORLD_BROWSER_TOOLS),'package.json'));
 const {chromium,firefox}=require('playwright');
-const testArt='iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAIAAADmAupWAAAAYUlEQVR4nO3PMQ0AIRQEUUAEVrBwPtCFDzRRI+A8fGiYzOs32cm71RRV+wxvT6zxhbfl4o8nGExnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdD+sgASRbACx1AAAAABJRU5ErkJggg==';
+const testArt='UklGRp4AAABXRUJQVlA4IJIAAAAwCACdASpQACgAPj0ci0OiIaEXeSQAIAPEoA1InA/gH4AbDfwD8Hf2A/wFKA/ADe/8//3QD+AZX+ARHiaBMADS/TBezFj/iAK6AAD+7L090UK9vr6fLPqSz/5k2GE//+fdKhgv/+fdNXzPAnaf7CncqYZL/ghGcCuJ6fu3tXtoVC357rYWejMi0/Apzj4mwAAAAA==';
 const temp=await mkdtemp(join(tmpdir(),'hatarvilag-player-map-'));
 let server;
 try{
@@ -23,7 +23,7 @@ try{
   try{
    const page=await browser.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',err=>errors.push(err.message));
-   await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({contentType:'image/png',body:Buffer.from(testArt,'base64')}));
+   await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({contentType:'image/webp',body:Buffer.from(testArt,'base64')}));
    await page.goto('http://127.0.0.1:'+server.address().port);
    const field=page.locator('.sector-field');
    const testNode=async(label,expectedX,expectedY)=>{

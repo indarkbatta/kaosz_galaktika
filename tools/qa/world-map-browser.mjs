@@ -39,7 +39,7 @@ try{
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    const imageRequests=[];page.on('request',req=>{if(req.url().includes('assets.voidnoir.net'))imageRequests.push('request '+req.url());});page.on('requestfailed',req=>{if(req.url().includes('assets.voidnoir.net'))imageRequests.push('failed '+req.url()+' '+req.failure()?.errorText);});
    await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
-    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAIAAADmAupWAAAAYUlEQVR4nO3PMQ0AIRQEUUAEVrBwPtCFDzRRI+A8fGiYzOs32cm71RRV+wxvT6zxhbfl4o8nGExnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdD+sgASRbACx1AAAAABJRU5ErkJggg==','base64')
+    contentType:'image/webp',body:Buffer.from('UklGRp4AAABXRUJQVlA4IJIAAAAwCACdASpQACgAPj0ci0OiIaEXeSQAIAPEoA1InA/gH4AbDfwD8Hf2A/wFKA/ADe/8//3QD+AZX+ARHiaBMADS/TBezFj/iAK6AAD+7L090UK9vr6fLPqSz/5k2GE//+fdKhgv/+fdNXzPAnaf7CncqYZL/ghGcCuJ6fu3tXtoVC357rYWejMi0/Apzj4mwAAAAA==','base64')
    }));
    await page.goto(url);
    const levels=page.getByRole('navigation',{name:'Világszintek'});

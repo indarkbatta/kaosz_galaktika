@@ -34,7 +34,7 @@ try{
    const page=await b.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',err=>errors.push(err.message));
    await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
-    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAIAAADmAupWAAAAYUlEQVR4nO3PMQ0AIRQEUUAEVrBwPtCFDzRRI+A8fGiYzOs32cm71RRV+wxvT6zxhbfl4o8nGExnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdD+sgASRbACx1AAAAABJRU5ErkJggg==','base64')
+    contentType:'image/webp',body:Buffer.from('UklGRp4AAABXRUJQVlA4IJIAAAAwCACdASpQACgAPj0ci0OiIaEXeSQAIAPEoA1InA/gH4AbDfwD8Hf2A/wFKA/ADe/8//3QD+AZX+ARHiaBMADS/TBezFj/iAK6AAD+7L090UK9vr6fLPqSz/5k2GE//+fdKhgv/+fdNXzPAnaf7CncqYZL/ghGcCuJ6fu3tXtoVC357rYWejMi0/Apzj4mwAAAAA==','base64')
    }));
    await page.goto(url);
    const modal=page.getByRole('dialog',{name:'Csillagtérkép szerkesztő'});
