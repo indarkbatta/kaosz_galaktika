@@ -6,6 +6,7 @@ import {LucidePlus,LucideZap} from './components/LucideSigns';
 import {attributes,toDice} from './lib/d6';
 import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery,type WorldGalaxy,type WorldQuadrant,type WorldSector} from './SectorMap';
 import Cantina,{type CrewMember} from './Cantina';
+import SkillChallengePanel from './SkillChallengePanel';
 import CraftingPanel from './CraftingPanel';
 import EquipmentInventory from './EquipmentInventory';
 import ShipLoadout from './ShipLoadout';
@@ -156,6 +157,9 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
      <h3>{local(a.game_actions_i18n)?.name||a.slug}</h3><p>{local(a.game_actions_i18n)?.description}</p>
      <footer><small>⚡{a.energy_cost} · TN {a.target_number}</small><button disabled={busy||!progress||energy<a.energy_cost} onClick={()=>void doAction(a)}>{tr('Végrehajtás','Perform')} →</button></footer>
     </article>})}</div>
+    <SkillChallengePanel locale={locale} characterId={captain.id} locationId={position} energy={energy}
+      skills={skills} attributePips={captain.attribute_pips} skillBonusPips={captain.skill_bonus_pips}
+      upgrades={upgrades} onProgress={refresh}/>
     {localActions.length===0&&<p className="cmd-empty">{tr('Itt nincs elérhető akció. Nyisd meg a szektortérképet és indulj tovább!','No actions available here. Open the sector map and travel onward!')}</p>}
 
    </>}
