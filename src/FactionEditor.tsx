@@ -67,7 +67,7 @@ export default function FactionEditor({locale,onBack,onSectionSelect}:{locale:st
    // Keep the returned ID/revision even if readback fails: retry updates this record instead of duplicating it.
    setDraft(d=>({...d,id:saved.id,revision:saved.revision}));
    await load(saved.id,saved.revision);notify(tr('Frakció, jelenlét, cégek és jutalmak mentve.','Faction, presence, companies and rewards saved.'),'success');
-  }catch(e){const message=e instanceof Error?e.message:'Save failed';setError(message==='Faction changed since loading; reload before saving'?tr('Más szerkesztő módosította a frakciót. Töltsd újra mentés előtt.','Another editor changed this faction. Reload before saving.'):message);}
+  }catch(e){const message=e instanceof Error?e.message:'Save failed';setError(message.includes('item_manufacturer_company_owner')?tr('Az üzemet egy tárgy gyártójaként használod. Törlés előtt módosítsd a tárgy gyártóját.','This plant is used as an item manufacturer. Reassign the item before removing it.'):message==='Faction changed since loading; reload before saving'?tr('Más szerkesztő módosította a frakciót. Töltsd újra mentés előtt.','Another editor changed this faction. Reload before saving.'):message);}
   finally{guard.current=false;setBusy(false);}
  }
  const langButtons=<div className="ed-language-list">{(['hu','en'] as const).map(l=><button key={l} type="button" className={language===l?'active':''} onClick={()=>setLanguage(l)}>{l==='hu'?'Magyar':'English'}</button>)}</div>;

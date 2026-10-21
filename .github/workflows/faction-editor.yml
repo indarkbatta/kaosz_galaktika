@@ -3,6 +3,10 @@ on:
   pull_request:
     paths:
       - 'src/FactionEditor.tsx'
+      - 'src/ItemEditor.tsx'
+      - 'src/item-editor.css'
+      - 'tools/qa/item-manufacturer-*'
+      - 'supabase/migrations/*m81*'
       - 'src/faction-editor.css'
       - 'src/components/EditorNavigation.tsx'
       - 'supabase/migrations/*m80*'
@@ -38,3 +42,11 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
         run: node tools/qa/faction-browser.mjs
+      - name: Verify item manufacturer constraints and atomic rollback
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
+        run: node tools/qa/item-manufacturer-database.mjs
+      - name: Verify item manufacturer editor in Chromium and Firefox
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
+        run: node tools/qa/item-manufacturer-browser.mjs
