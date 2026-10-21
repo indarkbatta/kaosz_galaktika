@@ -6,6 +6,7 @@ import Editor from './Editor';
 import type {EditorSection} from './components/EditorNavigation';
 import SkillEditor from './SkillEditor';
 import GameplayEditor from './GameplayEditor';
+import SkillChallengeEditor from './SkillChallengeEditor';
 import SectorEditor from './SectorEditor';
 import GalaxyEditor from './GalaxyEditor';
 import ItemEditor from './ItemEditor';
@@ -15,7 +16,7 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'skills'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin';
+type Page='dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
@@ -163,6 +164,7 @@ function App(){
     </main>
     :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} kind={editorKind} onKindChange={setEditorKind} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='challenges'&&(role==='editor'||role==='admin')?<SkillChallengeEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='galaxy'&&(role==='editor'||role==='admin')?<GalaxyEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
