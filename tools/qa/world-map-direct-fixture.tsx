@@ -4,7 +4,7 @@ import WorldMapEditor from '../../src/WorldMapEditor';
 import '../../src/styles.css';
 import '../../src/editor.css';
 const nodes=[
- {id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',slug:'alpha',name_hu:'Alfa állomás',name_en:'Alpha station',x:23,y:50},
+ {id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',slug:'alpha',name_hu:'Alfa állomás',name_en:'Alpha station',image_path:'hatarvilag/worlds/alpha.webp',x:23,y:50},
  {id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',slug:'beta',name_hu:'Béta bolygó',name_en:'Beta planet',x:55,y:25},
  {id:'cccccccc-cccc-4ccc-8ccc-cccccccccccc',slug:'gamma',name_hu:'Gamma roncs',name_en:'Gamma wreck',x:79,y:69}
 ];

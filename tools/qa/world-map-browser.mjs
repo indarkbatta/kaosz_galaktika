@@ -12,7 +12,7 @@ const {chromium,firefox}=require('playwright');
 const scratch=await mkdtemp(join(tmpdir(),'hatarvilag-world-'));
 const db={
  game_galaxies:[{id:'11111111-1111-4111-8111-111111111111',slug:'hatarvilag',name_hu:'Határvilág',name_en:'Borderworld',description_hu:'',description_en:'',is_published:true}],
- game_quadrants:[{id:'22222222-2222-4222-8222-222222222222',slug:'hatarvidek',name_hu:'Határvidék',name_en:'Frontier',description_hu:'',description_en:'',x:53,y:47,galaxy_id:'11111111-1111-4111-8111-111111111111',is_published:true}],
+ game_quadrants:[{id:'22222222-2222-4222-8222-222222222222',slug:'hatarvidek',name_hu:'Határvidék',name_en:'Frontier',description_hu:'',description_en:'',x:53,y:47,image_path:'hatarvilag/worlds/frontier.webp',galaxy_id:'11111111-1111-4111-8111-111111111111',is_published:true}],
  game_sectors:[{id:'33333333-3333-4333-8333-333333333333',slug:'kezdo_rendszer',name_hu:'Határvidéki naprendszer',name_en:'Frontier System',description_hu:'',description_en:'',x:35,y:60,quadrant_id:'22222222-2222-4222-8222-222222222222',is_published:true}],
  game_locations:[{id:'44444444-4444-4444-8444-444444444444',slug:'frontier_station',sector_id:'33333333-3333-4333-8333-333333333333',x:22,y:40,game_locations_i18n:[{locale:'hu',name:'Határvidéki állomás'},{locale:'en',name:'Frontier Station'}]}]
 };
@@ -38,7 +38,7 @@ try{
    const page=await engine.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
-    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGPUiq9mYGBgYmBgYGBgAAAMCQEI3wjvmgAAAABJRU5ErkJggg==','base64')
+    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAIAAADmAupWAAAAYUlEQVR4nO3PMQ0AIRQEUUAEVrBwPtCFDzRRI+A8fGiYzOs32cm71RRV+wxvT6zxhbfl4o8nGExnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdD+sgASRbACx1AAAAABJRU5ErkJggg==','base64')
    }));
    await page.goto(url);
    const levels=page.getByRole('navigation',{name:'Világszintek'});
@@ -55,6 +55,19 @@ try{
    assert.match(gridSize,/5% 5%, 5% 5%/,'Inline grid must have square cell spacing');
    const marker=mini.locator('.wa-map-node').first();
    assert.equal(await marker.getAttribute('style'),'left: 55%; top: 45%;','Preview must snap legacy quadrant coordinates on both axes');
+   const smallFrame=mini.locator('.wa-map-node-icon.world-map-frame').first();
+   const smallImage=smallFrame.locator('img');
+   await smallImage.waitFor({state:'visible'});
+   const thumbnailStyle=await smallFrame.evaluate(frame=>{
+     const photo=frame.querySelector('img');
+     const rect=frame.getBoundingClientRect();
+     return {width:rect.width,height:rect.height,radius:getComputedStyle(frame).borderTopLeftRadius,
+       crop:getComputedStyle(photo).objectFit,naturalWidth:photo.naturalWidth,naturalHeight:photo.naturalHeight};
+   });
+   assert.ok(Math.abs(thumbnailStyle.width-thumbnailStyle.height)<1,'Atlas marker is square');
+   assert.ok(parseFloat(thumbnailStyle.radius)<8,'Atlas marker has simple squared corners');
+   assert.equal(thumbnailStyle.crop,'cover');
+   assert.equal(thumbnailStyle.naturalWidth,80);assert.equal(thumbnailStyle.naturalHeight,40);
    const markerBox=await mini.locator('.wa-map-node-icon').first().boundingBox();
    assert.ok(markerBox,'Preview star marker visible');
    const mapCenterX=preview.x+1+(preview.width-2)*.55;
@@ -71,6 +84,9 @@ try{
    const node=modal.locator('.wm-node').first();
    const b=await node.boundingBox(),f=await field.boundingBox();
    const star=await node.locator('.wm-node-dot').boundingBox();
+   const photo=modal.locator('.wm-node-dot.world-map-frame img').first();
+   await photo.waitFor({state:'visible'});
+   assert.equal(await photo.evaluate(el=>getComputedStyle(el).objectFit),'cover','Big modal uses the same center crop');
    const point=await node.evaluate(el=>({x:parseFloat(el.style.left),y:parseFloat(el.style.top)}));
    assert.ok(star&&b&&f,'Star marker and field visible');
    assert.equal(point.x%5,0);assert.equal(point.y%5,0);

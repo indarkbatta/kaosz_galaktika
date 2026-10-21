@@ -33,6 +33,9 @@ try{
   try{
    const page=await b.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',err=>errors.push(err.message));
+   await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
+    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAIAAADmAupWAAAAYUlEQVR4nO3PMQ0AIRQEUUAEVrBwPtCFDzRRI+A8fGiYzOs32cm71RRV+wxvT6zxhbfl4o8nGExnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdD+sgASRbACx1AAAAABJRU5ErkJggg==','base64')
+   }));
    await page.goto(url);
    const modal=page.getByRole('dialog',{name:'Csillagtérkép szerkesztő'});
    await modal.waitFor();
@@ -61,6 +64,26 @@ try{
       'Marker icon must align to the grid Y intersection even when zoomed');
    };
    await atGrid();
+   const framed=nodes.first().locator('.wm-node-dot.world-map-frame');
+   const portrait=framed.locator('img');
+   await portrait.waitFor({state:'visible'});
+   const details=await framed.evaluate(el=>{
+    const image=el.querySelector('img');
+    const frame=getComputedStyle(el);
+    const imgStyle=getComputedStyle(image);
+    return {width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,
+      borderRadius:frame.borderTopLeftRadius,objectFit:imgStyle.objectFit,
+      position:imgStyle.objectPosition,naturalW:image.naturalWidth,naturalH:image.naturalHeight,
+      imageWidth:image.getBoundingClientRect().width,imageHeight:image.getBoundingClientRect().height};
+   });
+   assert.ok(Math.abs(details.width-details.height)<1,'Image marker is square');
+   assert.ok(parseFloat(details.borderRadius)<8,'Image marker has simple square-corner frame');
+   assert.equal(details.objectFit,'cover','Landscape art is center-cropped, not distorted');
+   assert.match(details.position,/50%/,'Art crop centered');
+   assert.equal(details.naturalW,80);assert.equal(details.naturalH,40);
+   assert.ok(Math.abs(details.imageWidth-details.imageHeight)<1,'Image square despite 2:1 source');
+   assert.equal(await nodes.nth(1).locator('.wm-node-dot .world-art-fallback').count(),1,
+      'Missing photo keeps fallback glyph in the same square frame');
    const mx=first.x+first.width/2,my=first.y+20;
    const anchorBefore=await nodes.nth(0).boundingBox();
    await page.mouse.move(mx,my);await page.mouse.wheel(0,-360);
