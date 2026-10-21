@@ -27,7 +27,7 @@ try{
  }]});
  const js=out.outputFiles.find(x=>x.path.endsWith('.js')).text;
  const css=out.outputFiles.find(x=>x.path.endsWith('.css'))?.text||'';
- const html='<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,#root{margin:0;background:#08131d;color:#eff4f7}'+css+'</style><div id="root"></div><script>window.__fixture='+JSON.stringify(initial)+'</script><script>'+js+'</script>';
+ const html='<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,#root{margin:0;background:#08131d;color:#eff4f7}'+css+'</style><div id="root"></div><script>window.__fixture=JSON.parse(sessionStorage.getItem("fixture")||"null")||'+JSON.stringify(initial)+'</script><script>'+js+'</script>';
  server=createServer((_,res)=>{res.writeHead(200,{'Content-Type':'text/html'});res.end(html);});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  for(const [name,driver] of [['chromium',chromium],['firefox',firefox]]){
@@ -53,8 +53,9 @@ try{
     assert.equal(await page.evaluate(()=>window.__fixture.character_skill_challenge_rolls.length),i+1);
     assert.equal(await modal.locator('.sc-skill-choices').count(),0);
     if(i===0){
-     // Close/reopen without acknowledgement restores the accepted result, not the next test.
-     await modal.getByRole('button',{name:'Bezárás',exact:true}).click();
+     // Full reload without acknowledgement restores the accepted result, not the next test.
+     await page.evaluate(()=>sessionStorage.setItem('fixture',JSON.stringify(window.__fixture)));
+     await page.reload();
      await page.getByRole('button',{name:/Folytatás/}).click();
      await modal.locator('.sc-play-action .dice-panel.is-revealed').waitFor();
      assert.equal(await modal.locator('.sc-play-action h3').textContent(),'Lépés 0');

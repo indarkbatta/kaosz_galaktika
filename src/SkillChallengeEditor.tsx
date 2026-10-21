@@ -78,7 +78,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
   if(draft.steps.length<2||draft.steps.length>8||draft.steps.some(x=>!x.name_hu.trim()||!x.name_en.trim()||
     x.skill_ids.length<1||new Set(x.skill_ids).size!==x.skill_ids.length||
     x.base_tn<4||x.base_tn>80||x.energy_cost<1||x.energy_cost>100))
-   throw Error(tr('Minden lépéshez név, 1–3 különböző skill, 4–80 TN és 1–100 energia szükséges.','Each step needs names, 1–3 distinct skills, TN 4–80 and 1–100 energy.'));
+   throw Error(tr('Minden lépéshez név, 1–3 különböző skill, 4–80 Célszám (TN) és 1–100 energia szükséges.','Each step needs names, 1–3 distinct skills, Target Number (TN) 4–80 and 1–100 energy.'));
  };
  const save=async(e:FormEvent)=>{e.preventDefault();if(busy)return;setBusy(true);
   try{
@@ -153,11 +153,11 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
      </div>}
     </div>}
     {tab==='reward'&&<>
-     <label>{tr('Nehézség','Difficulty')}<select value={draft.difficulty} onChange={e=>patch({difficulty:e.target.value})}>
+     <label>{tr('Nehézség','Difficulty')}<select aria-label={tr('Nehézség','Difficulty')} value={draft.difficulty} onChange={e=>patch({difficulty:e.target.value})}>
       <option value="easy">Könnyű / Easy</option><option value="normal">Normál / Normal</option>
       <option value="hard">Nehéz / Hard</option><option value="extreme">Extrém / Extreme</option>
      </select></label>
-     <p>{tr('A célszám: alap TN + ⌊(karakterszint−1)/5⌋ + nehézségi módosító.','Target: base TN + floor((character level−1)/5) + difficulty modifier.')}</p>
+     <p>{tr('Célszám (TN): alap célszám + ⌊(karakterszint−1)/5⌋ + nehézségi módosító.','Target Number (TN): base target + floor((character level−1)/5) + difficulty modifier.')}</p>
      <div className="sc-modifiers"><span>Könnyű / Easy −2 · ×0,75 XP</span><span>Normál / Normal 0 · ×1 XP</span>
       <span>Nehéz / Hard +3 · ×1,5 XP</span><span>Extrém / Extreme +6 · ×2 XP</span></div>
      <div className="sc-two"><label>{tr('Teljes siker XP','Full success XP')}<input type="number" min={0} max={10000} value={draft.xp_full} onChange={e=>patch({xp_full:Number(e.target.value)})}/></label>

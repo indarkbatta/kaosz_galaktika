@@ -56,6 +56,13 @@ try{for(const [name,driver] of [['chromium',chromium],['firefox',firefox]]){
  await page.locator('.cmd-log .dice-panel.is-revealed').waitFor();assert.equal(await page.locator('.cmd-log .dice-result b').textContent(),'Végösszeg: 6');
  await page.getByRole('button',{name:'Language',exact:true}).click();await page.getByRole('button',{name:'Bridge',exact:true}).last().click();
  await page.getByText('Target Number (TN): 9',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Activity Editor',exact:true}).click();
+ await page.getByRole('button',{name:'Remove artwork',exact:true}).click();
+ await page.getByRole('button',{name:'SAVE',exact:true}).click();
+ await page.waitForFunction(()=>window.__fixture.game_actions[0].image_path===null);
+ await page.getByRole('button',{name:'Bridge',exact:true}).click();
+ await page.locator('.bridge-card').nth(1).waitFor();
+ assert.equal(await page.locator('.bridge-card-image .world-art-fallback').count(),1);
  assert.deepEqual(errors,[]);console.log(name+': PASS both editor artwork save/reload, editor difficulty, shared cards, activity Wild penalty, double click, persisted log and English labels');
  }finally{await browser.close()}}
 }finally{await new Promise(r=>server.close(r))}
