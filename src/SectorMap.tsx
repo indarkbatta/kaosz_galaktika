@@ -1,6 +1,6 @@
 import {useEffect,useMemo,useState} from 'react';
 import './sector-map.css';
-import {WorldArtwork} from './components/WorldImageField';
+import {WorldArtwork,WorldMapIcon} from './components/WorldImageField';
 export type SectorLocale={locale:string;name:string;description:string};
 export type WorldGalaxy={id:string;slug:string;name_hu:string;name_en:string;image_path?:string|null};
 export type WorldQuadrant={id:string;galaxy_id:string;slug:string;name_hu:string;name_en:string;x:number;y:number;image_path?:string|null};
@@ -66,18 +66,18 @@ export default function SectorMap({locale,galaxies,quadrants,sectors,locations,r
       return <g key={r.id}><line x1={a.x} y1={a.y} x2={b.x} y2={b.y} className={reachable?'reachable':''}/><circle cx={(a.x+b.x)/2} cy={(a.y+b.y)/2} r=".6" className={reachable?'reachable':''}/></g>;
      })}
     </svg>}
-    {level==='galaxy'&&visibleQuadrants.map(q=><button key={q.id} type="button" title={display(q)} className="sector-node sector-world-node"
+    {level==='galaxy'&&visibleQuadrants.map(q=><button key={q.id} type="button" title={display(q)} className="sector-node sector-world-node world-map-node"
       style={{left:q.x+'%',top:q.y+'%'}} onClick={()=>goQuadrant(q.id)}>
-      <span className="sector-node-icon"><WorldArtwork path={q.image_path} fallback="◈" alt=""/></span><span className="sector-node-name">{display(q)}</span></button>)}
-    {level==='quadrant'&&visibleSectors.map(s=><button key={s.id} type="button" title={display(s)} className="sector-node sector-world-node"
+      <WorldMapIcon className="sector-node-icon" path={q.image_path} fallback="◈" alt=""/><span className="sector-node-name">{display(q)}</span></button>)}
+    {level==='quadrant'&&visibleSectors.map(s=><button key={s.id} type="button" title={display(s)} className="sector-node sector-world-node world-map-node"
       style={{left:s.x+'%',top:s.y+'%'}} onClick={()=>goSector(s.id)}>
-      <span className="sector-node-icon"><WorldArtwork path={s.image_path} fallback="✺" alt=""/></span><span className="sector-node-name">{display(s)}</span></button>)}
+      <WorldMapIcon className="sector-node-icon" path={s.image_path} fallback="✺" alt=""/><span className="sector-node-name">{display(s)}</span></button>)}
     {level==='sector'&&inSector.map(l=><button type="button" key={l.id} title={found.has(l.id)?name(l)?.name:t('Ismeretlen helyszín','Unknown site')}
      aria-label={found.has(l.id)?name(l)?.name:t('Ismeretlen helyszín','Unknown site')}
      aria-pressed={selected===l.id} onClick={()=>setSelected(l.id)}
-     className={'sector-node '+(l.id===currentId?'current ':'')+(selected===l.id?'selected ':'')+(!found.has(l.id)?'undiscovered':'')}
+     className={'sector-node world-map-node '+(l.id===currentId?'current ':'')+(selected===l.id?'selected ':'')+(!found.has(l.id)?'undiscovered':'')}
      style={{left:l.x+'%',top:l.y+'%'}}>
-      <span className="sector-node-icon"><WorldArtwork path={found.has(l.id)?l.image_path:null} fallback={emblem(l.kind)} alt=""/></span>
+      <WorldMapIcon className="sector-node-icon" path={found.has(l.id)?l.image_path:null} fallback={emblem(l.kind)} alt=""/>
       <span className="sector-node-name">{found.has(l.id)?name(l)?.name:t('Felderítetlen','Uncharted')}</span>
      </button>)}
     <div className="sector-compass"><span>N</span><span>✣</span></div>

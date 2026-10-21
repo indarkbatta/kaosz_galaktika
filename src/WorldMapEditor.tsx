@@ -2,7 +2,7 @@ import {useEffect,useRef,useState,type PointerEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import './world-map-editor.css';
-import {WorldArtwork} from './components/WorldImageField';
+import {WorldArtwork,WorldMapIcon} from './components/WorldImageField';
 import {WORLD_MAP_SIZE,snapWorldCoordinate} from './lib/worldMapGeometry';
 
 export type WorldMapNode={id:string;slug:string;name_hu:string;name_en:string;x:number;y:number;image_path?:string|null};
@@ -204,7 +204,7 @@ export default function WorldMapEditor({locale,level,parentId,parentName,nodes,r
        className={'wm-node '+(selected===n.id?'selected ':'')+(from===n.id?'link-start':'')}
        style={{left:n.x+'%',top:n.y+'%'}}
        aria-label={display(n)+' ('+n.x+', '+n.y+')'} aria-pressed={selected===n.id}>
-       <span className="wm-node-dot"><WorldArtwork path={n.image_path} fallback="✦" alt=""/></span><span className="wm-node-label">{display(n)}</span>
+       <WorldMapIcon className="wm-node-dot" path={n.image_path} fallback="✦" alt=""/><span className="wm-node-label">{display(n)}</span>
       </button>)}
       {!positions.length&&<div className="wm-empty">{tr('Még nincs objektum. Hozz létre egyet a szerkesztőben.','No nodes yet. Create one in the editor first.')}</div>}
      </div>

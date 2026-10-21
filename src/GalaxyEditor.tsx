@@ -6,7 +6,7 @@ import {EditorNavigation,type EditorSection} from './components/EditorNavigation
 import WorldMapEditor,{type WorldMapLevel,type WorldMapNode} from './WorldMapEditor';
 import './world-atlas-editor.css';
 import {snapWorldCoordinate} from './lib/worldMapGeometry';
-import {WorldArtwork,WorldImageField} from './components/WorldImageField';
+import {WorldArtwork,WorldImageField,WorldMapIcon} from './components/WorldImageField';
 import {validWorldImage} from './lib/worldImages';
 
 type Level='galaxies'|'quadrants'|'sectors';
@@ -150,7 +150,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
      <div className="wa-map-mini" role="group" aria-label={tr('Négyzetes térképelőnézet','Square starmap preview')}>
       {children.map(node=><div key={node.id} className="wa-map-node" title={en?node.name_en:node.name_hu}
         style={{left:snapWorldCoordinate(node.x)+'%',top:snapWorldCoordinate(node.y)+'%'}}>
-        <span className="wa-map-node-icon"><WorldArtwork path={node.image_path} fallback="✦" alt=""/></span>
+        <WorldMapIcon className="wa-map-node-icon" path={node.image_path} fallback="✦" alt=""/>
         <span className="wa-map-node-label">{en?node.name_en:node.name_hu}</span>
       </div>)}
      </div>
