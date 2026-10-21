@@ -12,6 +12,8 @@ export function DiceRollPanel({locale,result,rolling=false,onComplete}:{locale:s
  const spinning=rolling||!revealed;
  const wild=result?.wild_dice||[];
  const dice=result?.dice||[0,0,0];
+ // Older activity logs did not persist pips; reconstruct them from their authoritative total.
+ const pipBonus=result?.pip_bonus??(result?result.roll_total-dice.reduce((a,b)=>a+b,0)-wild.reduce((a,b)=>a+b,0)+(result.wild_penalty||0):0);
  return <section className={'dice-panel '+(spinning?'is-rolling':'is-revealed')} aria-label={en?'Dice roll':'Kockadobás'} aria-busy={spinning}>
   <strong>{spinning?(en?'Rolling…':'Dobás…'):(result?.succeeded?(en?'SUCCESS':'SIKER'):(en?'FAILURE':'KUDARC'))}</strong>
   <div className="dice-tray">{dice.map((v,i)=><div key={'d'+i} className={'dice-cell '+(result?.wild_cancelled_index===i?'cancelled':'')}>
@@ -20,7 +22,7 @@ export function DiceRollPanel({locale,result,rolling=false,onComplete}:{locale:s
     <Die value={v} spinning={spinning}/><small>{i===0?'Wild Die':'+ Wild'}</small></div>)}
   </div>
   {!spinning&&result&&<div className="dice-result" aria-live="polite">
-   <span>{en?'Pip bonus':'Pip bónusz'}: +{result.pip_bonus}</span>
+   <span>{en?'Pip bonus':'Pip bónusz'}: +{pipBonus}</span>
    {!!result.wild_penalty&&<span>{en?'Wild Die: first 1 and highest die removed':'Wild Die: első 1 és legmagasabb kocka kiesik'} (−{result.wild_penalty})</span>}
    <b>{en?'Total':'Végösszeg'}: {result.roll_total}</b><span>{en?'Target Number (TN)':'Célszám (TN)'}: {result.target_number}</span>
   </div>}
