@@ -316,3 +316,5 @@ M82–M87 are additive migrations. See [combat system and adaptation decisions](
 ### Roncskutatás térképszerkesztő (2026-10-21)
 
 `feature/salvage-map-editor` starts at `fc71a58` and preserves grouped editor navigation/game edge tabs. Játékmenet → Roncskutatás adds a snapping room/connection editor, four encounter kinds, credit/item loot, HU/EN room/map text, entry, graph validation, undo/redo and atomic revision-checked persistence. Migration `20261021195141_salvage_map_editor.sql` is applied to the linked database; rollback-only real-role integration passes. See `docs/SALVAGE_EDITOR.md` and `.github/workflows/salvage.yml`. This is authoring only; player traversal/reward execution is not added. No Vercel publish or main merge in this task.
+
+Roncskutatás follow-up: optional R2 background + persisted opacity, eight snapped room resize handles, and direct grid-size controls (up to 128×128). Migration `20261021201756_salvage_background_resize.sql`; same editor branch/PR #10. Existing graph safeguards and backward-compatible saves preserved.

@@ -7,7 +7,7 @@ begin
  update public.user_roles set role='editor' where user_id=uid;
  select id into challenge from public.game_skill_challenges where is_published limit 1;select id into encounter from public.game_combat_encounters where is_published limit 1;select id into item from public.game_items where is_published limit 1;
  if challenge is null or encounter is null or item is null then raise exception 'Test requires existing published challenge, encounter and item';end if;
- doc:=jsonb_build_object('slug','qa_salvage_'||replace(uid::text,'-',''),'name_hu','QA roncs','name_en','QA wreck','width',32,'height',24,'is_published',true,
+ doc:=jsonb_build_object('slug','qa_salvage_'||replace(uid::text,'-',''),'name_hu','QA roncs','name_en','QA wreck','width',64,'height',48,'background_image','hatarvilag/worlds/qa-wreck.webp','background_opacity',0.42,'is_published',true,
  'rooms',jsonb_build_array(
  jsonb_build_object('id',first_room,'x',1,'y',2,'width',4,'height',3,'name_hu','Beszállás','name_en','Entry','kind','empty','is_entry',true,'credits',0,'loot','[]'::jsonb),
  jsonb_build_object('id',loot_room,'x',7,'y',2,'width',4,'height',3,'name_hu','Raktár','name_en','Cargo','kind','loot','is_entry',false,'credits',50,'loot',jsonb_build_array(jsonb_build_object('item_id',item,'quantity',2))),
@@ -19,6 +19,7 @@ begin
  select value into reread from jsonb_array_elements(public.get_salvage_editor_catalog()->'maps') where value->>'id'=saved->>'id';
  if jsonb_array_length(reread->'rooms')<>4 or jsonb_array_length(reread->'connections')<>3 then raise exception 'Map graph did not persist';end if;
  if not exists(select 1 from jsonb_array_elements(reread->'rooms') r where r->>'kind'='loot' and (r->>'credits')::int=50 and (r->'loot'->0->>'quantity')::int=2) then raise exception 'Room loot did not persist';end if;
+ if reread->>'background_image'<>'hatarvilag/worlds/qa-wreck.webp' or (reread->>'background_opacity')::numeric<>0.42 then raise exception 'Background did not persist';end if;
  before_doc:=reread;
  begin perform public.save_salvage_map((saved->>'id')::uuid,1,jsonb_set(doc,'{rooms,1,x}','2'));raise exception 'TEST overlap accepted';exception when raise_exception then if sqlerrm<>'Rooms overlap' then raise;end if;end;
  select value into reread from jsonb_array_elements(public.get_salvage_editor_catalog()->'maps') where value->>'id'=saved->>'id';if reread is distinct from before_doc then raise exception 'Invalid map save failed to roll back';end if;
