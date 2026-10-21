@@ -54,3 +54,36 @@
 .cmd-energy-value strong{white-space:nowrap}
 .cmd-debug-refill{display:grid;place-items:center;min-width:27px;height:27px;background:#4c2a1c;border:1px solid #e78b4c;color:#ffc67e;font-size:16px;line-height:1;cursor:pointer;padding:2px}
 .cmd-debug-refill:hover{background:#8c4524}.cmd-debug-refill:disabled{opacity:.35}
+
+/* External file-folder tabs for the eight MAIN player pages (not a sidebar). */
+.cmd-frame{position:relative;width:100%;height:100%;min-height:0;min-width:0;isolation:isolate}
+.cmd-frame>.cmd-shell{width:100%;height:100%;overflow:hidden;position:relative;z-index:1}
+.cmd-frame>.cmd-edge-tabs{position:absolute;z-index:3;right:calc(100% - 1px);top:50%;transform:translateY(-50%);width:132px;height:min(552px,calc(100% - 40px));display:grid;grid-template-rows:repeat(8,minmax(0,1fr));gap:4px;overflow:visible;pointer-events:auto}
+.cmd-edge-tab{position:relative;display:flex;align-items:center;gap:8px;width:100%;height:100%;min-height:0;min-width:0;padding:7px 9px 7px 18px;border:1px solid #536675;border-right:0;border-radius:0;background:linear-gradient(105deg,#101c26 4%,#182b38 72%,#1e2c36);color:#b9c9d5;clip-path:polygon(12px 0,100% 0,100% 100%,12px 100%,0 calc(100% - 12px),0 12px);filter:drop-shadow(-4px 3px 3px #000a);text-align:left;font-size:12px;line-height:1.2;letter-spacing:.035em;white-space:nowrap;cursor:pointer}
+.cmd-edge-tab::before{content:'';position:absolute;inset:0 auto 0 9px;width:3px;background:#687a86;opacity:.75}
+.cmd-edge-icon{width:23px;height:24px;flex:0 0 23px;display:grid;place-items:center;color:#9bb9cc}
+.cmd-edge-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;font-weight:600;text-transform:uppercase}
+.cmd-edge-tab:hover{color:#fff;background:linear-gradient(110deg,#1a3648,#25465a);border-color:#91b4c6}
+.cmd-edge-tab:hover .cmd-edge-icon{color:#dcecf8}
+.cmd-edge-tab.active{color:#fff;background:linear-gradient(108deg,#08344e 0%,#0d425f 60%,#0f2939);border-color:#41bfe9;box-shadow:inset 0 0 0 1px #267eae}
+.cmd-edge-tab.active::before{background:#39c5f8;opacity:1;box-shadow:0 0 12px #49c9ff}
+.cmd-edge-tab.active .cmd-edge-icon{color:#58d4ff}
+.cmd-edge-tab:focus-visible{outline:2px solid #ffd09a;outline-offset:-3px}
+.cmd-head{justify-content:flex-start;padding-left:22px}
+.cmd-head>div{flex:1 1 auto;max-width:100%}
+.cmd-head>div strong{font-size:20px}
+@media(max-width:870px){
+ .cmd-frame>.cmd-edge-tabs{width:90px}
+ .cmd-edge-tab{padding:6px 5px 6px 13px;font-size:10px;gap:5px}
+ .cmd-edge-tab::before{left:7px}
+ .cmd-edge-icon{width:20px;flex-basis:20px}
+ .cmd-edge-icon svg{width:18px;height:18px}
+}
+@media(max-width:590px){
+ .cmd-frame>.cmd-edge-tabs{width:55px;height:min(510px,calc(100% - 20px));gap:3px}
+ .cmd-edge-tab{justify-content:center;padding:5px 4px 5px 11px;clip-path:polygon(9px 0,100% 0,100% 100%,9px 100%,0 calc(100% - 9px),0 9px)}
+ .cmd-edge-label{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+ .cmd-edge-icon{width:24px;flex-basis:24px}
+ .cmd-head{padding:5px 10px;flex-direction:row}
+ .cmd-head>div{max-width:100%;display:grid;justify-content:initial}
+}

@@ -10,6 +10,7 @@ import SkillChallengePanel from './SkillChallengePanel';
 import CraftingPanel from './CraftingPanel';
 import EquipmentInventory from './EquipmentInventory';
 import ShipLoadout from './ShipLoadout';
+import GameEdgeTabs,{type GameTab} from './components/GameEdgeTabs';
 import './captain-dashboard.css';
 import {BridgeEncounterCard} from './components/BridgeEncounterCard';
 import {DiceRollPanel,type DiceResult} from './components/DiceRollPanel';
@@ -45,7 +46,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [shipStatus,setShipStatus]=useState<{ready:boolean;base_speed:number;speed:number}|null>(null);
  const [cargoView,setCargoView]=useState<'stock'|'craft'>('stock');
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
- const [tab,setTab]=useState<'bridge'|'map'|'character'|'ship'|'cantina'|'inventory'|'log'|'combat'>('bridge'),[group,setGroup]=useState('body');
+ const [tab,setTab]=useState<GameTab>('bridge'),[group,setGroup]=useState('body');
  const [busy,setBusy]=useState(false);
  const actionGate=useRef(false);
  const actionRequest=useRef<{slug:string;id:string}|null>(null);
@@ -152,9 +153,11 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   ...travelLogs.map(x=>({key:'travel'+x.id,at:x.traveled_at,title:tr('Utazás','Travel')+' → '+siteName(x.destination_id),detail:siteName(x.origin_id)+' · ⚡ '+x.energy_spent}))
  ].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,9);
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
- return <section className="cmd-shell">
+ return <div className="cmd-frame">
+  <GameEdgeTabs locale={locale} active={tab} onChange={setTab}/>
+  <section className="cmd-shell">
   <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
-   <nav>{(['bridge','combat','map','character','ship','cantina','inventory','log'] as const).map(k=><button key={k} className={tab===k?'active':''} onClick={()=>setTab(k)}>{({bridge:tr('Híd','Bridge'),combat:tr('Harc','Combat'),map:tr('Szektortérkép','Sector Map'),character:tr('Karakter','Character'),ship:tr('Hajó','Ship'),cantina:tr('Kantin','Cantina'),inventory:tr('Raktér','Cargo'),log:tr('Napló','Log')})[k]}</button>)}</nav>
+
   </header>
   <div className="cmd-summary">
    <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
@@ -162,7 +165,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
    <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||''} path={ship?.image_path}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
   </div>
-  <main className="cmd-body">
+  <main className="cmd-body" id="cmd-tab-panel" role="tabpanel" aria-labelledby={'cmd-tab-'+tab}>
    {tab==='bridge'&&<><div className="cmd-title"><h2>{tr('ELÉRHETŐ TEVÉKENYSÉGEK','AVAILABLE ACTIVITIES')}</h2><small>{hereName}</small></div>
     <SkillChallengePanel locale={locale} characterId={captain.id} locationId={position} energy={energy}
       skills={skills} attributePips={captain.attribute_pips} skillBonusPips={captain.skill_bonus_pips}
@@ -201,5 +204,6 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    {diceDone&&<p>{actionRoll.message}</p>}<button disabled={!diceDone||busy} onClick={()=>setActionRoll(null)}>{tr('Vissza a hídra','Back to bridge')}</button>
   </section></div>}
   {confirmReset&&<div className="cmd-modal-bg"><div className="cmd-modal" role="dialog" aria-modal="true"><h3>{tr('Tesztkarakter törlése','Reset test captain')}</h3><p>{tr('Ez csak a saját karakteredet törli! Írd be: RESET','Deletes only your own captain! Type RESET.')}</p><input autoFocus value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/><div><button onClick={()=>setConfirmReset(false)}>{tr('Mégse','Cancel')}</button><button disabled={busy||resetWord!=='RESET'} onClick={()=>void reset()}>{tr('Törlés','Delete')}</button></div></div></div>}
- </section>;
+ </section>
+ </div>;
 }
