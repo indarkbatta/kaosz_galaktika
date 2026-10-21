@@ -44,7 +44,7 @@ try{
    assert.equal(await page.evaluate(()=>window.__fixture.xp),0);
    await modal.locator('.sc-skill-choices button').first().click();
    await modal.getByText('TN 13').waitFor();
-   await modal.getByRole('button',{name:'Bezárás'}).click();
+   await modal.getByRole('button',{name:'Bezárás',exact:true}).click();
    await page.getByRole('button',{name:/Folytatás/}).click();
    await modal.getByText('TN 13').waitFor();
    for(let i=1;i<4;i++){
