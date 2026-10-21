@@ -63,6 +63,7 @@ try{
    await fields.location.selectOption(loc2);
    await page.getByRole('button',{name:'Mentés',exact:true}).click();
    await page.waitForFunction(target=>window.__speciesHomeworld.db.game_species[0].homeworld_location_id===target,loc2);
+   await page.waitForFunction(target=>document.querySelector('select[aria-label="Kezdőhelyszín"]')?.value===target,loc2);
    assert.equal(await fields.location.inputValue(),loc2,'Homeworld survives save and refresh');
    const updates=await page.evaluate(()=>window.__speciesHomeworld.updates);
    assert.equal(updates.at(-1).table,'game_species');

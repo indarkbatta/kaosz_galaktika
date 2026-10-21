@@ -172,7 +172,9 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
    setRecords(items);setSkills(sk.data as unknown as Skill[]);setLocales(lang.data as LocaleRow[]);
    setCounts(v=>({...v,[k]:items.length,[other]:otherCount.count||0}));
    const picked=items.find(x=>x.id===keep)||items[0];
-   setHomeworldPath(emptyWorldPath());
+   // Keep the selected hierarchy when refreshing the same saved Homeworld.
+   // A blank/default homeworld explicitly clears the cascade.
+   if(!picked?.homeworld_location_id)setHomeworldPath(emptyWorldPath());
    setForm(picked?hydrate(picked,k):emptyForm());
    setDirty(false);setLoading(false);
  },[]);
