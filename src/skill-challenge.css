@@ -36,3 +36,6 @@
 .sc-play>footer{padding:12px 19px;border-top:1px solid #465c6c;display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px;color:#aabcc9}
 .sc-play>footer button{background:#1b2e3b;color:#fff;border:1px solid #637b8e;padding:10px;cursor:pointer}
 @media(max-width:760px){.sc-play-grid{grid-template-columns:1fr}.sc-play-story{max-height:235px}.sc-play-action{border-left:0;border-top:1px solid #4c6170}.sc-bridge-list{grid-template-columns:1fr}}
+
+/* Keep existing single-step bridge actions visible without introducing page scroll. */
+.sc-bridge{flex:0 0 auto;max-height:150px;min-height:0}.sc-bridge-list{max-height:109px;overflow-y:auto}

@@ -52,7 +52,7 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
  const available=challenges.filter(x=>x.location_id===locationId);
  const selected=challenges.find(x=>x.id===chosen);
  const run=selected&&(runs.find(x=>x.challenge_id===selected.id&&x.status==='active')||
-  runs.find(x=>x.challenge_id===selected.id));
+  ((!selected.repeatable||last)?runs.find(x=>x.challenge_id===selected.id&&x.status!=='active'):undefined));
  const steps=run?.definition.steps||selected?.steps||[];
  const step=run?.status==='active'?steps[run.step_index]:null;
  const completed=run&&run.status!=='active';
@@ -80,7 +80,7 @@ export default function SkillChallengePanel({locale,characterId,locationId,energ
    const result=await supabase.rpc('roll_skill_challenge',{p_run:run.id,p_step_index:run.step_index,p_skill:skill});
    if(result.error)throw result.error;
    setLast(result.data);await refresh();await onProgress();
-   if(result.data?.status!=='active')notify(tr('Kihívás befejezve.','Challenge completed.'),'success');
+   if(result.data?.status!=='active')notify(tr('Kihívás lezárult.','Challenge concluded.'),result.data?.status==='failure'?'warning':'success');
   }catch(error){notify(error instanceof Error?error.message:String(error),'error');}
   finally{setBusy(false);}
  };
