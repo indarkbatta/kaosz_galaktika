@@ -25,6 +25,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
  const [mapOpen,setMapOpen]=useState(false);
  const [draft,setDraft]=useState<Place>(blank),[translations,setTranslations]=useState<Record<string,{name:string;description:string}>>({});
  const [checked,setChecked]=useState<string[]>([]),[links,setLinks]=useState<Record<string,Link>>({});
+ const [linksDirty,setLinksDirty]=useState(false);
  const [tab,setTab]=useState('general'),[language,setLanguage]=useState('hu');
  const [busy,setBusy]=useState(false);
  const label=(x:Place)=>x.game_locations_i18n.find(n=>n.locale===locale)?.name||x.game_locations_i18n.find(n=>n.locale==='hu')?.name||x.slug;
@@ -34,11 +35,12 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
   if(p.sector_id)setSelectedSector(p.sector_id);
   setTranslations(Object.fromEntries(p.game_locations_i18n.map(x=>[x.locale,{name:x.name,description:x.description}])));
   setChecked(allPlacements.filter(x=>x.location_id===p.id).map(x=>x.action_id));
+  setLinksDirty(false);
   setLinks(Object.fromEntries(allRoutes.filter(x=>x.origin_id===p.id||x.destination_id===p.id)
    .map(x=>[x.origin_id===p.id?x.destination_id:x.origin_id,{enabled:true,cost:x.energy_cost}])));
   
  }
- async function load(keep?:string){
+ async function load(keep?:string,verify?:{sectorId:string;routes:WorldMapRoute[]}){
   const [p,r,a,placements,langs,system]=await Promise.all([
    supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,image_path,is_published,game_locations_i18n(locale,name,description)').order('slug'),
    supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published'),
@@ -48,15 +50,28 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
    supabase.from('game_sectors').select('id,slug,name_hu,name_en,quadrant_id').order('slug')
   ]);
   const err=p.error||r.error||a.error||placements.error||langs.error||system.error;
-  if(err){notify(err.message,'error');return;}
+  if(err){notify(err.message,'error');if(verify)throw new Error(err.message);return;}
   const rows=p.data as unknown as Place[],rts=(r.data||[]) as Route[],ps=placements.data||[];
+  if(verify){
+   const ids=new Set(rows.filter(row=>row.sector_id===verify.sectorId).map(row=>row.id));
+   const persisted=rts.filter(route=>ids.has(route.origin_id)&&ids.has(route.destination_id));
+   const signature=(route:WorldMapRoute)=>
+    [route.origin_id<route.destination_id?route.origin_id+':'+route.destination_id:route.destination_id+':'+route.origin_id,
+     route.energy_cost,route.is_published!==false?1:0].join('|');
+   const expected=verify.routes.map(signature).sort();
+   const actual=persisted.map(signature).sort();
+   if(JSON.stringify(expected)!==JSON.stringify(actual)){
+    throw new Error(tr('A mentett összeköttetések visszaellenőrzése nem sikerült. A térképet újra be kell tölteni.',
+      'Saved links did not match the database. Reload the map before further changes.'));
+   }
+  }
   setPlaces(rows);setRoutes(rts);setActions((a.data||[]) as Action[]);
   setPlacements(ps);setLanguages(langs.data as Local[]);
   setSectors(system.data||[]);
   if(!selectedSector)setSelectedSector(system.data?.[0]?.id||'');
   const chosen=rows.find(x=>x.id===(keep||draft.id))||rows[0];
   if(chosen)choose(chosen,rts,ps);
-  else setDraft({...blank,sector_id:system.data?.[0]?.id||''});
+  else{setDraft({...blank,sector_id:system.data?.[0]?.id||''});setLinks({});setLinksDirty(false);}
  }
  useEffect(()=>{void load();},[]);
  const update=<T extends keyof Place>(key:T,value:Place[T])=>setDraft(p=>({...p,[key]:value}));
@@ -77,7 +92,8 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
    const rows=Object.entries(translations).filter(([,v])=>v.name.trim()).map(([code,v])=>({location_id:id,locale:code,name:v.name.trim(),description:v.description.trim()}));
    const textSave=await supabase.from('game_locations_i18n').upsert(rows,{onConflict:'location_id,locale'});if(textSave.error)throw textSave.error;
    const associations=Object.entries(links).filter(([target,link])=>link.enabled&&target!==id&&places.some(p=>p.id===target&&p.sector_id===draft.sector_id)).map(([target,link])=>({target,cost:link.cost}));
-   const saved=await supabase.rpc('replace_sector_links',{p_location:id,p_actions:checked,p_routes:associations});if(saved.error)throw saved.error;
+   // A general/dictionary/action save must NEVER replace routes taken from a stale form.
+   const saved=await supabase.rpc('replace_sector_links',{p_location:id,p_actions:checked,p_routes:linksDirty?associations:null});if(saved.error)throw saved.error;
    if(!draft.id&&draft.is_published){const published=await supabase.from('game_locations').update({is_published:true}).eq('id',id);if(published.error)throw published.error;}
    await load(id);notify(tr('Helyszín sikeresen mentve.','Location saved.'),'success');
   }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'),'error');}finally{setBusy(false);}
@@ -95,7 +111,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?label(places.find(x=>x.id===draft.id)||draft):tr('Új helyszín','New location')}</strong>
-    <button type="button" className="sector-map-open" disabled={!selectedSector} onClick={()=>setMapOpen(true)}>{tr('Csillagtérkép','Starmap')} ↗</button></EditorHeader>
+    <button type="button" className="sector-map-open" disabled={!selectedSector||busy||linksDirty} title={linksDirty?tr("Mentsd előbb az útvonalváltozásokat.","Save pending route edits first."):undefined} onClick={()=>setMapOpen(true)}>{tr('Csillagtérkép','Starmap')} ↗</button></EditorHeader>
    <EditorTabs label="Sector Editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'dictionary',name:tr('Szótár','Dictionary')},{id:'routes',name:tr('Akciók / útvonalak','Actions / routes')}]}/>
 
    <form className="ed-form sector-editor-form" id="sector-editor-form" onSubmit={save}>
@@ -111,8 +127,8 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
      <label>{tr('Helyszín leírása','Location description')} ({language.toUpperCase()})<textarea rows={5} value={loc.description} onChange={e=>patchLang('description',e.target.value)}/></label></>}
     {tab==='routes'&&<><h3>{tr('Elérhető tevékenységek','Available activities')}</h3><div className="sector-action-list">{actions.map(a=><label className="sector-check" key={a.id}><input type="checkbox" checked={checked.includes(a.id)} onChange={e=>setChecked(old=>e.target.checked?[...old,a.id]:old.filter(x=>x!==a.id))}/>{activeName(a)}</label>)}</div>
      <h3>{tr('Közvetlen, kétirányú útvonalak','Direct two-way routes')}</h3><div className="sector-route-list">{places.filter(p=>p.id!==draft.id&&p.sector_id===draft.sector_id).map(p=>{const link=links[p.id]||{enabled:false,cost:10};return <div key={p.id}>
-      <label className="sector-check"><input type="checkbox" checked={link.enabled} onChange={e=>setLinks(old=>({...old,[p.id]:{...link,enabled:e.target.checked}}))}/>{label(p)}</label>
-      <label>⚡<input type="number" min="1" max="500" disabled={!link.enabled} value={link.cost} onChange={e=>setLinks(old=>({...old,[p.id]:{...link,cost:Number(e.target.value)}}))}/></label>
+      <label className="sector-check"><input type="checkbox" checked={link.enabled} onChange={e=>{setLinksDirty(true);setLinks(old=>({...old,[p.id]:{...link,enabled:e.target.checked}}));}}/>{label(p)}</label>
+      <label>⚡<input type="number" min="1" max="500" disabled={!link.enabled} value={link.cost} onChange={e=>{setLinksDirty(true);setLinks(old=>({...old,[p.id]:{...link,cost:Number(e.target.value)}}));}}/></label>
      </div>})}</div></>}
    </form>
    <EditorFooter><span className="ed-fine">HU / EN · RLS</span><button type="submit" form="sector-editor-form" className="ed-submit" disabled={busy}>{tr('MENTÉS','SAVE')}</button></EditorFooter>
@@ -123,6 +139,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
    nodes={places.filter(p=>p.sector_id===selectedSector).map(p=>({id:p.id,slug:p.slug,x:p.x,y:p.y,image_path:p.image_path,
     name_hu:p.game_locations_i18n.find(t=>t.locale==='hu')?.name||p.slug,
     name_en:p.game_locations_i18n.find(t=>t.locale==='en')?.name||p.slug}))}
-   onClose={()=>setMapOpen(false)} onSaved={()=>{void load();}}/>}
+   onClose={()=>setMapOpen(false)}
+   onSaved={async savedRoutes=>{await load(draft.id||undefined,{sectorId:selectedSector,routes:savedRoutes||[]});}}/>}
  </EditorFrame>;
 }

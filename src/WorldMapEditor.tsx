@@ -24,7 +24,7 @@ const dedup=(routes:WorldMapRoute[])=>{
 
 export default function WorldMapEditor({locale,level,parentId,parentName,nodes,routes=[],onClose,onSaved}:{
  locale:string;level:WorldMapLevel;parentId:string;parentName:string;nodes:WorldMapNode[];
- routes?:WorldMapRoute[];onClose:()=>void;onSaved:()=>void;
+ routes?:WorldMapRoute[];onClose:()=>void;onSaved:(savedRoutes?:WorldMapRoute[])=>void|Promise<void>;
 }){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [positions,setPositions]=useState<WorldMapNode[]>(()=>aligned(nodes));
@@ -157,12 +157,15 @@ export default function WorldMapEditor({locale,level,parentId,parentName,nodes,r
   if(busy)return;setBusy(true);
   try{
    const p_nodes=positions.map(({id,x,y})=>({id,x,y}));
+   const submittedRoutes=edges.map(({origin_id,destination_id,energy_cost,is_published})=>({origin_id,destination_id,energy_cost,is_published:is_published!==false}));
    const response=level==='sector'
-    ?await supabase.rpc('save_sector_starmap',{p_sector:parentId,p_nodes,p_routes:edges.map(({origin_id,destination_id,energy_cost,is_published})=>({origin_id,destination_id,energy_cost,is_published:is_published!==false}))})
+    ?await supabase.rpc('save_sector_starmap',{p_sector:parentId,p_nodes,p_routes:submittedRoutes})
     :await supabase.rpc('save_world_map_positions',{p_level:level,p_parent:parentId,p_nodes});
    if(response.error)throw response.error;
+   // Only announce success once the parent has re-read and verified the saved links.
+   await onSaved(level==='sector'?submittedRoutes:undefined);
    notify(tr('Csillagtérkép és útvonalak mentve.','Starmap saved.'),'success');
-   onSaved();onClose();
+   onClose();
   }catch(error){notify(error instanceof Error?error.message:String(error),'error');}
   finally{setBusy(false);}
  };
