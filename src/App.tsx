@@ -6,7 +6,9 @@ import Editor from './Editor';
 import type {EditorSection} from './components/EditorNavigation';
 import SkillEditor from './SkillEditor';
 import GameplayEditor from './GameplayEditor';
+import SkillChallengeEditor from './SkillChallengeEditor';
 import SectorEditor from './SectorEditor';
+import GalaxyEditor from './GalaxyEditor';
 import ItemEditor from './ItemEditor';
 import ShipEditor from './ShipEditor';
 import CharacterPage from './CharacterPage';
@@ -14,11 +16,12 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='dashboard'|'editor'|'skills'|'gameplay'|'sector'|'items'|'ships'|'crew'|'admin';
+type Page='dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'admin'|'factions';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
 
+const FactionEditor=lazy(()=>import('./FactionEditor'));
 const CrewEditor=lazy(()=>import('./CrewEditor'));
 
 function App(){
@@ -162,9 +165,12 @@ function App(){
     </main>
     :page==='editor'&&(role==='editor'||role==='admin')?<Editor locale={locale} kind={editorKind} onKindChange={setEditorKind} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='skills'&&(role==='editor'||role==='admin')?<SkillEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='challenges'&&(role==='editor'||role==='admin')?<SkillChallengeEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='gameplay'&&(role==='editor'||role==='admin')?<GameplayEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='galaxy'&&(role==='editor'||role==='admin')?<GalaxyEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='factions'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><FactionEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='crew'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CrewEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='dashboard'?<div className="ch-v2-mount"><CharacterPage locale={locale} isEditor={role==='editor'||role==='admin'}/></div>

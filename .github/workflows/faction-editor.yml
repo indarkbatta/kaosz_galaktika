@@ -1,0 +1,52 @@
+name: Faction editor
+on:
+  pull_request:
+    paths:
+      - 'src/FactionEditor.tsx'
+      - 'src/ItemEditor.tsx'
+      - 'src/item-editor.css'
+      - 'tools/qa/item-manufacturer-*'
+      - 'supabase/migrations/*m81*'
+      - 'src/faction-editor.css'
+      - 'src/components/EditorNavigation.tsx'
+      - 'supabase/migrations/*m80*'
+      - 'tools/qa/faction-*'
+      - '.github/workflows/faction-editor.yml'
+permissions:
+  contents: read
+jobs:
+  faction:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
+      - name: Install QA tools
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-faction-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14
+      - name: Install browsers
+        run: node "%RUNNER_TEMP%\hatarvilag-faction-tools\node_modules\playwright\cli.js" install chromium firefox
+      - name: Verify faction SQL and editor permissions
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
+        run: node tools/qa/faction-database.mjs
+      - name: Verify editor through HTTP and PostgreSQL in Chromium and Firefox
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
+        run: node tools/qa/faction-browser.mjs
+      - name: Verify item manufacturer constraints and atomic rollback
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
+        run: node tools/qa/item-manufacturer-database.mjs
+      - name: Verify item manufacturer editor in Chromium and Firefox
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-faction-tools
+        run: node tools/qa/item-manufacturer-browser.mjs
