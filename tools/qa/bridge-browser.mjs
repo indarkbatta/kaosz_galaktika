@@ -63,10 +63,10 @@ try{for(const [name,driver] of [['chromium',chromium],['firefox',firefox]]){
  assert.equal(await page.evaluate(()=>window.__fixture.calls.filter(x=>x.method==='perform_game_action').length),1);
  assert.equal(await dialog.locator('.wild.cancelled').count(),1);assert.equal(await dialog.locator('.dice-result b').textContent(),'Végösszeg: 6');
  await dialog.getByRole('button',{name:'Vissza a hídra'}).click();
- await page.getByRole('button',{name:'Napló',exact:true}).click();
+ await page.getByRole('tab',{name:'Napló',exact:true}).click();assert.equal(await page.getByRole('tab',{name:'Napló',exact:true}).getAttribute('aria-selected'),'true');
  await page.getByText('Kockaeredmények',{exact:true}).click();
  await page.locator('.cmd-log .dice-panel.is-revealed').waitFor();assert.equal(await page.locator('.cmd-log .dice-result b').textContent(),'Végösszeg: 6');
- await page.getByRole('button',{name:'Language',exact:true}).click();await page.getByRole('button',{name:'Bridge',exact:true}).last().click();
+ await page.getByRole('button',{name:'Language',exact:true}).click();await page.getByRole('tab',{name:'Bridge',exact:true}).click();
  await page.getByText('Target Number (TN): 9',{exact:true}).waitFor();
  await page.getByRole('button',{name:'Activity Editor',exact:true}).click();
  await page.getByRole('button',{name:'Remove artwork',exact:true}).click();
