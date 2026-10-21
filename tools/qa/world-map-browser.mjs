@@ -37,6 +37,7 @@ try{
   try{
    const page=await engine.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   const imageRequests=[];page.on('request',req=>{if(req.url().includes('assets.voidnoir.net'))imageRequests.push('request '+req.url());});page.on('requestfailed',req=>{if(req.url().includes('assets.voidnoir.net'))imageRequests.push('failed '+req.url()+' '+req.failure()?.errorText);});
    await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
     contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAFAAAAAoCAIAAADmAupWAAAAYUlEQVR4nO3PMQ0AIRQEUUAEVrBwPtCFDzRRI+A8fGiYzOs32cm71RRV+wxvT6zxhbfl4o8nGExnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdAbTGUxnMJ3BdD+sgASRbACx1AAAAABJRU5ErkJggg==','base64')
    }));
@@ -58,7 +59,10 @@ try{
    const smallFrame=mini.locator('.wa-map-node-icon.world-map-frame').first();
    const smallImage=smallFrame.locator('img');
    await smallImage.waitFor({state:'visible'});
-   await page.waitForFunction(()=>document.querySelector('.wa-map-node-icon.world-map-frame img')?.naturalWidth===80);
+   await page.waitForTimeout(950);
+   const debugArt=await smallImage.evaluate(el=>({src:el.src,complete:el.complete,naturalWidth:el.naturalWidth,naturalHeight:el.naturalHeight,loading:el.loading}));
+   console.log(label+' image diagnostics',JSON.stringify(debugArt),JSON.stringify(imageRequests));
+   await page.waitForFunction(()=>document.querySelector('.wa-map-node-icon.world-map-frame img')?.naturalWidth===80,null,{timeout:3500});
    const thumbnailStyle=await smallFrame.evaluate(frame=>{
      const photo=frame.querySelector('img');
      const rect=frame.getBoundingClientRect();
