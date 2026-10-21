@@ -18,7 +18,7 @@ export type Encounter={id:string;slug:string;location_id:string;enemy_id:string;
 export type Profile={id:string;species_id:string|null;class_id:string|null;defenses:Record<string,string>;hp_per_rank:number;resistances:Record<string,number>;revision:number};
 export type ItemCombat={item_id:string;tier:number;weapon_pips:number;damage_types:string[];resistances:Record<string,number>;effects:Effect[];revision?:number};
 export type CombatRules={id:number;revision:number;defense_curves:Record<string,{base:number;per_rank:number}>;recovery_energy:number;injury_recovery_ticks:number;max_rounds:number};
-export type CombatCatalog={powers:Power[];talents:Talent[];enemies:Enemy[];encounters:Encounter[];profiles:Profile[];items:ItemCombat[];rules:CombatRules;species:Named[];classes:Named[];skills:(Named&{attribute:string})[];equipment:Named[];locations:Named[];locales:{code:string;native_name:string}[]};
+export type CombatCatalog={powers:Power[];talents:Talent[];enemies:Enemy[];encounters:Encounter[];profiles:Profile[];items:ItemCombat[];rules:CombatRules;species:Named[];classes:Named[];skills:(Named&{attribute:string})[];equipment:Named[];reward_items?:Named[];locations:Named[];locales:{code:string;native_name:string}[]};
 export const combatName=(row:Named|undefined,locale:string)=>row?.texts?.find(t=>t.locale===locale)?.name||row?.texts?.find(t=>t.locale==='hu')?.name||row?.slug||row?.id||'—';
 export const blankTexts=():CombatText[]=>[{locale:'hu',name:'',description:''},{locale:'en',name:'',description:''}];
 export const blankItemCombat=(item_id:string):ItemCombat=>({item_id,tier:1,weapon_pips:0,damage_types:['kinetic'],resistances:{},effects:[]});
@@ -33,6 +33,8 @@ export function combatError(message:string,locale:string){
  'Severe injuries are still recovering':'A sérülés felépülési ideje még nem telt le.','No talent points available':'Nincs elkölthető talentpont.','Talent unavailable':'A talent nem elérhető.',
  'Talent rank changed or maximum reached':'A talent rangja közben megváltozott, vagy elérted a maximumot.','Talent prerequisites unmet':'A talent előfeltételei nem teljesülnek.',
  'Content changed; reload':'A tartalom közben megváltozott. Töltsd újra mentés előtt.','Hungarian and English names required':'A magyar és az angol név kötelező.',
+ 'Request ID required':'Kérésazonosító szükséges.','Save the power before testing':'Tesztelés előtt mentsd a powert.','Hungarian and English encounter names required':'Az összecsapás magyar és angol neve kötelező.','Publish the enemy before publishing its encounter':'Az összecsapás előtt publikáld az ellenfelet.',
+ 'Power is used by an enemy; reassign it first':'Az ellenfél használja ezt a powert. Előbb módosítsd az ellenfél powerkészletét.','Published enemies require this active published power':'Publikált ellenfél használja ezt az aktív powert. Előbb módosítsd az ellenfelet.',
  'Choose an existing combat skill':'Válassz egy meglévő harci képzettséget.','Passives must target self without an attack':'A passzív power önmagára hat, támadódobás nélkül.',
  'Defense profile requires 1 primary, 2 secondary, 2 tertiary':'Pontosan 1 elsődleges, 2 másodlagos és 2 harmadlagos Defense szükséges.',
  'Talent prerequisite must be in the same tree':'Az előfeltételnek ugyanahhoz a talentfához kell tartoznia.','Talent prerequisite cycle':'A talentek előfeltételei nem alkothatnak kört.',
