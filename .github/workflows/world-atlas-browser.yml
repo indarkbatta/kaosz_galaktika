@@ -8,6 +8,9 @@ on:
       - 'src/world-image.css'
       - 'src/sector-map.css'
       - 'tools/qa/player-map-*'
+      - 'src/SectorEditor.tsx'
+      - 'tools/qa/sector-link-*'
+      - 'supabase/migrations/20261021114500_m76_preserve_location_routes.sql'
       - 'src/GalaxyEditor.tsx'
       - 'src/world-map-editor.css'
       - 'src/world-atlas-editor.css'
@@ -47,3 +50,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
         run: node tools/qa/player-map-art-browser.mjs
+      - name: Verify route persistence across map and location saves
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-world-browser-tools
+        run: node tools/qa/sector-link-browser.mjs
