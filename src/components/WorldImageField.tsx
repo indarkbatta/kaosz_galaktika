@@ -2,13 +2,13 @@ import {useState} from 'react';
 import {normalizeWorldImage,validWorldImage,worldImageUrl} from '../lib/worldImages';
 import '../world-image.css';
 
-export function WorldArtwork({path,alt='',fallback='✦',className='',fit='cover'}:{
- path?:string|null;alt?:string;fallback?:string;className?:string;fit?:'cover'|'contain';
+export function WorldArtwork({path,alt='',fallback='✦',className='',fit='cover',loading='lazy'}:{
+ path?:string|null;alt?:string;fallback?:string;className?:string;fit?:'cover'|'contain';loading?:'lazy'|'eager';
 }){
  const src=worldImageUrl(path);
  const [broken,setBroken]=useState<string|null>(null);
  return <span className={'world-art world-art--'+fit+' '+className}>
-  {src&&broken!==src?<img src={src} alt={alt} loading="lazy" onError={()=>setBroken(src)}/>:<span className="world-art-fallback" aria-hidden="true">{fallback}</span>}
+  {src&&broken!==src?<img src={src} alt={alt} loading={loading} decoding="async" onError={()=>setBroken(src)}/>:<span className="world-art-fallback" aria-hidden="true">{fallback}</span>}
  </span>;
 }
 /** Reused by the small atlas, large editable starmap and player map. */
@@ -16,7 +16,7 @@ export function WorldMapIcon({path,alt='',fallback='✦',className=''}:{
  path?:string|null;alt?:string;fallback?:string;className?:string;
 }){
  return <span className={'world-map-frame '+className}>
-  <WorldArtwork path={path} alt={alt} fallback={fallback} className="world-map-crop" fit="cover"/>
+  <WorldArtwork path={path} alt={alt} fallback={fallback} className="world-map-crop" fit="cover" loading="eager"/>
  </span>;
 }
 export function WorldImageField({locale,value,onChange,placeholder='hatarvilag/worlds/… .webp'}:{
