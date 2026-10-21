@@ -26,7 +26,7 @@ await new Promise(r=>server.listen(0,'127.0.0.1',r));
 try{for(const [name,driver] of [['chromium',chromium],['firefox',firefox]]){
  const browser=await driver.launch({headless:true});try{
  const page=await browser.newPage({viewport:{width:1350,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.route('https://assets.voidnoir.net/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=','base64')}));
+ await page.route('https://assets.voidnoir.net/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFklEQVR4nGOQc4siCTGMahjVMHw1AADIDr4BHZ+22QAAAABJRU5ErkJggg==','base64')}));
  await page.goto('http://127.0.0.1:'+server.address().port);
  const image=page.getByRole('textbox',{name:'Kép útvonala',exact:true});
  await image.fill('https://assets.voidnoir.net/hatarvilag/worlds/qa.png');
