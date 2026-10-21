@@ -53,16 +53,16 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     supabase.from('character_skill_upgrades').select('skill_id,bonus_pips').eq('character_id',captain.id),
     supabase.from('character_positions').select('location_id').eq('character_id',captain.id).single(),
     supabase.from('character_location_discoveries').select('location_id,discovered_at').eq('character_id',captain.id),
-    supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,is_published,game_locations_i18n(locale,name,description)').eq('is_published',true),
+    supabase.from('game_locations').select('id,slug,kind,sector_id,x,y,image_path,is_published,game_locations_i18n(locale,name,description)').eq('is_published',true),
     supabase.from('game_routes').select('id,origin_id,destination_id,energy_cost,is_published').eq('is_published',true),
     supabase.from('game_location_actions').select('location_id,action_id'),
     supabase.from('character_travel_log').select('id,origin_id,destination_id,energy_spent,traveled_at').eq('character_id',captain.id).order('id',{ascending:false}).limit(8),
     supabase.from('character_inventory').select('item_id,quantity,game_items(slug,rarity,category,game_items_i18n(locale,name,description))').eq('character_id',captain.id),
     supabase.from('character_crew').select('id,position,name,specialty,aptitude,species_slug,portrait_path,rarity,class_id').eq('character_id',captain.id),
     supabase.rpc('get_ship_loadout'),
-    supabase.from('game_galaxies').select('id,slug,name_hu,name_en').eq('is_published',true),
-    supabase.from('game_quadrants').select('id,galaxy_id,slug,name_hu,name_en,x,y').eq('is_published',true),
-    supabase.from('game_sectors').select('id,quadrant_id,slug,name_hu,name_en,x,y').eq('is_published',true)
+    supabase.from('game_galaxies').select('id,slug,name_hu,name_en,image_path').eq('is_published',true),
+    supabase.from('game_quadrants').select('id,galaxy_id,slug,name_hu,name_en,x,y,image_path').eq('is_published',true),
+    supabase.from('game_sectors').select('id,quadrant_id,slug,name_hu,name_en,x,y,image_path').eq('is_published',true)
   ]);
   const problem=p.error||r.error||a.error||l.error||u.error||pos.error||dis.error||loc.error||rou.error||placement.error||travelHistory.error||inv.error||crewData.error||loadout.error||gals.error||quads.error||sys.error;
   if(problem){notify(problem.message,'error');return;}

@@ -1,10 +1,11 @@
 import {useEffect,useMemo,useState} from 'react';
 import './sector-map.css';
+import {WorldArtwork} from './components/WorldImageField';
 export type SectorLocale={locale:string;name:string;description:string};
-export type WorldGalaxy={id:string;slug:string;name_hu:string;name_en:string};
-export type WorldQuadrant={id:string;galaxy_id:string;slug:string;name_hu:string;name_en:string;x:number;y:number};
-export type WorldSector={id:string;quadrant_id:string;slug:string;name_hu:string;name_en:string;x:number;y:number};
-export type SectorLocation={id:string;sector_id:string;slug:string;kind:'station'|'wreck'|'planet'|'anomaly';x:number;y:number;is_published:boolean;game_locations_i18n:SectorLocale[]};
+export type WorldGalaxy={id:string;slug:string;name_hu:string;name_en:string;image_path?:string|null};
+export type WorldQuadrant={id:string;galaxy_id:string;slug:string;name_hu:string;name_en:string;x:number;y:number;image_path?:string|null};
+export type WorldSector={id:string;quadrant_id:string;slug:string;name_hu:string;name_en:string;x:number;y:number;image_path?:string|null};
+export type SectorLocation={id:string;sector_id:string;slug:string;image_path?:string|null;kind:'station'|'wreck'|'planet'|'anomaly';x:number;y:number;is_published:boolean;game_locations_i18n:SectorLocale[]};
 export type SectorRoute={id:string;origin_id:string;destination_id:string;energy_cost:number;is_published:boolean};
 export type SectorDiscovery={location_id:string;discovered_at:string};
 type Level='galaxy'|'quadrant'|'sector';
@@ -67,16 +68,16 @@ export default function SectorMap({locale,galaxies,quadrants,sectors,locations,r
     </svg>}
     {level==='galaxy'&&visibleQuadrants.map(q=><button key={q.id} type="button" title={display(q)} className="sector-node sector-world-node"
       style={{left:q.x+'%',top:q.y+'%'}} onClick={()=>goQuadrant(q.id)}>
-      <span className="sector-node-icon">◈</span><span className="sector-node-name">{display(q)}</span></button>)}
+      <span className="sector-node-icon"><WorldArtwork path={q.image_path} fallback="◈" alt=""/></span><span className="sector-node-name">{display(q)}</span></button>)}
     {level==='quadrant'&&visibleSectors.map(s=><button key={s.id} type="button" title={display(s)} className="sector-node sector-world-node"
       style={{left:s.x+'%',top:s.y+'%'}} onClick={()=>goSector(s.id)}>
-      <span className="sector-node-icon">✺</span><span className="sector-node-name">{display(s)}</span></button>)}
+      <span className="sector-node-icon"><WorldArtwork path={s.image_path} fallback="✺" alt=""/></span><span className="sector-node-name">{display(s)}</span></button>)}
     {level==='sector'&&inSector.map(l=><button type="button" key={l.id} title={found.has(l.id)?name(l)?.name:t('Ismeretlen helyszín','Unknown site')}
      aria-label={found.has(l.id)?name(l)?.name:t('Ismeretlen helyszín','Unknown site')}
      aria-pressed={selected===l.id} onClick={()=>setSelected(l.id)}
      className={'sector-node '+(l.id===currentId?'current ':'')+(selected===l.id?'selected ':'')+(!found.has(l.id)?'undiscovered':'')}
      style={{left:l.x+'%',top:l.y+'%'}}>
-      <span className="sector-node-icon">{emblem(l.kind)}</span>
+      <span className="sector-node-icon"><WorldArtwork path={found.has(l.id)?l.image_path:null} fallback={emblem(l.kind)} alt=""/></span>
       <span className="sector-node-name">{found.has(l.id)?name(l)?.name:t('Felderítetlen','Uncharted')}</span>
      </button>)}
     <div className="sector-compass"><span>N</span><span>✣</span></div>
@@ -86,12 +87,12 @@ export default function SectorMap({locale,galaxies,quadrants,sectors,locations,r
   <aside className="sector-detail">
    <small className="sector-overline">{level==='sector'?t('KIVÁLASZTOTT HELYSZÍN','SELECTED LOCATION'):t('GALAKTIKUS NAVIGÁCIÓ','GALACTIC NAVIGATION')}</small>
    {level!=='sector'?<>
-    <div className="sector-location-emblem">✦</div><h3>{level==='galaxy'?display(galaxies.find(g=>g.id===galaxyId)):display(currentQuadrant)}</h3>
+    <WorldArtwork className="sector-location-emblem sector-art-detail" path={level==='galaxy'?galaxies.find(g=>g.id===galaxyId)?.image_path:currentQuadrant?.image_path} fallback="✦" alt=""/><h3>{level==='galaxy'?display(galaxies.find(g=>g.id===galaxyId)):display(currentQuadrant)}</h3>
     <p>{level==='galaxy'?t('Válassz egy kvadránst a galaktikus térképen.','Select a quadrant on the galactic chart.'):t('Válassz egy naprendszert. Egy szektorban több különálló helyszín lehet.','Select a star system. A sector can contain several distinct locations.')}</p>
     {level==='galaxy'&&<select className="sector-world-select" aria-label={t('Galaxis','Galaxy')} value={galaxyId} onChange={e=>goGalaxy(e.target.value)}>{galaxies.map(g=><option key={g.id} value={g.id}>{display(g)}</option>)}</select>}
     <p className="sector-jump-note">{t('A jumpgate-es kvadránsváltás egy következő fejlesztési lépés.','Inter-quadrant jumpgate travel is a later feature.')}</p>
    </>:<>
-    <div className="sector-location-emblem">{chosen?emblem(chosen.kind):'◈'}</div>
+    <WorldArtwork className="sector-location-emblem sector-art-detail" path={known?chosen?.image_path:null} fallback={chosen?emblem(chosen.kind):'◈'} alt=""/>
     <h3>{known?name(chosen)?.name:t('Ismeretlen helyszín','Unknown location')}</h3>
     <div className="sector-kind">{chosen?({station:t('ŰRÁLLOMÁS','STATION'),wreck:t('RONCSMEZŐ','WRECK FIELD'),planet:t('BOLYGÓ','PLANET'),anomaly:t('ANOMÁLIA','ANOMALY')})[chosen.kind]:''}</div>
     <p>{known?name(chosen)?.description:t('A célpont részletei az első megérkezés után válnak ismertté.','Details are revealed after your first visit.')}</p>
