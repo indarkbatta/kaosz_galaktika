@@ -12,8 +12,14 @@ type Tab = 'general'|'skills'|'dictionary';
 type LocaleRow = {code:string;native_name:string;name_en:string;is_enabled:boolean;sort_order:number};
 type Translation = {locale:string;name:string;description:string;passives?:string;starting_equipment?:string;traits?:string;gameplay_role?:string};
 type BonusRow = {skill_id:string;bonus_pips:number};
+type WorldEntry={id:string;slug:string;is_published:boolean;name_hu:string;name_en:string};
+type WorldQuadrant=WorldEntry&{galaxy_id:string};
+type WorldSector=WorldEntry&{quadrant_id:string};
+type WorldLocation={id:string;slug:string;sector_id:string;is_published:boolean;game_locations_i18n:{locale:string;name:string}[]};
+type HomeworldPath={galaxy:string;quadrant:string;sector:string};
+const emptyWorldPath=():HomeworldPath=>({galaxy:'',quadrant:'',sector:''});
 type CatalogRecord = {
-  id:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string|null;
+  id:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string|null;homeworld_location_id?:string|null;
   is_published:boolean;resistances?:{code:string;value:number}[];
   game_species_i18n?:Translation[];game_classes_i18n?:Translation[];
   game_species_skill_bonuses?:BonusRow[];game_classes_skill_bonuses?:BonusRow[];
@@ -21,7 +27,7 @@ type CatalogRecord = {
 type Skill = {id:string;slug:string;attribute:Attr;is_combat:boolean;icon_path:string|null;position:number;game_skills_i18n:{locale:string;name:string}[]};
 type TranslationBody = {name:string;description:string;passives:string;starting_equipment:string;traits:string;gameplay_role:string};
 type FormBody = {
-  id?:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string;is_published:boolean;
+  id?:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string;homeworld_location_id:string|null;is_published:boolean;
   resistances:{code:string;value:number}[];translations:Record<string,TranslationBody>;bonuses:Record<string,number>;
 };
 const attrs:Attr[]=['body','mind','soul','morale','social'];
@@ -47,7 +53,9 @@ hu:{
   confirmDelete:'Biztosan véglegesen törlöd a kiválasztott bejegyzést?',confirmLeave:'Nem mentett változásaid vannak. Elveted őket?',
   unsaved:'Nem mentett módosítás',discard:'Elvetés',complete:'Teljes',localeError:'Nem sikerült hozzáadni a nyelvet.',
   localeInvalid:'Kétbetűs nyelvkódot adj meg (pl. de vagy fr).',noRecords:'Nincs még bejegyzés. Hozz létre egyet.',
-  portrait:'Portré',localizedFields:'Fordítható tartalom',noSkill:'Nincs képességadat.',close:'Bezárás'
+  portrait:'Portré',localizedFields:'Fordítható tartalom',noSkill:'Nincs képességadat.',close:'Bezárás',
+  homeworld:'Homeworld · a faj kezdővilága',homeworldGalaxy:'Galaxis',homeworldQuadrant:'Kvadráns',homeworldSector:'Szektor / naprendszer',homeworldLocation:'Kezdőhelyszín',homeworldChoose:'Válassz…',
+  homeworldDefault:'Nincs kijelölve: az új karakter a Határvidéki állomáson kezd.',homeworldSelected:'Az új karakter ezen a helyszínen kezd, és ezt ismeri meg először.',homeworldDraft:'Vázlat helyszín – publikált faj nem kezdhet itt.',homeworldMissing:'A kiválasztott kezdőhelyszín nem található.',homeworldLoadError:'Nem sikerült betölteni a galaktikus helyszíneket.'
 },
 en:{
   title:'Editor dashboard',back:'Return to game',species:'Species',classes:'Classes',newSpecies:'New species',newClass:'New class',
@@ -66,11 +74,13 @@ en:{
   confirmDelete:'Permanently delete this entry?',confirmLeave:'You have unsaved changes. Discard them?',
   unsaved:'Unsaved changes',discard:'Discard',complete:'Complete',localeError:'Could not add language.',
   localeInvalid:'Enter a two-letter language code (e.g. de or fr).',noRecords:'No entries yet. Create one.',
-  portrait:'Portrait',localizedFields:'Localised content',noSkill:'No skill data.',close:'Close'
+  portrait:'Portrait',localizedFields:'Localised content',noSkill:'No skill data.',close:'Close',
+  homeworld:'Homeworld · species starting location',homeworldGalaxy:'Galaxy',homeworldQuadrant:'Quadrant',homeworldSector:'Sector / star system',homeworldLocation:'Starting location',homeworldChoose:'Choose…',
+  homeworldDefault:'Not set: new captains start at Frontier Station.',homeworldSelected:'New captains spawn here and discover this location first.',homeworldDraft:'Draft location – published species cannot spawn here.',homeworldMissing:'The selected starting location is unavailable.',homeworldLoadError:'Could not load the galactic locations.'
 }};
 type UiKey=keyof typeof ui.hu;
 const emptyTranslation=():TranslationBody=>({name:'',description:'',passives:'',starting_equipment:'',traits:'',gameplay_role:''});
-const emptyForm=():FormBody=>({slug:'',primary_attribute:'body',secondary_attribute:'mind',image_path:'',is_published:false,resistances:[],translations:{hu:emptyTranslation(),en:emptyTranslation()},bonuses:{}});
+const emptyForm=():FormBody=>({slug:'',primary_attribute:'body',secondary_attribute:'mind',image_path:'',homeworld_location_id:null,is_published:false,resistances:[],translations:{hu:emptyTranslation(),en:emptyTranslation()},bonuses:{}});
 const table=(k:Kind)=>k==='species'?'game_species':'game_classes';
 const i18nTable=(k:Kind)=>k==='species'?'game_species_i18n':'game_classes_i18n';
 const bonusTable=(k:Kind)=>k==='species'?'game_species_skill_bonuses':'game_classes_skill_bonuses';
@@ -86,7 +96,7 @@ function hydrate(item:CatalogRecord,k:Kind):FormBody{
  if(!translations.hu)translations.hu=emptyTranslation();
  if(!translations.en)translations.en=emptyTranslation();
  return {id:item.id,slug:item.slug,primary_attribute:item.primary_attribute,secondary_attribute:item.secondary_attribute,
-  image_path:item.image_path||'',is_published:item.is_published,resistances:item.resistances||[],
+  image_path:item.image_path||'',homeworld_location_id:item.homeworld_location_id||null,is_published:item.is_published,resistances:item.resistances||[],
   translations,bonuses:Object.fromEntries(bonusList(item,k).map(b=>[b.skill_id,b.bonus_pips]))};
 }
 function editorSelect(k:Kind){
@@ -97,6 +107,11 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
  const l=locale==='en'?'en':'hu',dict=ui[l],t=(key:UiKey)=>dict[key];
  const [tab,setTab]=useState<Tab>('general');
  const [records,setRecords]=useState<CatalogRecord[]>([]);
+ const [worldGalaxies,setWorldGalaxies]=useState<WorldEntry[]>([]);
+ const [worldQuadrants,setWorldQuadrants]=useState<WorldQuadrant[]>([]);
+ const [worldSectors,setWorldSectors]=useState<WorldSector[]>([]);
+ const [worldLocations,setWorldLocations]=useState<WorldLocation[]>([]);
+ const [homeworldPath,setHomeworldPath]=useState<HomeworldPath>(emptyWorldPath);
  const [counts,setCounts]=useState({species:0,classes:0});
  const [skills,setSkills]=useState<Skill[]>([]);
  const [locales,setLocales]=useState<LocaleRow[]>([{code:'hu',native_name:'Magyar',name_en:'Hungarian',is_enabled:true,sort_order:0},{code:'en',native_name:'English',name_en:'English',is_enabled:true,sort_order:1}]);
@@ -110,6 +125,36 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
  const pending=useRef<(()=>void)|null>(null);
  const [languageForm,setLanguageForm]=useState({code:'',native_name:'',name_en:''});
  const [showAddLanguage,setShowAddLanguage]=useState(false);
+ // The editor is the only place choosing the spawn point; the trigger determines
+ // the real character position at creation, without trusting a client-supplied ID.
+ useEffect(()=>{
+  let live=true;
+  void (async()=>{
+   const [galaxies,quadrants,sectors,locations]=await Promise.all([
+    supabase.from('game_galaxies').select('id,slug,name_hu,name_en,is_published').order('slug'),
+    supabase.from('game_quadrants').select('id,slug,galaxy_id,name_hu,name_en,is_published').order('slug'),
+    supabase.from('game_sectors').select('id,slug,quadrant_id,name_hu,name_en,is_published').order('slug'),
+    supabase.from('game_locations').select('id,slug,sector_id,is_published,game_locations_i18n(locale,name)').order('slug')
+   ]);
+   if(!live)return;
+   const err=galaxies.error||quadrants.error||sectors.error||locations.error;
+   if(err){notify(t('homeworldLoadError')+' '+err.message,'error');return;}
+   setWorldGalaxies((galaxies.data||[]) as WorldEntry[]);
+   setWorldQuadrants((quadrants.data||[]) as WorldQuadrant[]);
+   setWorldSectors((sectors.data||[]) as WorldSector[]);
+   setWorldLocations((locations.data||[]) as WorldLocation[]);
+  })();
+  return()=>{live=false;};
+ },[]);
+ useEffect(()=>{
+  if(kind!=='species'||!form.homeworld_location_id)return;
+  const location=worldLocations.find(row=>row.id===form.homeworld_location_id);
+  const sector=worldSectors.find(row=>row.id===location?.sector_id);
+  const quadrant=worldQuadrants.find(row=>row.id===sector?.quadrant_id);
+  if(location&&sector&&quadrant){
+   setHomeworldPath({galaxy:quadrant.galaxy_id,quadrant:quadrant.id,sector:sector.id});
+  }
+ },[kind,form.id,form.homeworld_location_id,worldLocations,worldSectors,worldQuadrants]);
  const refresh=useCallback(async(k:Kind,keep?:string)=>{
    setLoading(true);setError('');
    const other=k==='species'?'classes':'species';
@@ -127,14 +172,15 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
    setRecords(items);setSkills(sk.data as unknown as Skill[]);setLocales(lang.data as LocaleRow[]);
    setCounts(v=>({...v,[k]:items.length,[other]:otherCount.count||0}));
    const picked=items.find(x=>x.id===keep)||items[0];
+   setHomeworldPath(emptyWorldPath());
    setForm(picked?hydrate(picked,k):emptyForm());
    setDirty(false);setLoading(false);
  },[]);
  useEffect(()=>{void refresh(kind);},[kind,refresh]);
  const navigate=(fn:()=>void)=>{if(dirty){pending.current=fn;setModal('discard');}else fn();};
  const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{onKindChange(k);setTab('general');setMessage('');setError('');});};
- const chooseRecord=(item:CatalogRecord)=>navigate(()=>{setForm(hydrate(item,kind));setDirty(false);setMessage('');setError('');setTab('general');});
- const createNew=()=>navigate(()=>{setForm(emptyForm());setDirty(false);setMessage('');setError('');setTab('general');});
+ const chooseRecord=(item:CatalogRecord)=>navigate(()=>{setHomeworldPath(emptyWorldPath());setForm(hydrate(item,kind));setDirty(false);setMessage('');setError('');setTab('general');});
+ const createNew=()=>navigate(()=>{setHomeworldPath(emptyWorldPath());setForm(emptyForm());setDirty(false);setMessage('');setError('');setTab('general');});
  const update=(patch:Partial<FormBody>)=>{setForm(prev=>({...prev,...patch}));setDirty(true);setMessage('');};
  const setTranslation=(lang:string,key:keyof TranslationBody,val:string)=>{setForm(prev=>({...prev,translations:{...prev.translations,[lang]:{...emptyTranslation(),...prev.translations[lang],[key]:val}}}));setDirty(true);setMessage('');};
  const updateSkill=(id:string,pips:number)=>{setForm(prev=>{const bonuses={...prev.bonuses};if(!pips)delete bonuses[id];else bonuses[id]=pips;return {...prev,bonuses};});setDirty(true);setMessage('');};
@@ -142,13 +188,16 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
    if(!form.translations.hu?.name?.trim()||!form.translations.en?.name?.trim()){setTab('dictionary');setError(t('required'));return;}
    if(form.primary_attribute===form.secondary_attribute){setTab('general');setError(t('different'));return;}
    if(form.image_path.trim()&&!form.image_path.trim().startsWith('hatarvilag/')){setTab('general');setError(t('imageError'));return;}
+   if(kind==='species'&&form.homeworld_location_id&&!worldLocations.some(loc=>loc.id===form.homeworld_location_id)){
+    setTab('general');setError(t('homeworldMissing'));return;
+   }
    const slug=slugify(form.slug||form.translations.hu.name);
    if(!slug){setTab('general');setError(t('required'));return;}
    setBusy(true);
    try{
      let id=form.id;
      const data={slug,primary_attribute:form.primary_attribute,secondary_attribute:form.secondary_attribute,
-       image_path:form.image_path.trim()||null,is_published:form.is_published,...(kind==='species'?{resistances:form.resistances}:{})};
+       image_path:form.image_path.trim()||null,is_published:form.is_published,...(kind==='species'?{resistances:form.resistances,homeworld_location_id:form.homeworld_location_id}:{})};
      if(id){const result=await supabase.from(table(kind)).update(data).eq('id',id);if(result.error)throw result.error;}
      else {const result=await supabase.from(table(kind)).insert(data).select('id').single();if(result.error)throw result.error;id=result.data.id;}
      const rows=Object.entries(form.translations).filter(([code,value])=>(code==='hu'||code==='en'||value.name.trim())&&value.name.trim()).map(([code,value])=>({
@@ -182,6 +231,17 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
  };
  const skillGroups=useMemo(()=>attrs.map(a=>({attr:a,skills:skills.filter(s=>s.attribute===a).sort((a,b)=>a.position-b.position)})),[skills]);
  const countBonuses=Object.values(form.bonuses).filter(n=>n>0).length;
+ const homeworldQuads=worldQuadrants.filter(q=>q.galaxy_id===homeworldPath.galaxy);
+ const homeworldSectors=worldSectors.filter(s=>s.quadrant_id===homeworldPath.quadrant);
+ const homeworldLocations=worldLocations.filter(loc=>loc.sector_id===homeworldPath.sector);
+ const chosenHomeworld=worldLocations.find(loc=>loc.id===form.homeworld_location_id);
+ const chosenSector=worldSectors.find(s=>s.id===homeworldPath.sector);
+ const chosenQuadrant=worldQuadrants.find(q=>q.id===homeworldPath.quadrant);
+ const chosenGalaxy=worldGalaxies.find(g=>g.id===homeworldPath.galaxy);
+ const worldName=(entry:WorldEntry|undefined)=>entry?(l==='en'?entry.name_en:entry.name_hu):'';
+ const locationName=(loc:WorldLocation|undefined)=>loc?
+  loc.game_locations_i18n?.find(t=>t.locale===l)?.name||loc.game_locations_i18n?.find(t=>t.locale==='hu')?.name||loc.slug:'';
+ const homeworldIsDraft=!!chosenHomeworld&&(!chosenHomeworld.is_published||!chosenSector?.is_published||!chosenQuadrant?.is_published||!chosenGalaxy?.is_published);
  const selectedLanguage=locales.find(x=>x.code===editLocale);
  const langContent={...emptyTranslation(),...form.translations[editLocale]};
  const translationFields:(keyof TranslationBody)[]=kind==='species'?['name','description','passives']:['name','description','starting_equipment','traits','gameplay_role'];
@@ -221,6 +281,42 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect}
                <label>{t('primary')} <em>+1D</em><select value={form.primary_attribute} onChange={e=>update({primary_attribute:e.target.value as Attr})}>{attrs.map(a=><option value={a} key={a}>{attrNames[l][a]}</option>)}</select></label>
                <label>{t('secondary')} <em>+1</em><select value={form.secondary_attribute} onChange={e=>update({secondary_attribute:e.target.value as Attr})}>{attrs.map(a=><option value={a} key={a}>{attrNames[l][a]}</option>)}</select></label>
              </div>
+             {kind==='species'&&<section className="ed-homeworld">
+               <h3><span aria-hidden="true">✦</span> {t('homeworld')}</h3>
+               <div className="ed-homeworld-fields">
+                <label>{t('homeworldGalaxy')}
+                 <select aria-label={t('homeworldGalaxy')} value={homeworldPath.galaxy}
+                  onChange={e=>{setHomeworldPath({galaxy:e.target.value,quadrant:'',sector:''});update({homeworld_location_id:null});}}>
+                  <option value="">{t('homeworldChoose')}</option>
+                  {worldGalaxies.map(g=><option key={g.id} value={g.id}>{worldName(g)}</option>)}
+                 </select>
+                </label>
+                <label>{t('homeworldQuadrant')}
+                 <select aria-label={t('homeworldQuadrant')} value={homeworldPath.quadrant} disabled={!homeworldPath.galaxy}
+                  onChange={e=>{setHomeworldPath({galaxy:homeworldPath.galaxy,quadrant:e.target.value,sector:''});update({homeworld_location_id:null});}}>
+                  <option value="">{t('homeworldChoose')}</option>
+                  {homeworldQuads.map(q=><option key={q.id} value={q.id}>{worldName(q)}</option>)}
+                 </select>
+                </label>
+                <label>{t('homeworldSector')}
+                 <select aria-label={t('homeworldSector')} value={homeworldPath.sector} disabled={!homeworldPath.quadrant}
+                  onChange={e=>{setHomeworldPath({...homeworldPath,sector:e.target.value});update({homeworld_location_id:null});}}>
+                  <option value="">{t('homeworldChoose')}</option>
+                  {homeworldSectors.map(s=><option key={s.id} value={s.id}>{worldName(s)}</option>)}
+                 </select>
+                </label>
+                <label>{t('homeworldLocation')}
+                 <select aria-label={t('homeworldLocation')} value={form.homeworld_location_id||''} disabled={!homeworldPath.sector}
+                  onChange={e=>update({homeworld_location_id:e.target.value||null})}>
+                  <option value="">{t('homeworldChoose')}</option>
+                  {homeworldLocations.map(loc=><option key={loc.id} value={loc.id}>{locationName(loc)}{!loc.is_published?' ◌':''}</option>)}
+                 </select>
+                </label>
+               </div>
+               <p className={homeworldIsDraft?'ed-homeworld-hint ed-homeworld-warning':'ed-homeworld-hint'}>
+                {homeworldIsDraft?t('homeworldDraft'):chosenHomeworld?t('homeworldSelected'):t('homeworldDefault')}
+               </p>
+              </section>}
              {kind==='species'?<div className="ed-resistance-box"><h3>{t('resistances')}</h3>
                {form.resistances.map((row,i)=><div className="ed-resistance-row" key={i}>
                  <select aria-label={t('resistances')} value={row.code} onChange={e=>update({resistances:form.resistances.map((r,j)=>i===j?{...r,code:e.target.value}:r)})}>{resistanceCodes.map((code,n)=><option key={code} value={code}>{resistanceNames[l][n]}</option>)}</select>

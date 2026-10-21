@@ -158,3 +158,15 @@
  .ed-nav>button{min-height:42px;padding:8px 9px;font-size:14px}
  .ed-shell{width:calc(100vw - 18px)}
 }
+
+/* Species homeworld: compact 4-level selector inside the shared editor template. */
+.ed-homeworld{min-width:0;border:1px solid #536172;background:#0b1822;padding:12px;display:grid;gap:10px}
+.ed-homeworld h3{margin:0;color:#e8c4ac;font-size:13px;font-weight:650;letter-spacing:.055em;text-transform:uppercase}
+.ed-homeworld h3 span{color:#f19b70}
+.ed-homeworld-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}
+.ed-general-grid .ed-homeworld-fields label{display:flex;flex-direction:column;gap:5px;font-size:12px;line-height:1.25;text-transform:none;letter-spacing:0}
+.ed-homeworld-fields select{width:100%;min-width:0;box-sizing:border-box;font-size:14px!important;line-height:1.25;padding:9px 8px!important;margin:0}
+.ed-homeworld-fields select:disabled{opacity:.47}
+.ed-homeworld-hint{font-size:12px;line-height:1.45;color:#aac0cc;margin:0}
+.ed-homeworld-warning{color:#f6b08f}
+@media(max-width:1150px){.ed-homeworld-fields{grid-template-columns:1fr}}
