@@ -28,7 +28,7 @@ export default function SectorEditor({locale,onBack,onSectionSelect}:{locale:str
  const label=(x:Place)=>x.game_locations_i18n.find(n=>n.locale===locale)?.name||x.game_locations_i18n.find(n=>n.locale==='hu')?.name||x.slug;
  const activeName=(a:Action)=>a.game_actions_i18n.find(n=>n.locale===locale)?.name||a.game_actions_i18n.find(n=>n.locale==='hu')?.name||a.slug;
  function choose(p:Place,allRoutes:Route[],allPlacements:{location_id:string;action_id:string}[]){
-  setDraft({...p});
+  setDraft({...p,x:snapWorldCoordinate(p.x),y:snapWorldCoordinate(p.y)});
   if(p.sector_id)setSelectedSector(p.sector_id);
   setTranslations(Object.fromEntries(p.game_locations_i18n.map(x=>[x.locale,{name:x.name,description:x.description}])));
   setChecked(allPlacements.filter(x=>x.location_id===p.id).map(x=>x.action_id));

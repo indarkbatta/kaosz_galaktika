@@ -12,7 +12,7 @@ const {chromium,firefox}=require('playwright');
 const scratch=await mkdtemp(join(tmpdir(),'hatarvilag-world-'));
 const db={
  game_galaxies:[{id:'11111111-1111-4111-8111-111111111111',slug:'hatarvilag',name_hu:'Határvilág',name_en:'Borderworld',description_hu:'',description_en:'',is_published:true}],
- game_quadrants:[{id:'22222222-2222-4222-8222-222222222222',slug:'hatarvidek',name_hu:'Határvidék',name_en:'Frontier',description_hu:'',description_en:'',x:50,y:50,galaxy_id:'11111111-1111-4111-8111-111111111111',is_published:true}],
+ game_quadrants:[{id:'22222222-2222-4222-8222-222222222222',slug:'hatarvidek',name_hu:'Határvidék',name_en:'Frontier',description_hu:'',description_en:'',x:53,y:47,galaxy_id:'11111111-1111-4111-8111-111111111111',is_published:true}],
  game_sectors:[{id:'33333333-3333-4333-8333-333333333333',slug:'kezdo_rendszer',name_hu:'Határvidéki naprendszer',name_en:'Frontier System',description_hu:'',description_en:'',x:35,y:60,quadrant_id:'22222222-2222-4222-8222-222222222222',is_published:true}],
  game_locations:[{id:'44444444-4444-4444-8444-444444444444',slug:'frontier_station',sector_id:'33333333-3333-4333-8333-333333333333',x:22,y:40,game_locations_i18n:[{locale:'hu',name:'Határvidéki állomás'},{locale:'en',name:'Frontier Station'}]}]
 };
@@ -42,13 +42,39 @@ try{
    await levels.getByRole('button',{name:'Galaxis',exact:true}).waitFor();
    const tabs=page.getByRole('navigation',{name:'Szerkesztőfülek'});
    await tabs.getByRole('button',{name:'Csillagtérkép'}).click();
+   // This is the inline map shown in the user's screenshot, not the modal.
+   const mini=page.getByRole('group',{name:'Négyzetes térképelőnézet'});
+   const preview=await mini.boundingBox();
+   assert.ok(preview&&Math.abs(preview.width-preview.height)<1.25,
+    'Inline map must itself be square, not a wide rectangle: '+JSON.stringify(preview));
+   assert.ok(preview.width>=250,'Inline map must remain usable');
+   const gridSize=await mini.evaluate(el=>getComputedStyle(el).backgroundSize);
+   assert.match(gridSize,/5% 5%, 5% 5%/,'Inline grid must have square cell spacing');
+   const marker=mini.locator('.wa-map-node').first();
+   assert.equal(await marker.getAttribute('style'),'left: 55%; top: 45%;','Preview must snap legacy quadrant coordinates on both axes');
+   const markerBox=await mini.locator('.wa-map-node-icon').first().boundingBox();
+   assert.ok(markerBox,'Preview star marker visible');
+   const mapCenterX=preview.x+1+(preview.width-2)*.55;
+   const mapCenterY=preview.y+1+(preview.height-2)*.45;
+   assert.ok(Math.abs(markerBox.x+markerBox.width/2-mapCenterX)<1.5,
+    'Preview marker visual center must match X grid intersection');
+   assert.ok(Math.abs(markerBox.y+markerBox.height/2-mapCenterY)<1.5,
+    'Preview marker visual center must match Y grid intersection');
    await page.getByRole('button',{name:'Nagy csillagtérkép szerkesztése'}).click();
    const modal=page.getByRole('dialog',{name:'Csillagtérkép szerkesztő'});
    await modal.waitFor();
    const rect=await modal.boundingBox();assert.ok(rect.width>1200&&rect.height>750,'Large modal '+JSON.stringify(rect));
    const field=modal.locator('.wm-field');
    const node=modal.locator('.wm-node').first();
-   const b=await node.boundingBox(),f=await field.boundingBox();assert.ok(b&&f,'Draggable node');
+   const b=await node.boundingBox(),f=await field.boundingBox();
+   const star=await node.locator('.wm-node-dot').boundingBox();
+   const point=await node.evaluate(el=>({x:parseFloat(el.style.left),y:parseFloat(el.style.top)}));
+   assert.ok(star&&b&&f,'Star marker and field visible');
+   assert.equal(point.x%5,0);assert.equal(point.y%5,0);
+   assert.ok(Math.abs(star.x+star.width/2-(f.x+f.width*point.x/100))<1.6,
+    'Large modal star icon center must be ON the X grid intersection');
+   assert.ok(Math.abs(star.y+star.height/2-(f.y+f.height*point.y/100))<1.6,
+    'Large modal star icon center must be ON the Y grid intersection');assert.ok(b&&f,'Draggable node');
    await page.mouse.move(b.x+b.width/2,b.y+b.height/2);
    await page.mouse.down();
    await page.mouse.move(f.x+f.width*.7,f.y+f.height*.4,{steps:18});

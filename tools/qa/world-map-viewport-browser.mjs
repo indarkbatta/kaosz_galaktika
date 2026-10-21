@@ -50,6 +50,17 @@ try{
    assert.equal(await modal.locator('.wm-line').count(),1,'Existing route is drawn');
    // Scroll about a node: pointer anchored wheel zoom should not move the point.
    const first=await nodes.nth(0).boundingBox();assert.ok(first);
+   const atGrid=async()=>{
+    const star=await nodes.nth(0).locator('.wm-node-dot').boundingBox();
+    const stage=await field.boundingBox();
+    const point=await nodes.nth(0).evaluate(el=>({x:parseFloat(el.style.left),y:parseFloat(el.style.top)}));
+    assert.ok(star&&stage);
+    assert.ok(Math.abs(star.x+star.width/2-(stage.x+stage.width*point.x/100))<1.7,
+      'Marker icon must align to the grid X intersection even when zoomed');
+    assert.ok(Math.abs(star.y+star.height/2-(stage.y+stage.height*point.y/100))<1.7,
+      'Marker icon must align to the grid Y intersection even when zoomed');
+   };
+   await atGrid();
    const mx=first.x+first.width/2,my=first.y+20;
    const anchorBefore=await nodes.nth(0).boundingBox();
    await page.mouse.move(mx,my);await page.mouse.wheel(0,-360);
@@ -57,6 +68,7 @@ try{
    const afterZoom=await field.boundingBox();
    assert.ok(afterZoom.width>box.width+10,'Wheel zoom enlarges square map');
    assert.ok(Math.abs(afterZoom.width-afterZoom.height)<1,'Grid stays square when zoomed');
+   await atGrid();
    const anchorAfter=await nodes.nth(0).boundingBox();
    assert.ok(Math.abs((anchorBefore.x+anchorBefore.width/2)-(anchorAfter.x+anchorAfter.width/2))<8,'Wheel pointer anchored');
    // Pan by dragging empty space outside world square.
