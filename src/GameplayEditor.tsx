@@ -19,7 +19,7 @@ export default function GameplayEditor({locale,onBack,onSectionSelect,initialTab
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [actions,setActions]=useState<Action[]>([]),[skills,setSkills]=useState<Skill[]>([]);
  const [locales,setLocales]=useState<Lang[]>([]),[chosen,setChosen]=useState(''),[lang,setLang]=useState('hu');
- const [tab,setTab]=useState(initialTab),[rules,setRules]=useState<Rules>({energy_per_tick:1,energy_max:16,energy_regen_seconds:3600,xp_level_base:100,skill_points_per_level:1});
+ const [tab,setTab]=useState<string>(initialTab),[rules,setRules]=useState<Rules>({energy_per_tick:1,energy_max:16,energy_regen_seconds:3600,xp_level_base:100,skill_points_per_level:1});
  const [edit,setEdit]=useState<Action|null>(null),[translations,setTranslations]=useState<Record<string,Local>>({});
  const [busy,setBusy]=useState(false);
  const [items,setItems]=useState<Item[]>([]),[drops,setDrops]=useState<Drop[]>([]);
