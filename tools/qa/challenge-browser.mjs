@@ -13,9 +13,9 @@ const steps=ids.map((id,i)=>({name_hu:'Lépés '+i,name_en:'Step '+i,description
 description_en:'Test',skill_ids:[id],base_tn:9+i,energy_cost:6+i}));
 const initial={game_skill_challenges:[{id:'challenge1',slug:'silent_relay',location_id:'station',name_hu:'A néma adóállomás',
 name_en:'Silent Relay',description_hu:'Négylépcsős kihívás',description_en:'Mission',
-steps,xp_full:75,xp_partial:30,xp_failure:10,repeatable:false,cooldown_hours:24,is_published:true}],
+difficulty:'hard',image_path:'hatarvilag/worlds/qa.png',steps,xp_full:75,xp_partial:30,xp_failure:10,repeatable:false,cooldown_hours:24,is_published:true}],
 character_skill_challenge_runs:[],character_skill_challenge_rolls:[],energy:100,xp:0,calls:[]};
-const mock="const db=window.__fixture;\nconst ok=data=>Promise.resolve({data,error:null});\nexport const supabase={from(table){return {select(){\n const where=[];const q={eq(k,v){where.push([k,v]);return q;},order(){return q;},limit(){return q;},\n then(res,rej){return ok(JSON.parse(JSON.stringify(db[table].filter(row=>where.every(([k,v])=>row[k]===v))))).then(res,rej);}};\n return q;\n}};},\nrpc(method,args){\n db.calls.push({method,args});\n if(method==='start_skill_challenge'){\n  const m=db.game_skill_challenges[0];\n  db.character_skill_challenge_runs.unshift({id:'run1',challenge_id:m.id,character_id:'captain',\n  definition:{steps:m.steps,location_id:m.location_id},difficulty:args.p_difficulty,\n  level_at_start:1,step_index:0,successes:0,status:'active',xp_awarded:0,reward_qty:0,\n  started_at:new Date().toISOString(),finished_at:null});\n  return ok({run_id:'run1'});\n }\n if(method==='roll_skill_challenge'){\n  const r=db.character_skill_challenge_runs[0];if(args.p_step_index!==r.step_index)\n   return Promise.resolve({data:null,error:{message:'Stale step'}});\n  const step=r.definition.steps[r.step_index],target=step.base_tn+3;\n  db.character_skill_challenge_rolls.push({id:r.step_index+1,run_id:r.id,\n  step_index:r.step_index,skill_id:args.p_skill,dice:[6,6,5],pip_bonus:0,\n  roll_total:17,target_number:target,succeeded:true,energy_spent:step.energy_cost});\n  r.step_index++;r.successes++;db.energy-=step.energy_cost;\n  if(r.step_index===4){r.status='success';r.xp_awarded=112;db.xp=112;r.finished_at=new Date().toISOString();}\n  return ok({run_id:r.id,dice:[6,6,5],pip_bonus:0,roll_total:17,target_number:target,\n  succeeded:true,status:r.status,xp_awarded:r.status==='active'?0:r.xp_awarded});\n }\n return Promise.resolve({data:null,error:{message:'Unknown action'}});\n}};";
+const mock="const db=window.__fixture;\nconst ok=data=>Promise.resolve({data,error:null});\nexport const supabase={from(table){return {select(){\n const where=[];const q={eq(k,v){where.push([k,v]);return q;},order(){return q;},limit(){return q;},\n then(res,rej){return ok(JSON.parse(JSON.stringify(db[table].filter(row=>where.every(([k,v])=>row[k]===v))))).then(res,rej);}};\n return q;\n}};},\nrpc(method,args){\n db.calls.push({method,args});\n if(method==='start_skill_challenge'){\n  const m=db.game_skill_challenges[0];\n  db.character_skill_challenge_runs.unshift({id:'run1',challenge_id:m.id,character_id:'captain',\n  definition:{steps:m.steps,location_id:m.location_id},difficulty:m.difficulty,result_seen_through:-1,\n  level_at_start:1,step_index:0,successes:0,status:'active',xp_awarded:0,reward_qty:0,\n  started_at:new Date().toISOString(),finished_at:null});\n  return ok({run_id:'run1'});\n }\n if(method==='acknowledge_challenge_result'){db.character_skill_challenge_runs[0].result_seen_through=args.p_step_index;return ok(null);}\n if(method==='roll_skill_challenge'){\n  const r=db.character_skill_challenge_runs[0];if(args.p_step_index!==r.step_index)\n   return Promise.resolve({data:null,error:{message:'Stale step'}});\n  const step=r.definition.steps[r.step_index],target=step.base_tn+3;\n  db.character_skill_challenge_rolls.push({id:r.step_index+1,run_id:r.id,\n  step_index:r.step_index,skill_id:args.p_skill,dice:[6,5],wild_dice:[6,6,1],wild_penalty:0,wild_cancelled_index:null,pip_bonus:0,\n  roll_total:24,target_number:target,succeeded:true,energy_spent:step.energy_cost});\n  r.step_index++;r.successes++;db.energy-=step.energy_cost;\n  if(r.step_index===4){r.status='success';r.xp_awarded=112;db.xp=112;r.finished_at=new Date().toISOString();}\n  return ok({run_id:r.id,dice:[6,5],wild_dice:[6,6,1],wild_penalty:0,wild_cancelled_index:null,pip_bonus:0,roll_total:24,target_number:target,\n  succeeded:true,status:r.status,xp_awarded:r.status==='active'?0:r.xp_awarded});\n }\n return Promise.resolve({data:null,error:{message:'Unknown action'}});\n}};";
 const temp=await mkdtemp(join(tmpdir(),'challenge-browser-'));let server;
 try{
  const out=await build({entryPoints:['tools/qa/challenge-fixture.tsx'],bundle:true,
@@ -38,25 +38,37 @@ try{
    await page.goto('http://127.0.0.1:'+server.address().port);
    await page.getByRole('button',{name:/Indítás/}).click();
    const modal=page.getByRole('dialog',{name:'Skill Challenge'});await modal.waitFor();
-   await modal.getByRole('button',{name:/Nehéz/}).click();
+   assert.equal(await modal.locator('select').count(),0);
+   assert.equal(await modal.getByRole('button',{name:/Nehéz/}).count(),0);
    await modal.getByRole('button',{name:'Kihívás indítása'}).click();
-   await modal.getByText('TN 12').waitFor();
+   await modal.locator('.sc-check-info').getByText('Célszám (TN) 12').waitFor();
    assert.equal(await page.evaluate(()=>window.__fixture.xp),0);
-   await modal.locator('.sc-skill-choices button').first().click();
-   await modal.getByText('TN 13').waitFor();
-   await modal.getByRole('button',{name:'Bezárás',exact:true}).click();
-   await page.getByRole('button',{name:/Folytatás/}).click();
-   await modal.getByText('TN 13').waitFor();
-   for(let i=1;i<4;i++){
-    await modal.locator('.sc-skill-choices button').first().click();
-    if(i<3)await modal.getByText('TN '+(13+i)).waitFor();
+   assert.deepEqual(await page.evaluate(()=>window.__fixture.calls[0].args),{p_slug:'silent_relay'});
+   for(let i=0;i<4;i++){
+    await modal.locator('.sc-skill-choices button').first().dblclick();
+    await modal.locator('.sc-play-action .dice-panel.is-revealed').waitFor();
+    assert.equal(await modal.locator('.sc-play-action h3').textContent(),'Lépés '+i);
+    assert.equal(await modal.locator('.sc-play-action .wild').count(),3);
+    assert.equal(await modal.locator('.sc-play-action .dice-result b').textContent(),'Végösszeg: 24');
+    assert.equal(await page.evaluate(()=>window.__fixture.character_skill_challenge_rolls.length),i+1);
+    assert.equal(await modal.locator('.sc-skill-choices').count(),0);
+    if(i===0){
+     // Close/reopen without acknowledgement restores the accepted result, not the next test.
+     await modal.getByRole('button',{name:'Bezárás',exact:true}).click();
+     await page.getByRole('button',{name:/Folytatás/}).click();
+     await modal.locator('.sc-play-action .dice-panel.is-revealed').waitFor();
+     assert.equal(await modal.locator('.sc-play-action h3').textContent(),'Lépés 0');
+    }
+    if(i===3)assert.equal(await modal.getByText('TELJES SIKER',{exact:true}).count(),0);
+    await modal.getByRole('button',{name:'Tovább',exact:true}).click();
+    if(i<3){await modal.locator('.sc-check-info').getByText('Célszám (TN) '+(13+i)).waitFor();}
    }
-   await modal.getByText('TELJES SIKER').waitFor();
+   await modal.getByText('TELJES SIKER',{exact:true}).waitFor();
    const d=await page.evaluate(()=>window.__fixture);
    assert.equal(d.character_skill_challenge_rolls.length,4);
    assert.equal(d.xp,112);assert.equal(d.energy,70);
    assert.deepEqual(errors,[]);
-   console.log(name+': PASS difficulty, 4 persisted steps, resume and end-only XP');
+   console.log(name+': PASS editor difficulty, current-step result, explicit next, Wild explosions, double-click, resume, final-step result and end-only XP');
   }finally{await b.close();}
  }
 }finally{if(server)await new Promise(r=>server.close(r));await rm(temp,{recursive:true,force:true});}

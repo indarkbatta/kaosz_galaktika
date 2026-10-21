@@ -4,15 +4,17 @@ import {notify} from './lib/toast';
 import {EditorFrame,EditorHeader,EditorTabs,EditorRoster,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
 import './skill-challenge-editor.css';
+import {WorldImageField,WorldArtwork} from './components/WorldImageField';
+import {validWorldImage} from './lib/worldImages';
 
 type Step={name_hu:string;name_en:string;description_hu:string;description_en:string;skill_ids:string[];base_tn:number;energy_cost:number};
-type Challenge={id:string;slug:string;location_id:string;name_hu:string;name_en:string;
+type Challenge={image_path:string|null;difficulty:string;id:string;slug:string;location_id:string;name_hu:string;name_en:string;
  description_hu:string;description_en:string;steps:Step[];xp_full:number;xp_partial:number;xp_failure:number;
  reward_item_id:string|null;reward_qty:number;repeatable:boolean;cooldown_hours:number;is_published:boolean;sort_order:number};
 type Skill={id:string;slug:string;attribute:string;game_skills_i18n:{locale:string;name:string}[]};
 type Location={id:string;slug:string;game_locations_i18n:{locale:string;name:string}[]};
 type Item={id:string;slug:string;game_items_i18n:{locale:string;name:string}[]};
-const fresh=(location_id='',skill_id=''):Challenge=>({id:'',slug:'',location_id,name_hu:'',name_en:'',description_hu:'',
+const fresh=(location_id='',skill_id=''):Challenge=>({image_path:null,difficulty:'normal',id:'',slug:'',location_id,name_hu:'',name_en:'',description_hu:'',
  description_en:'',steps:[0,1,2].map((_,i)=>({name_hu:'',name_en:'',description_hu:'',description_en:'',
  skill_ids:skill_id?[skill_id]:[],base_tn:9+i,energy_cost:7})),
  xp_full:75,xp_partial:30,xp_failure:10,reward_item_id:null,reward_qty:1,repeatable:false,cooldown_hours:24,
@@ -70,6 +72,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
   stepPatch({skill_ids:[...new Set(next.filter(Boolean))].slice(0,3)});
  };
  const validate=()=>{
+  if(!validWorldImage(draft.image_path))throw Error(tr('Érvénytelen képútvonal.','Invalid artwork path.'));
   if(!/^[a-z][a-z0-9_]*$/.test(draft.slug)||!draft.location_id||!draft.name_hu.trim()||!draft.name_en.trim())
    throw Error(tr('Azonosító, helyszín és magyar/angol név szükséges.','Slug, location and names required.'));
   if(draft.steps.length<2||draft.steps.length>8||draft.steps.some(x=>!x.name_hu.trim()||!x.name_en.trim()||
@@ -80,7 +83,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
  const save=async(e:FormEvent)=>{e.preventDefault();if(busy)return;setBusy(true);
   try{
    validate();
-   const row={slug:draft.slug,location_id:draft.location_id,name_hu:draft.name_hu.trim(),name_en:draft.name_en.trim(),
+   const row={image_path:draft.image_path,difficulty:draft.difficulty,slug:draft.slug,location_id:draft.location_id,name_hu:draft.name_hu.trim(),name_en:draft.name_en.trim(),
     description_hu:draft.description_hu,description_en:draft.description_en,steps:draft.steps,xp_full:draft.xp_full,
     xp_partial:draft.xp_partial,xp_failure:draft.xp_failure,reward_item_id:draft.reward_item_id||null,
     reward_qty:draft.reward_qty,repeatable:draft.repeatable,cooldown_hours:draft.cooldown_hours,
@@ -100,7 +103,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
     <button type="button" onClick={()=>navigate(()=>{setDraft(fresh(locations[0]?.id,skills[0]?.id));setTab('general');setStepIndex(0);setDirty(false);})}>＋</button></div>
    <div className="ed-roster-list">{challenges.map(c=><button type="button" key={c.id}
     className={'ed-record '+(c.id===draft.id?'selected':'')} onClick={()=>navigate(()=>choose(c))}>
-    <span className="ed-thumbnail">⚙</span><span className="ed-record-name"><strong>{name(c)}</strong>
+    <span className="ed-thumbnail"><WorldArtwork path={c.image_path} fallback="⚙"/></span><span className="ed-record-name"><strong>{name(c)}</strong>
     <small>{c.steps.length} {tr('lépés','steps')} · {c.is_published?tr('Aktív','Published'):tr('Piszkozat','Draft')}</small></span>
    </button>)}</div>
   </EditorRoster>
@@ -112,6 +115,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
    ]} selected={tab} onSelect={setTab}/>
    <form className="ed-form sc-editor-form" id="skill-challenge-form" onSubmit={save}>
     {tab==='general'&&<>
+     <WorldImageField locale={locale} value={draft.image_path} onChange={image_path=>patch({image_path})}/>
      <label>{tr('Technikai azonosító','Slug')}<input required value={draft.slug} onChange={e=>patch({slug:e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'')})}/></label>
      <label>{tr('Helyszín (ahol a hídról elérhető)','Location (bridge availability)')}
       <select value={draft.location_id} onChange={e=>patch({location_id:e.target.value})}>{locations.map(l=><option value={l.id} key={l.id}>{local(l.game_locations_i18n)}</option>)}</select>
@@ -137,7 +141,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
        <label>English name<input value={current.name_en} onChange={e=>stepPatch({name_en:e.target.value})}/></label></div>
       <div className="sc-two"><label>Magyar leírás<textarea rows={2} value={current.description_hu} onChange={e=>stepPatch({description_hu:e.target.value})}/></label>
        <label>English description<textarea rows={2} value={current.description_en} onChange={e=>stepPatch({description_en:e.target.value})}/></label></div>
-      <div className="sc-two"><label>{tr('Alap célszám (TN)','Base target number')}<input type="number" min={4} max={80} value={current.base_tn} onChange={e=>stepPatch({base_tn:Number(e.target.value)})}/></label>
+      <div className="sc-two"><label>{tr('Alap célszám (TN)','Base Target Number (TN)')}<input type="number" min={4} max={80} value={current.base_tn} onChange={e=>stepPatch({base_tn:Number(e.target.value)})}/></label>
        <label>{tr('Energia / próba','Energy / roll')}<input type="number" min={1} max={100} value={current.energy_cost} onChange={e=>stepPatch({energy_cost:Number(e.target.value)})}/></label></div>
       <strong>{tr('Választható skillek (legfeljebb 3)','Selectable skills (up to 3)')}</strong>
       {[0,1,2].map(pos=><label key={pos}>{pos===0?tr('Elsődleges skill','Primary skill'):tr('Alternatív skill','Alternative skill')+' '+pos}
@@ -149,6 +153,10 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
      </div>}
     </div>}
     {tab==='reward'&&<>
+     <label>{tr('Nehézség','Difficulty')}<select value={draft.difficulty} onChange={e=>patch({difficulty:e.target.value})}>
+      <option value="easy">Könnyű / Easy</option><option value="normal">Normál / Normal</option>
+      <option value="hard">Nehéz / Hard</option><option value="extreme">Extrém / Extreme</option>
+     </select></label>
      <p>{tr('A célszám: alap TN + ⌊(karakterszint−1)/5⌋ + nehézségi módosító.','Target: base TN + floor((character level−1)/5) + difficulty modifier.')}</p>
      <div className="sc-modifiers"><span>Könnyű / Easy −2 · ×0,75 XP</span><span>Normál / Normal 0 · ×1 XP</span>
       <span>Nehéz / Hard +3 · ×1,5 XP</span><span>Extrém / Extreme +6 · ×2 XP</span></div>

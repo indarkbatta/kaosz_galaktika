@@ -3,6 +3,13 @@ on:
   pull_request:
     paths:
       - 'src/SkillChallengePanel.tsx'
+      - 'src/CaptainDashboard.tsx'
+      - 'src/GameplayEditor.tsx'
+      - 'src/components/BridgeEncounterCard.tsx'
+      - 'src/components/DiceRollPanel.tsx'
+      - 'src/bridge-encounter.css'
+      - 'supabase/migrations/*m78*'
+      - 'tools/qa/bridge-*'
       - 'src/SkillChallengeEditor.tsx'
       - 'src/skill-challenge*.css'
       - 'tools/qa/challenge-*'
@@ -26,10 +33,18 @@ jobs:
       - name: Install dependencies
         run: npm install --no-fund --no-audit
       - name: Install Playwright tools
-        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-challenge-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-challenge-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14
       - name: Install browsers
         run: node "%RUNNER_TEMP%\hatarvilag-challenge-browser-tools\node_modules\playwright\cli.js" install chromium firefox
       - name: Verify challenge gameplay
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-challenge-browser-tools
         run: node tools/qa/challenge-browser.mjs
+      - name: Verify bridge editors and activity rolls
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-challenge-browser-tools
+        run: node tools/qa/bridge-browser.mjs
+      - name: Verify authoritative database logic in isolated PostgreSQL
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-challenge-browser-tools
+        run: node tools/qa/bridge-database.mjs
