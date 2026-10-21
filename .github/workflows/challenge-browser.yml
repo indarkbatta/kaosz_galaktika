@@ -1,0 +1,35 @@
+name: Multi-step Challenge Browser
+on:
+  pull_request:
+    paths:
+      - 'src/SkillChallengePanel.tsx'
+      - 'src/SkillChallengeEditor.tsx'
+      - 'src/skill-challenge*.css'
+      - 'tools/qa/challenge-*'
+      - '.github/workflows/challenge-browser.yml'
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-fund --no-audit
+      - name: Install Playwright tools
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-challenge-browser-tools" --no-save --no-fund --no-audit playwright@1.56.1
+      - name: Install browsers
+        run: node "%RUNNER_TEMP%\hatarvilag-challenge-browser-tools\node_modules\playwright\cli.js" install chromium firefox
+      - name: Verify challenge gameplay
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-challenge-browser-tools
+        run: node tools/qa/challenge-browser.mjs
