@@ -38,7 +38,7 @@ try{
    const page=await engine.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
-    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9YtDGnQAAAAASUVORK5CYII=','base64')
+    contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGPUiq9mYGBgYmBgYGBgAAAMCQEI3wjvmgAAAABJRU5ErkJggg==','base64')
    }));
    await page.goto(url);
    const levels=page.getByRole('navigation',{name:'Világszintek'});
