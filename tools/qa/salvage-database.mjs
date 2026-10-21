@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {resolve} from 'node:path';import {setupSalvageDatabase,document} from './salvage-db-fixture.mjs';
+const require=createRequire(resolve(process.env.WORLD_BROWSER_TOOLS,'package.json')),{PGlite}=require('@electric-sql/pglite');const db=new PGlite();
+try{
+ await setupSalvageDatabase(db);const catalog=(await db.query('select get_salvage_editor_catalog() c')).rows[0].c;const doc=document(catalog);
+ await db.exec('set role authenticated');
+ const save=async(id,revision,document)=>(await db.query('select save_salvage_map($1,$2,$3) r',[id,revision,JSON.stringify(document)])).rows[0].r;
+ const saved=await save(null,null,doc);assert.equal(saved.revision,1);let reread=(await db.query('select get_salvage_editor_catalog() c')).rows[0].c.maps[0];assert.equal(reread.rooms.length,4);assert.equal(reread.connections.length,3);assert.deepEqual(reread.rooms.map(r=>r.kind),['empty','loot','challenge','combat']);assert.equal(reread.rooms[1].credits,42);assert.equal(reread.rooms[1].loot[0].quantity,2);assert.equal(reread.rooms[3].encounter_id,doc.rooms[3].encounter_id);
+ const before=JSON.stringify(reread);let attempt=0;
+ async function rejects(edit,pattern){const bad=structuredClone(doc);edit(bad);await assert.rejects(save(saved.id,1,bad),pattern);const after=(await db.query('select get_salvage_editor_catalog() c')).rows[0].c.maps[0];assert.equal(JSON.stringify(after),before,'failed save must preserve complete map');attempt++;}
+ await rejects(d=>d.rooms[1].x=2,/Rooms overlap/);await rejects(d=>d.rooms[1].x=31,/Rooms outside map/);await rejects(d=>d.rooms[0].x=1.2,/Invalid room dimensions/);
+ await rejects(d=>d.connections=[],/unreachable/);await rejects(d=>d.rooms[1].is_entry=true,/salvage_one_entry/);await rejects(d=>d.rooms[0].is_entry=false,/exactly one entry/);
+ await rejects(d=>d.connections.push({...d.connections[0]}),/duplicate key/);await rejects(d=>d.connections[0].to_room_id=d.connections[0].from_room_id,/check constraint/);await rejects(d=>d.connections[0].to_room_id='ffffffff-ffff-4fff-8fff-ffffffffffff',/foreign key/);
+ await rejects(d=>d.rooms[1].loot[0].quantity=0,/check constraint/);await rejects(d=>d.rooms[1].loot[0].item_id='ffffffff-ffff-4fff-8fff-ffffffffffff',/foreign key/);await rejects(d=>d.rooms[0].credits=42,/check constraint/);await rejects(d=>d.rooms[1].loot.push({...d.rooms[1].loot[0]}),/duplicate key/);
+ await rejects(d=>d.rooms[2].challenge_id=null,/check constraint/);await assert.rejects(save(saved.id,0,doc),/Map changed/);
+ await db.exec('reset role;update game_skill_challenges set is_published=false;set role authenticated');await rejects(()=>{},/Unpublished encounter reference/);await db.exec('reset role;update game_skill_challenges set is_published=true;set role authenticated');
+ const updated=structuredClone(doc);updated.is_published=false;updated.connections=[];updated.rooms=updated.rooms.slice(0,2);updated.rooms[1].x=10;updated.rooms[1].credits=99;
+ const next=await save(saved.id,1,updated);assert.equal(next.revision,2);reread=(await db.query('select get_salvage_editor_catalog() c')).rows[0].c.maps[0];assert.equal(reread.rooms.length,2);assert.equal(reread.connections.length,0);assert.equal(reread.rooms[1].credits,99);assert.equal((await db.query('select count(*) n from game_salvage_rooms')).rows[0].n,2);assert.equal((await db.query('select count(*) n from game_salvage_room_loot')).rows[0].n,1);
+ // Concurrent stale editors serialize at map revision; one candidate commits.
+ const results=await Promise.allSettled([save(saved.id,2,{...updated,name_hu:'Első'}),save(saved.id,2,{...updated,name_hu:'Második'})]);assert.equal(results.filter(r=>r.status==='fulfilled').length,1);assert.equal(results.filter(r=>r.status==='rejected').length,1);
+ await assert.rejects(db.exec("update game_salvage_maps set name_hu='Cheat'"),/permission denied/);
+ await db.exec("select set_config('qa.editor','no',false)");assert.equal((await db.query('select count(*) n from game_salvage_maps')).rows[0].n,0);await assert.rejects(db.query('select get_salvage_editor_catalog()'),/Editor access required/);await assert.rejects(save(saved.id,3,updated),/Editor access required/);
+ await db.exec('reset role;set role anon');await assert.rejects(db.query('select get_salvage_editor_catalog()'),/permission denied/);await db.exec('reset role');
+ assert.equal((await db.query("select count(*) n from pg_tables where schemaname='public' and tablename like 'game_salvage_%' and rowsecurity")).rows[0].n,4);
+ console.log('PASS salvage PostgreSQL: all four room kinds and loot persist, atomic graph saves, revision conflict, '+attempt+' invalid saves rolled back, draft/ready reachability, references, editor-only RLS and grants.');
+}finally{await db.close();}

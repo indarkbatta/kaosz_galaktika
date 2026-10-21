@@ -3,7 +3,7 @@ import {useEffect,useState,type ReactNode} from 'react';
 export type EditorSection=
  'species'|'classes'|'skills'|'crew'|'galaxy'|'sector'|'factions'|'items'|'ships'|
  'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|'profiles'|
- 'combat-rules'|'balance'|'languages'|'combat';
+ 'combat-rules'|'balance'|'languages'|'combat'|'salvage';
 
 type GroupId='characters'|'world'|'equipment'|'gameplay'|'combat'|'system';
 type MenuItem={id:EditorSection;icon:string;hu:string;en:string};
@@ -24,7 +24,8 @@ const groups:MenuGroup[]=[
   {id:'ships',icon:'rocket',hu:'Hajók és modulok',en:'Ships & modules'}]},
  {id:'gameplay',icon:'gamepad',hu:'Játékmenet',en:'Gameplay',items:[
   {id:'gameplay',icon:'list-checks',hu:'Aktivitások és zsákmány',en:'Activities & loot'},
-  {id:'challenges',icon:'dice',hu:'Skill challenge-ek',en:'Skill challenges'}]},
+  {id:'challenges',icon:'dice',hu:'Skill challenge-ek',en:'Skill challenges'},
+  {id:'salvage',icon:'map-pin',hu:'Roncskutatás',en:'Salvage exploration'}]},
  {id:'combat',icon:'swords',hu:'Harc',en:'Combat',items:[
   {id:'encounters',icon:'crosshair',hu:'Encounterek',en:'Encounters'},
   {id:'enemies',icon:'skull',hu:'Ellenségek',en:'Enemies'},
