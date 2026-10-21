@@ -31,6 +31,7 @@ try{
     const frame=node.locator('.sector-node-icon.world-map-frame');
     const image=frame.locator('img');
     await image.waitFor({state:'visible'});
+    await page.waitForFunction(()=>document.querySelector('.sector-node-icon.world-map-frame img')?.naturalWidth===80);
     const [f,box]=await Promise.all([field.boundingBox(),frame.boundingBox()]);
     assert.ok(f&&box,'Field and image present');
     const styles=await frame.evaluate(el=>{

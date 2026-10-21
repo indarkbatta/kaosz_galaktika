@@ -58,6 +58,7 @@ try{
    const smallFrame=mini.locator('.wa-map-node-icon.world-map-frame').first();
    const smallImage=smallFrame.locator('img');
    await smallImage.waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.querySelector('.wa-map-node-icon.world-map-frame img')?.naturalWidth===80);
    const thumbnailStyle=await smallFrame.evaluate(frame=>{
      const photo=frame.querySelector('img');
      const rect=frame.getBoundingClientRect();

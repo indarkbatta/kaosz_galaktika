@@ -67,6 +67,7 @@ try{
    const framed=nodes.first().locator('.wm-node-dot.world-map-frame');
    const portrait=framed.locator('img');
    await portrait.waitFor({state:'visible'});
+   await page.waitForFunction(()=>document.querySelector('.wm-node-dot.world-map-frame img')?.naturalWidth===80);
    const details=await framed.evaluate(el=>{
     const image=el.querySelector('img');
     const frame=getComputedStyle(el);
