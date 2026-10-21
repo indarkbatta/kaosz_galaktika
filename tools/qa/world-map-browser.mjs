@@ -16,7 +16,7 @@ const db={
  game_sectors:[{id:'33333333-3333-4333-8333-333333333333',slug:'kezdo_rendszer',name_hu:'Határvidéki naprendszer',name_en:'Frontier System',description_hu:'',description_en:'',x:35,y:60,quadrant_id:'22222222-2222-4222-8222-222222222222',is_published:true}],
  game_locations:[{id:'44444444-4444-4444-8444-444444444444',slug:'frontier_station',sector_id:'33333333-3333-4333-8333-333333333333',x:22,y:40,game_locations_i18n:[{locale:'hu',name:'Határvidéki állomás'},{locale:'en',name:'Frontier Station'}]}]
 };
-const mock="export const supabase={from(table){return {select(){const q=Promise.resolve({data:JSON.parse(JSON.stringify(window.__worldFixture.db[table]||[])),error:null});q.order=()=>q;return q;}}},rpc(name,args){window.__worldFixture.calls.push({name,args});if(name!=='save_world_map_positions')return Promise.resolve({data:null,error:{message:'Unexpected RPC'}});const table=args.p_level==='galaxy'?'game_quadrants':args.p_level==='quadrant'?'game_sectors':'game_locations';for(const node of args.p_nodes){const x=window.__worldFixture.db[table].find(y=>y.id===node.id);if(x)Object.assign(x,{x:node.x,y:node.y});}return Promise.resolve({data:args.p_nodes.length,error:null});}}";
+const mock="export const supabase={from(table){return {select(){const q=Promise.resolve({data:JSON.parse(JSON.stringify(window.__worldFixture.db[table]||[])),error:null});q.order=()=>q;return q;},update(body){return {eq(key,id){return {select(){return {single(){const row=window.__worldFixture.db[table].find(v=>v[key]===id);if(!row)return Promise.resolve({data:null,error:{message:'Row missing'}});Object.assign(row,body);return Promise.resolve({data:{id:row.id},error:null});}};}};}};},insert(body){return {select(){return {single(){const id='99999999-9999-4999-8999-999999999999';window.__worldFixture.db[table].push({id,...body});return Promise.resolve({data:{id},error:null});}};}};}};},rpc(name,args){window.__worldFixture.calls.push({name,args});if(name!=='save_world_map_positions')return Promise.resolve({data:null,error:{message:'Unexpected RPC'}});const table=args.p_level==='galaxy'?'game_quadrants':args.p_level==='quadrant'?'game_sectors':'game_locations';for(const node of args.p_nodes){const x=window.__worldFixture.db[table].find(y=>y.id===node.id);if(x)Object.assign(x,{x:node.x,y:node.y});}return Promise.resolve({data:args.p_nodes.length,error:null});}}";
 let server;
 try{
  const b=await build({entryPoints:['tools/qa/world-map-fixture.tsx'],bundle:true,format:'iife',write:false,outdir:scratch,jsx:'automatic',define:{'import.meta.env':'{}'},plugins:[{
@@ -37,6 +37,9 @@ try{
   try{
    const page=await engine.newPage({viewport:{width:1440,height:900}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+   await page.route('https://assets.voidnoir.net/**',route=>route.fulfill({
+    contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="120" height="90"><rect width="120" height="90" fill="#2a627b"/></svg>'
+   }));
    await page.goto(url);
    const levels=page.getByRole('navigation',{name:'Világszintek'});
    await levels.getByRole('button',{name:'Galaxis',exact:true}).waitFor();
@@ -97,6 +100,23 @@ try{
    await page.getByRole('button',{name:'Nagy csillagtérkép szerkesztése'}).click();
    assert.equal(await modal.locator('.wm-node').count(),1,'Sector contains a location');
    assert.match(await modal.locator('.wm-node-label').first().textContent(),/állomás/);
+   await modal.getByRole('button',{name:'Mégse'}).click();
+   // Persist artwork through the real GalaxyEditor form for every catalog level.
+   for(const name of ['Szektor','Kvadráns','Galaxis']){
+    await levels.getByRole('button',{name,exact:true}).click();
+    await tabs.getByRole('button',{name:'Alapadatok'}).click();
+    const input=page.getByRole('textbox',{name:'Kép útvonala'});
+    const key='hatarvilag/worlds/'+name.toLowerCase()+'.webp';
+    await input.fill('https://evil.example.net/not-our-art.jpg');
+    assert.equal(await page.getByRole('alert').count(),1,'Reject external image URL');
+    await input.fill('https://assets.voidnoir.net/'+key);
+    assert.equal(await input.inputValue(),key,'Normalize public R2 link');
+    assert.equal(await page.locator('.world-image-editor-preview img').count(),1,'Live artwork preview');
+    await page.getByRole('button',{name:'Mentés',exact:true}).click();
+    await page.waitForFunction(k=>Object.values(window.__worldFixture.db).some(rows=>rows.some(row=>row.image_path===k)),key);
+    assert.equal(await input.inputValue(),key,'Persisted image survives reload');
+    assert.equal(await page.locator('.ed-roster-list .world-art img').count(),1,'Saved roster thumbnail');
+   }
    assert.deepEqual(errors,[],'Browser errors');
    console.log(label+': PASS galaxy/quadrant/sector/location maps, drag, snap, save and large modal');
   }finally{await engine.close();}
