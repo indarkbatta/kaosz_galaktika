@@ -11,6 +11,7 @@ const db=new PGlite();try{
  await assert.rejects(db.query('select save_talent_tree(null,null,$1)',[JSON.stringify(doc)]),/already assigned/);doc.nodes.pop();
  const saved=(await q('select save_talent_tree(null,null,$1) t',[JSON.stringify(doc)])).t;
  const preview=(await q('select preview_character_defenses($1,$2,$3,null) p',[c.species[0].id,c.classes[0].id,doc.nodes[0].id])).p;assert.equal(preview.passive_defenses.body,7);
+ await assert.rejects(db.query('update game_talents set species_id=null,class_id=$1 where id=$2',[c.classes[0].id,talent.id]),/stay in its branch/);await assert.rejects(db.query("update game_talents set effects='[]' where id=$1",[talent.id]),/configured talent effects/);
  const before=(await q('select get_talent_tree_editor_catalog() c')).c.trees[0];
  const bad=structuredClone(doc);bad.nodes[0].effects=[{type:'modifier',stat:'defense',key:'body',amount:20}];
  await assert.rejects(db.query('select save_talent_tree($1,$2,$3)',[saved.id,1,JSON.stringify(bad)]),/inline effects/);
