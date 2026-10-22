@@ -2,6 +2,10 @@ name: Talent tree editor
 on:
   pull_request:
     paths:
+      - 'src/Editor.tsx'
+      - 'src/SkillEditor.tsx'
+      - 'src/components/StartingDefenses.tsx'
+      - 'src/components/BranchCombatFields.tsx'
       - 'src/TalentTreeEditor.tsx'
       - 'src/CharacterPage.tsx'
       - 'src/PlayerTalents.tsx'
@@ -19,6 +23,8 @@ on:
       - 'supabase/migrations/*talent_tree*'
       - 'supabase/migrations/*talent_card*'
       - 'supabase/migrations/*talent_branch*'
+      - 'supabase/migrations/*unified_talents*'
+      - 'tools/qa/unified-*'
       - 'tools/qa/talent-tree-*'
       - 'tools/qa/talent-learning-*'
       - '.github/workflows/talent-trees.yml'
@@ -50,6 +56,10 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools
         run: node tools/qa/talent-tree-database.mjs
+      - name: Unified catalog, branch defenses, AP and active defense commands
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools
+        run: node tools/qa/unified-database.mjs
       - name: Tree authoring and reload persistence in Chromium and Firefox
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools

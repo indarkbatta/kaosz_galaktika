@@ -3,3 +3,4 @@
 @media(max-height:800px){.cb-combatant>.world-art{height:70px}.cb-combatant{grid-template-columns:60px 1fr}.cb-combatant>.world-art{width:60px}.cb-defense-values{font-size:10px}.cb-power-grid>button{min-height:70px}.cb-power-grid .world-art{width:32px;height:32px}}
 
 .cb-combatant meter::-webkit-meter-bar{background:#1d2a31;border:1px solid #4b616e;border-radius:0}.cb-combatant meter::-webkit-meter-optimum-value{background:#b66540;border-radius:0}.cb-combatant meter::-moz-meter-bar{background:#b66540;border-radius:0}
+.cb-active-defense,.ed-branch-combat{padding:16px;border:1px solid #48545b;border-radius:6px;margin:12px 0}.cb-active-defense>span{margin-left:14px}.cb-active-defense>div{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.cb-active-defense small,.ed-branch-combat p{color:#aebbc5;font-size:12px}.ed-branch-combat .cb-stat-grid label{display:flex;flex-direction:column;gap:6px}.ed-branch-combat .cb-stat-grid{margin:12px 0}

@@ -2,7 +2,7 @@ import {useEffect,useState,type ReactNode} from 'react';
 
 export type EditorSection=
  'species'|'classes'|'skills'|'crew'|'galaxy'|'sector'|'factions'|'items'|'ships'|
- 'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|'profiles'|
+ 'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|
  'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
 
 type GroupId='characters'|'world'|'equipment'|'gameplay'|'combat'|'system';
@@ -32,7 +32,6 @@ const groups:MenuGroup[]=[
   {id:'enemies',icon:'skull',hu:'Ellenségek',en:'Enemies'},
   {id:'powers',icon:'zap',hu:'Powerek',en:'Powers'},
   {id:'talents',icon:'git-branch',hu:'Talentek',en:'Talents'},
-  {id:'profiles',icon:'shield',hu:'Harci profilok',en:'Combat profiles'},
   {id:'combat-rules',icon:'sliders',hu:'Harci szabályok',en:'Combat rules'}]},
  {id:'system',icon:'settings',hu:'Rendszer',en:'System',items:[
   {id:'balance',icon:'gauge',hu:'Globális beállítások (energia / XP)',en:'Global settings (energy / XP)'},
