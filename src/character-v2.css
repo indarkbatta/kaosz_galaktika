@@ -4,7 +4,7 @@
 .ch-v2-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 17px;background:#090e15;border-bottom:1px solid #43505b}
 .ch-v2-heading>div{display:flex;flex-direction:column;gap:5px}.ch-v2-heading small{color:#d47e61;font-size:10px;letter-spacing:.15em}.ch-v2-heading strong{font-size:22px;letter-spacing:.19em}
 .ch-head-actions{margin-right:0;white-space:nowrap;color:#788c99;font-size:11px}
-.ch-v2-steps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;padding:7px 14px;border-bottom:1px solid #4d5862;background:#090e14}
+.ch-v2-steps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;padding:7px 14px;border-bottom:1px solid #4d5862;background:#090e14}
 .ch-v2-steps button{border:1px solid #42505b;background:#121d26;color:#c5d0d9;padding:7px 2px;font-size:11px;white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:6px;text-transform:uppercase}
 .ch-v2-steps button b{border-radius:50%;background:#293947;color:#ddd;font-size:10px;width:19px;height:19px;display:grid;place-items:center}
 .ch-v2-steps button.active{border-color:#e76e50;background:linear-gradient(130deg,#89291f,#4a1b19);color:#fff}.ch-v2-steps button.active b{background:#ec6e4b;color:#23120d}
@@ -20,7 +20,7 @@
 .ch-v2-captain h2{font-size:29px;margin-top:14px}.ch-v2-captain p{font-size:14px;max-width:420px;line-height:1.8;margin:22px 0 32px}
 .ch-v2-captain label{font-size:11px;color:#c2cdd5;text-transform:uppercase;letter-spacing:.1em;display:block}
 .ch-v2-captain input{display:block;width:100%;max-width:440px;margin-top:11px;padding:15px;font-size:18px;border:1px solid #5e6a76;background:#080d13;color:#fff}
-.ch-v2-cards{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:9px;height:calc(100% - 44px);min-height:0}
+.ch-v2-cards{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:9px;height:calc(100% - 44px);min-height:0}
 .ch-v2-card{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;min-height:0;color:#dfebef;background:#0d161e;border:1px solid #475663;padding:5px;text-align:center}
 .ch-v2-card.selected,.ch-v2-ship.selected{border-color:#ef7252;background:#4a1b18;box-shadow:inset 0 0 0 1px #c74731}
 .ch-v2-card-art{flex:1;min-height:0;overflow:hidden;background:radial-gradient(#32424b,#0d141b)}

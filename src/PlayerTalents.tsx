@@ -1,0 +1,24 @@
+import {useEffect,useRef,useState} from 'react';
+import {supabase} from './lib/supabase';
+import type {TalentTree} from './lib/talentTree';
+import {treeName} from './lib/talentTree';
+import './player-talents.css';
+type Catalog={level:number;points:{species:number;class:number;shared:number};owned:string[];trees:(TalentTree&{revision:number})[]};
+export default function PlayerTalents({locale,speciesId,classId,creation=false,choices,onChoices,onReady,onChanged}:{locale:string;speciesId?:string;classId?:string;creation?:boolean;choices?:{species:string;class:string};onChoices?:(v:{species:string;class:string})=>void;onReady?:(ready:boolean)=>void;onChanged?:()=>void}){
+ const en=locale==='en',tr=(a:string,b:string)=>en?b:a;
+ const [data,setData]=useState<Catalog|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[branch,setBranch]=useState<'species'|'class'>('species');
+ const generation=useRef(0),lock=useRef(false),readyRef=useRef(onReady);readyRef.current=onReady;
+ useEffect(()=>{const gen=++generation.current;setData(null);setError('');readyRef.current?.(false);void supabase.rpc('get_player_talent_trees',{p_species:speciesId||null,p_class:classId||null}).then(r=>{if(gen!==generation.current)return;if(r.error){setError(r.error.message);return;}setData(r.data as Catalog);});return()=>{generation.current++;};},[speciesId,classId]);
+ useEffect(()=>{if(!creation)return;const valid=!!data&&(['species','class'] as const).every(b=>{const tree=data.trees.find(t=>b==='species'?t.species_id:t.class_id);return !tree||tree.nodes.some(n=>n.id===choices?.[b]&&(n.min_level||1)===1&&!tree.connections.some(e=>e.to_node_id===n.id));});readyRef.current?.(valid);},[data,choices,creation]);
+ async function learn(id:string,revision:number){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const r=await supabase.rpc('learn_talent_tree_node',{p_node:id,p_revision:revision});if(r.error)throw new Error(r.error.message);setData(r.data as Catalog);onChanged?.();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{lock.current=false;setBusy(false);}}
+ if(!data)return <div role="status">{error||tr('Talentfák betöltése…','Loading talent trees…')}</div>;
+ const tree=data.trees.find(t=>branch==='species'?t.species_id:t.class_id),owned=data.owned||[];
+ return <section className="pt-panel"><header><strong>{tr('Talentek','Talents')}</strong><span>{tr('Faji','Species')}: {creation&&choices?.species?0:data.points.species} · {tr('Kaszt','Class')}: {creation&&choices?.class?0:data.points.class} · {tr('Közös','Shared')}: {data.points.shared}</span></header>
+ <p>{creation?tr('Válassz 1 faji és 1 kaszttalentet. Szintlépésenként további 1 pontot kapsz bármelyik fára.','Choose 1 species and 1 class talent. Each later level grants 1 point for either tree.'):tr('Minden node 1 pont. A kezdőpontok csak a saját fájukra, a közös pontok bármelyikre költhetők.','Each node costs 1 point. Starting points are reserved for their tree; shared points work in either tree.')}</p>
+ <nav>{(['species','class'] as const).map(b=><button type="button" key={b} className={branch===b?'active':''} onClick={()=>setBranch(b)}>{b==='species'?tr('Faji fa','Species tree'):tr('Kasztfa','Class tree')}{creation&&choices?.[b]?' ✓':''}</button>)}</nav>
+ {error&&<p role="alert">{error}</p>}
+ {!tree?<p>{tr('Ehhez még nincs publikált talentfa. A kezdőpont megmarad.','No published tree yet. Your starting point is retained.')}</p>:<div className="pt-nodes">{tree.nodes.filter(n=>!creation||(n.min_level||1)===1).map(n=>{const learned=owned.includes(n.id),parents=tree.connections.filter(e=>e.to_node_id===n.id),prerequisites=parents.every(e=>owned.includes(e.from_node_id)),level=n.min_level||1,can=level<=data.level&&prerequisites&&(n.kind!=='power'||(n as typeof n&{power_published?:boolean}).power_published);return <article key={n.id} className={(learned||choices?.[branch]===n.id?'selected ':'')+(!can?'locked':'')}>
+ {n.image_path&&<img src={'https://assets.voidnoir.net/'+n.image_path} alt=""/>}<div><strong>{treeName(n,en)}</strong><small>{level}. {tr('szint','level')} · 1 {tr('pont','point')} · {n.kind==='power'?'Power':tr('Passzív','Passive')}</small><p>{en?n.description_en:n.description_hu}</p>{parents.length>0&&<small>{tr('Előfeltétel','Requires')}: {parents.map(e=>treeName(tree.nodes.find(x=>x.id===e.from_node_id)!,en)).join(', ')}</small>}
+ <button type="button" disabled={busy||learned||!can||(!creation&&data.points[branch]+data.points.shared<1)} onClick={()=>creation?onChoices?.({...choices!,[branch]:n.id}):void learn(n.id,tree.revision)}>{learned?tr('Megtanulva','Learned'):choices?.[branch]===n.id?tr('Kiválasztva','Selected'):creation?tr('Kiválasztás','Select'):tr('Megtanulás','Learn')}</button></div></article>;})}</div>}
+ </section>;
+}
