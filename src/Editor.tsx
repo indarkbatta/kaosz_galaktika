@@ -4,12 +4,13 @@ import {notify} from './lib/toast';
 import './editor.css';
 import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
+import {OriginResistances} from './components/OriginResistances';
 import {BranchCombatFields,defaultBranchCombat,type BranchCombat} from './components/BranchCombatFields';
 import {SkillArt} from './components/GameArt';
 
 type Attr = 'body'|'mind'|'soul'|'morale'|'social';
 type Kind = 'species'|'classes';
-type Tab = 'general'|'skills'|'dictionary';
+type Tab = 'general'|'combat'|'resistances'|'homeworld'|'skills'|'dictionary';
 type LocaleRow = {code:string;native_name:string;name_en:string;is_enabled:boolean;sort_order:number};
 type Translation = {locale:string;name:string;description:string;passives?:string;starting_equipment?:string;traits?:string;gameplay_role?:string};
 type BonusRow = {skill_id:string;bonus_pips:number};
@@ -106,6 +107,7 @@ function editorSelect(k:Kind){
 }
 export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,initialTab='general',activeSection}:{locale:string;onBack:()=>void;kind:Kind;onKindChange:(kind:Kind)=>void;onSectionSelect:(section:EditorSection)=>void;initialTab?:Tab;activeSection?:EditorSection}){
  const l=locale==='en'?'en':'hu',dict=ui[l],t=(key:UiKey)=>dict[key];
+ const [skillAttribute,setSkillAttribute]=useState<Attr>('body'),[dictionaryField,setDictionaryField]=useState<keyof TranslationBody>('description'),[recordPage,setRecordPage]=useState(0),[resistancePage,setResistancePage]=useState(0);
  const [tab,setTab]=useState<Tab>(initialTab);
  const [records,setRecords]=useState<CatalogRecord[]>([]);
  const [worldGalaxies,setWorldGalaxies]=useState<WorldEntry[]>([]);
@@ -172,7 +174,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
    const items=cat.data as unknown as CatalogRecord[];
    setRecords(items);setSkills(sk.data as unknown as Skill[]);setLocales(lang.data as LocaleRow[]);
    setCounts(v=>({...v,[k]:items.length,[other]:otherCount.count||0}));
-   const picked=items.find(x=>x.id===keep)||items[0];
+   const picked=items.find(x=>x.id===keep)||items[0];setRecordPage(Math.floor(Math.max(0,items.findIndex(x=>x.id===picked?.id))/4));
    // Keep the selected hierarchy when refreshing the same saved Homeworld.
    // A blank/default homeworld explicitly clears the cascade.
    if(!picked?.homeworld_location_id)setHomeworldPath(emptyWorldPath());
@@ -181,8 +183,8 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
  },[]);
  useEffect(()=>{void refresh(kind);},[kind,refresh]);
  const navigate=(fn:()=>void)=>{if(dirty){pending.current=fn;setModal('discard');}else fn();};
- const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{onKindChange(k);setTab('general');setMessage('');setError('');});};
- const chooseRecord=(item:CatalogRecord)=>navigate(()=>{setHomeworldPath(emptyWorldPath());setForm(hydrate(item,kind));setDirty(false);setMessage('');setError('');setTab('general');});
+ const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{onKindChange(k);setRecordPage(0);setResistancePage(0);setTab('general');setMessage('');setError('');});};
+ const chooseRecord=(item:CatalogRecord)=>navigate(()=>{setResistancePage(0);setHomeworldPath(emptyWorldPath());setForm(hydrate(item,kind));setDirty(false);setMessage('');setError('');setTab('general');});
  const createNew=()=>navigate(()=>{setHomeworldPath(emptyWorldPath());setForm(emptyForm());setDirty(false);setMessage('');setError('');setTab('general');});
  const update=(patch:Partial<FormBody>)=>{setForm(prev=>({...prev,...patch}));setDirty(true);setMessage('');};
  const setTranslation=(lang:string,key:keyof TranslationBody,val:string)=>{setForm(prev=>({...prev,translations:{...prev.translations,[lang]:{...emptyTranslation(),...prev.translations[lang],[key]:val}}}));setDirty(true);setMessage('');};
@@ -194,7 +196,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
    if(kind==='species'&&form.homeworld_location_id&&!worldLocations.some(loc=>loc.id===form.homeworld_location_id)){
     setTab('general');setError(t('homeworldMissing'));return;
    }
-   if(['primary','secondary','tertiary'].some((rank,i)=>Object.values(form.passive_defenses).filter(v=>v===rank).length!==[1,2,2][i])){setTab('general');setError(l==='hu'?'Áganként 1 elsődleges, 2 másodlagos és 2 harmadlagos passzív védelem szükséges.':'Each branch requires 1 primary, 2 secondary and 2 tertiary passive defenses.');return;}
+   if(['primary','secondary','tertiary'].some((rank,i)=>Object.values(form.passive_defenses).filter(v=>v===rank).length!==[1,2,2][i])){setTab('combat');setError(l==='hu'?'Áganként 1 elsődleges, 2 másodlagos és 2 harmadlagos passzív védelem szükséges.':'Each branch requires 1 primary, 2 secondary and 2 tertiary passive defenses.');return;}
    const slug=slugify(form.slug||form.translations.hu.name);
    if(!slug){setTab('general');setError(t('required'));return;}
    setBusy(true);
@@ -251,26 +253,27 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
  const translationFields:(keyof TranslationBody)[]=kind==='species'?['name','description','passives']:['name','description','starting_equipment','traits','gameplay_role'];
  const fieldLabels:Record<keyof TranslationBody,string>={name:t('name'),description:t('description'),passives:t('passives'),
    starting_equipment:t('equipment'),traits:t('traits'),gameplay_role:t('role')};
- return <EditorFrame>
+ return <EditorFrame className="ed-origin-editor">
    <EditorNavigation locale={locale} active={activeSection||kind} counts={counts} onBack={()=>navigate(onBack)}
    onSelect={section=>{if(section==='species'||section==='classes')chooseKind(section);else navigate(()=>onSectionSelect(section));}}/>
    <EditorRoster>
      <div className="ed-roster-top"><strong>{kind==='species'?t('species'):t('classes')} ({records.length})</strong>
        <button type="button" onClick={createNew}>＋ {kind==='species'?t('newSpecies'):t('newClass')}</button>
      </div>
-     <div className="ed-roster-list">{loading?<p>{t('loading')}</p>:records.length===0?<p>{t('noRecords')}</p>:records.map(item=>
+     <div className="ed-roster-list">{loading?<p>{t('loading')}</p>:records.length===0?<p>{t('noRecords')}</p>:records.slice(Math.min(recordPage,Math.max(0,Math.ceil(records.length/4)-1))*4,Math.min(recordPage,Math.max(0,Math.ceil(records.length/4)-1))*4+4).map(item=>
        <button type="button" key={item.id} className={'ed-record '+(form.id===item.id?'selected':'')} onClick={()=>chooseRecord(item)}>
          <span className="ed-thumbnail">{item.image_path?<img alt="" loading="lazy" src={picture(item.image_path)}/>:<span>◈</span>}</span>
          <span className="ed-record-name"><strong>{translated(item,kind,l)}</strong><small>{attrNames[l][item.primary_attribute]} +1D / {attrNames[l][item.secondary_attribute]} +1</small></span>
          <span className={item.is_published?'ed-pub':'ed-draft'}>{item.is_published?'●':'○'}</span>
        </button>)}
      </div>
+    {records.length>4&&<div className="ed-pager"><button type="button" disabled={recordPage===0} onClick={()=>setRecordPage(v=>v-1)}>←</button><span>{recordPage+1} / {Math.ceil(records.length/4)}</span><button type="button" disabled={(recordPage+1)*4>=records.length} onClick={()=>setRecordPage(v=>v+1)}>→</button></div>}
    </EditorRoster>
    <section className="ed-editor">
      <EditorHeader><strong>{form.id?form.translations[l]?.name||form.translations.hu?.name||form.slug:t('create')}</strong>
        <span>{kind==='species'?t('species'):t('classes')}</span>
      </EditorHeader>
-     <EditorTabs label={t('title')} items={(['general','skills','dictionary'] as Tab[]).map(id=>({id,name:t(id)}))} selected={tab} onSelect={id=>setTab(id as Tab)}/>
+     <EditorTabs label={t('title')} items={(['general','combat','resistances',...(kind==='species'?['homeworld' as const]:[]),'skills','dictionary'] as Tab[]).map(id=>({id,name:id==='combat'?(l==='hu'?'HP / védelem':'HP / defense'):id==='resistances'?(l==='hu'?'Ellenállások':'Resistances'):id==='homeworld'?(l==='hu'?'Kezdővilág':'Homeworld'):t(id as UiKey)}))} selected={tab} onSelect={id=>setTab(id as Tab)}/>
 
      <form className="ed-form" id="ed-form" onSubmit={save}>
        {tab==='general'&&<div className="ed-tab-pane">
@@ -285,7 +288,12 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
                <label>{t('primary')} <em>+1D</em><select value={form.primary_attribute} onChange={e=>update({primary_attribute:e.target.value as Attr})}>{attrs.map(a=><option value={a} key={a}>{attrNames[l][a]}</option>)}</select></label>
                <label>{t('secondary')} <em>+1</em><select value={form.secondary_attribute} onChange={e=>update({secondary_attribute:e.target.value as Attr})}>{attrs.map(a=><option value={a} key={a}>{attrNames[l][a]}</option>)}</select></label>
              </div>
-             {kind==='species'&&<section className="ed-homeworld">
+             <label className="ed-checkbox"><input type="checkbox" checked={form.is_published} onChange={e=>update({is_published:e.target.checked})}/>{form.is_published?t('published'):t('draft')}</label>
+           </div>
+         </div>
+       </div>}
+       {tab==='combat'&&<div className="ed-tab-pane ed-origin-settings"><BranchCombatFields locale={locale} value={form} onChange={update}/></div>}
+       {tab==='homeworld'&&<div className="ed-tab-pane ed-origin-settings">             {kind==='species'&&<section className="ed-homeworld">
                <h3><span aria-hidden="true">✦</span> {t('homeworld')}</h3>
                <div className="ed-homeworld-fields">
                 <label>{t('homeworldGalaxy')}
@@ -321,24 +329,20 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
                 {homeworldIsDraft?t('homeworldDraft'):chosenHomeworld?t('homeworldSelected'):t('homeworldDefault')}
                </p>
               </section>}
-             <BranchCombatFields locale={locale} value={form} onChange={update}/>
-             {kind==='species'?<div className="ed-resistance-box"><h3>{t('resistances')}</h3>
-               {form.resistances.map((row,i)=><div className="ed-resistance-row" key={i}>
+</div>}
+       {tab==='resistances'&&<div className="ed-tab-pane ed-origin-settings"><OriginResistances locale={locale} value={form.combat_resistances} onChange={combat_resistances=>update({combat_resistances})} environment={kind==='species'?<>             {kind==='species'?<div className="ed-resistance-box"><h3>{t('resistances')}</h3>
+               {form.resistances.slice(resistancePage*4,resistancePage*4+4).map((row,index)=>{const i=resistancePage*4+index;return <div className="ed-resistance-row" key={i}>
                  <select aria-label={t('resistances')} value={row.code} onChange={e=>update({resistances:form.resistances.map((r,j)=>i===j?{...r,code:e.target.value}:r)})}>{resistanceCodes.map((code,n)=><option key={code} value={code}>{resistanceNames[l][n]}</option>)}</select>
                  <input type="number" min={-100} max={100} aria-label="%" value={row.value} onChange={e=>update({resistances:form.resistances.map((r,j)=>i===j?{...r,value:Number(e.target.value)}:r)})}/><span>%</span>
                  <button type="button" aria-label="Remove" onClick={()=>update({resistances:form.resistances.filter((_,j)=>i!==j)})}>×</button>
-               </div>)}
+               </div>})}
                <button type="button" className="ed-secondary-button" disabled={form.resistances.length>=12} onClick={()=>update({resistances:[...form.resistances,{code:'kinetic',value:10}]})}>＋ {t('addResistance')}</button>
              </div>:<div className="ed-general-help">{t('langInfo')}</div>}
-             <label className="ed-checkbox"><input type="checkbox" checked={form.is_published} onChange={e=>update({is_published:e.target.checked})}/>{form.is_published?t('published'):t('draft')}</label>
-           </div>
-         </div>
-         <p className="ed-tab-help">{t('langInfo')}</p>
-       </div>}
+<div className="ed-pager"><button type="button" disabled={resistancePage===0} onClick={()=>setResistancePage(v=>v-1)}>←</button><span>{resistancePage+1} / {Math.max(1,Math.ceil(form.resistances.length/4))}</span><button type="button" disabled={(resistancePage+1)*4>=form.resistances.length} onClick={()=>setResistancePage(v=>v+1)}>→</button></div></>:undefined}/></div>}
        {tab==='skills'&&<div className="ed-tab-pane">
          <p className="ed-tab-help">{t('bonusInfo')}</p>
          <p className="ed-bonus-summary">{t('skillTotal')}: <strong>{countBonuses}</strong></p>
-         <div className="ed-skill-groups">{skillGroups.map(g=><section className={'ed-skill-group ed-attr-'+g.attr} key={g.attr}>
+         <nav className="ed-origin-subtabs" aria-label={l==='hu'?'Skillcsoport':'Skill group'}>{attrs.map(a=><button type="button" key={a} aria-pressed={a===skillAttribute} onClick={()=>setSkillAttribute(a)}>{attrNames[l][a]}</button>)}</nav><div className="ed-skill-groups">{skillGroups.filter(g=>g.attr===skillAttribute).map(g=><section className={'ed-skill-group ed-attr-'+g.attr} key={g.attr}>
            <h3>{attrNames[l][g.attr]} <span>{form.primary_attribute===g.attr?'+1D':form.secondary_attribute===g.attr?'+1':''}</span></h3>
            {g.skills.length===0?<p>{t('noSkill')}</p>:g.skills.map(s=><div className="ed-skill-row" key={s.id}>
              <label htmlFor={'skill-'+s.id}>{s.icon_path&&<SkillArt className="ed-skill-icon" slug={s.slug} path={s.icon_path}/>}{s.game_skills_i18n.find(x=>x.locale===l)?.name||s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug}
@@ -350,15 +354,14 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
          </section>)}</div>
        </div>}
        {tab==='dictionary'&&<div className="ed-tab-pane">
-         <p className="ed-tab-help">{t('langInfo')}</p>
          <div className="ed-language-list" role="tablist" aria-label={t('language')}>
            {locales.map(row=><button key={row.code} type="button" role="tab" aria-selected={editLocale===row.code} className={editLocale===row.code?'active':''} onClick={()=>setEditLocale(row.code)}>
              {row.native_name} <small>{row.code.toUpperCase()}</small>
              {form.translations[row.code]?.name?.trim()?<span className="ed-translated">●</span>:<span className="ed-untranslated">○</span>}
            </button>)}
          </div>
-         <div className="ed-dictionary-fields"><div className="ed-dictionary-title"><h3>{selectedLanguage?.native_name||editLocale}</h3><span>{editLocale.toUpperCase()}</span></div>
-           {translationFields.map(field=><label key={field}>{fieldLabels[field]} {field==='name'&&<em>*</em>}
+         <nav className="ed-origin-subtabs" aria-label={l==='hu'?'Szöveges mező':'Text field'}>{translationFields.filter(f=>f!=='name').map(f=><button type="button" key={f} aria-pressed={f===dictionaryField} onClick={()=>setDictionaryField(f)}>{fieldLabels[f]}</button>)}</nav><div className="ed-dictionary-fields"><div className="ed-dictionary-title"><h3>{selectedLanguage?.native_name||editLocale}</h3><span>{editLocale.toUpperCase()}</span></div>
+           {translationFields.filter(field=>field==='name'||field===(translationFields.includes(dictionaryField)?dictionaryField:'description')).map(field=><label key={field}>{fieldLabels[field]} {field==='name'&&<em>*</em>}
              {field==='name'?<input value={langContent[field]} onChange={e=>setTranslation(editLocale,field,e.target.value)}/>:<textarea rows={field==='description'?4:3} value={langContent[field]} onChange={e=>setTranslation(editLocale,field,e.target.value)}/>}
            </label>)}
          </div>

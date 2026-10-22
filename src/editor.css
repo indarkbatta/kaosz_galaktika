@@ -196,3 +196,31 @@
  .ed-nav-group-trigger{min-height:39px}
  .ed-nav-children{padding-left:14px}
 }
+/* Species/class tabs share a fixed viewport; long lists use explicit paging. */
+.ed-origin-editor .ed-form{overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.ed-origin-editor .ed-tab-pane{height:100%;min-height:0;padding:14px;overflow:hidden}
+.ed-origin-editor .ed-origin-settings{display:flex;flex-direction:column;gap:12px}
+.ed-origin-editor .ed-origin-settings h3{font-size:18px;line-height:1.25;margin:0 0 10px}
+.ed-origin-editor .ed-origin-settings p{font-size:12px;line-height:1.4;margin:8px 0;color:#acbcc6}
+.ed-origin-editor .ed-origin-settings label{display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.25;letter-spacing:.02em;min-width:0}
+.ed-origin-editor .ed-origin-settings input,.ed-origin-editor .ed-origin-settings select{width:100%;height:37px;min-width:0;padding:7px 9px;margin:0;border:1px solid #42515c;border-radius:0;font:inherit;font-size:14px;background:#080d13;color:#e3eaf0}
+.ed-origin-editor .ed-branch-combat{margin:0;padding:0;border:0;border-radius:0}
+.ed-origin-editor .ed-branch-combat .cb-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:16px 0}
+.ed-origin-editor .ed-origin-resistances>.cb-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ed-origin-editor .ed-origin-subtabs{display:flex;gap:6px;flex:none;margin:0 0 10px}
+.ed-origin-editor .ed-origin-subtabs button{flex:1;min-width:0;padding:8px 5px;border:1px solid #46545e;background:#14212a;color:#c3cdd5;font-size:12px;line-height:1.2}
+.ed-origin-editor .ed-origin-subtabs button[aria-pressed=true]{border-color:#c47f5e;color:#f0d4bb;background:#34221d}
+.ed-origin-editor .ed-skill-groups{grid-template-columns:minmax(0,1fr)}
+.ed-origin-editor .ed-skill-row{padding:5px 0}.ed-origin-editor .ed-skill-row label{display:flex;align-items:center;gap:8px}
+.ed-origin-editor .ed-skill-icon{width:30px;height:30px;flex:none}
+.ed-origin-editor .ed-dictionary-fields{gap:10px;padding:12px}.ed-origin-editor .ed-dictionary-fields textarea{height:clamp(90px,16vh,180px);min-height:0;resize:none}
+.ed-origin-editor .ed-language-list{margin-bottom:10px}.ed-origin-editor .ed-language-list button{padding:7px 10px}
+.ed-origin-editor .ed-new-language{margin-top:10px}.ed-origin-editor .ed-language-form{gap:8px;padding:8px}.ed-origin-editor .ed-language-form input{height:32px;padding:5px}
+.ed-origin-editor .ed-roster-list{overflow:hidden}.ed-origin-editor .ed-record{min-height:65px;padding:8px}
+.ed-origin-editor .ed-homeworld{margin:0;padding:12px;border-radius:0}.ed-origin-editor .ed-homeworld-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.ed-origin-editor .ed-general-grid{height:100%}.ed-origin-editor .ed-image-frame{height:calc(100% - 65px);max-height:390px;min-height:120px}
+.ed-origin-editor .ed-general-fields{gap:14px}
+.ed-origin-editor .ed-resistance-row{display:grid;grid-template-columns:1fr 85px 15px 32px;align-items:center;gap:7px;margin:10px 0}
+@media(max-height:780px){.ed-origin-editor .ed-tab-pane{padding:10px}.ed-origin-editor .ed-origin-settings h3{font-size:16px}.ed-origin-editor .ed-origin-settings p{font-size:11px;margin:5px 0}.ed-origin-editor .ed-origin-resistances>.cb-stat-grid{gap:8px}.ed-origin-editor .ed-branch-combat .cb-stat-grid{gap:10px;margin:10px 0}.ed-origin-editor .ed-origin-settings label{font-size:11px;gap:4px}.ed-origin-editor .ed-origin-settings input,.ed-origin-editor .ed-origin-settings select{height:34px}.ed-origin-editor .ed-tab-help{margin:0 0 8px;font-size:11px}.ed-origin-editor .ed-dictionary-fields textarea{height:85px}}
+.ed-origin-editor .ed-nav,.ed-origin-editor .ed-nav-groups{overflow:hidden}
+@media(max-height:780px){.ed-origin-editor .ed-nav{padding:8px}.ed-origin-editor .ed-nav h2{font-size:11px;padding:4px 6px 8px}.ed-origin-editor .ed-nav>button.ed-nav-exit{min-height:32px;padding:6px}.ed-origin-editor .ed-nav-bottom{display:none}.ed-origin-editor .ed-nav-group-trigger{min-height:32px;padding:6px;font-size:12px}.ed-origin-editor .ed-nav-leaf{min-height:29px;padding:4px 6px;font-size:12px}}

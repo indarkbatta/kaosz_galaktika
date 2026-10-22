@@ -15,5 +15,6 @@ export async function upgradeUnifiedDatabase(db){
  await db.exec(`insert into game_skills(slug,attribute,is_combat) values('reflexes','body',false),('analysis','mind',false),('willpower','soul',false),('discipline','morale',false),('networking','social',false);
  insert into game_skills_i18n select id,'hu',slug,'' from game_skills where not is_combat;insert into game_skills_i18n select id,'en',slug,'' from game_skills where not is_combat;`);
  await db.exec(await readFile('supabase/migrations/20261022194323_unified_talents_defenses.sql','utf8'));
+ await db.exec(await readFile('supabase/migrations/20261022203736_passive_defense_target.sql','utf8'));
 }
 export async function setupUnifiedDatabase(db){await setupTreeDatabase(db);await upgradeUnifiedDatabase(db);}

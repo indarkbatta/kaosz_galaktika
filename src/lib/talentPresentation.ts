@@ -24,7 +24,7 @@ export function talentBranch(n:TreeNode,en:boolean){const key=n.description_en.m
 export function talentFlavor(n:TreeNode,en:boolean){return flavors[n.name_en]?.[en?1:0]||'';}
 function formula(f:Formula|undefined,en:boolean){if(!f)return '—';const parts=[f.weapon?(en?'Weapon':'Fegyver')+(f.weapon!==1?' ×'+f.weapon:''):'',f.dice?f.dice+'D':'',f.pips?String(f.pips):'',f.attribute?combatLabel(f.attribute,en?'en':'hu')+(f.attribute_scale?' ×'+f.attribute_scale:''):''].filter(Boolean);return parts.join(' + ')||'0';}
 export function effectSummary(e:Effect,en:boolean,skills:Record<string,string>){const locale=en?'en':'hu',duration=e.duration?` · ${e.duration} ${en?'turns':'kör'}`:'';
- if(e.type==='modifier'){const key=skills[e.key||'']||combatLabel(e.key||'',locale),suffix=e.stat==='defense'?(en?' defense':'-védelem'):e.stat==='resistance'?(en?' resistance':' ellenállás'):'';return `${(e.amount||0)>=0?'+':''}${e.amount||0}${e.stat==='skill'?' pip':e.stat==='resistance'?(en?' pp':' százalékpont'):''} ${key}${suffix}${duration}`;}
+ if(e.type==='modifier'){const key=skills[e.key||'']||combatLabel(e.key||'',locale),suffix=e.stat==='defense'?(en?' defense target':' védelmi célszám'):e.stat==='resistance'?(en?' resistance':' ellenállás'):'';return `${(e.amount||0)>=0?'+':''}${e.amount||0}${e.stat==='skill'?' pip':e.stat==='resistance'?(en?' pp':' százalékpont'):''} ${key}${suffix}${duration}`;}
  if(e.type==='damage'||e.type==='ongoing_damage')return `${formula(e.formula,en)} ${en?'damage':'sebzés'}${duration}`;
  if(e.type==='heal'||e.type==='ongoing_heal')return `${formula(e.formula,en)} ${en?'healing':'gyógyítás'}${duration}`;
  return (en?'Special effect':'Különleges hatás')+duration;

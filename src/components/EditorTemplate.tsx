@@ -1,7 +1,7 @@
 import type {ReactNode} from 'react';
 /** Single visual and structural template for all Határvilág editors. */
-export function EditorFrame({children}:{children:ReactNode}){
- return <div className="ed-layout"><div className="ed-shell">{children}</div></div>;
+export function EditorFrame({children,className=''}:{children:ReactNode;className?:string}){
+ return <div className={'ed-layout '+className}><div className="ed-shell">{children}</div></div>;
 }
 export function EditorRoster({children,className=''}:{children:ReactNode;className?:string}){
  return <aside className={['ed-roster',className].filter(Boolean).join(' ')}>{children}</aside>;
