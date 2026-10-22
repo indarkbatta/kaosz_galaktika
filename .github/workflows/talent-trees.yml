@@ -1,0 +1,46 @@
+name: Talent tree editor
+on:
+  pull_request:
+    paths:
+      - 'src/TalentTreeEditor.tsx'
+      - 'src/components/TalentTreeCanvas.tsx'
+      - 'src/lib/talentTree.ts'
+      - 'src/talent-tree.css'
+      - 'src/components/CombatFields.tsx'
+      - 'src/App.tsx'
+      - 'src/components/EditorNavigation.tsx'
+      - 'supabase/migrations/*talent_tree*'
+      - 'tools/qa/talent-tree-*'
+      - '.github/workflows/talent-trees.yml'
+permissions:
+  contents: read
+jobs:
+  salvage:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: cmd
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --no-fund --no-audit
+      - name: Build
+        run: npm run build
+      - name: Install QA tools
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-talent-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14
+      - name: Install browsers
+        run: node "%RUNNER_TEMP%\hatarvilag-talent-tools\node_modules\playwright\cli.js" install chromium firefox
+      - name: Tree graph, rewards, atomic saves, revisions and editor authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools
+        run: node tools/qa/talent-tree-database.mjs
+      - name: Tree authoring and reload persistence in Chromium and Firefox
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools
+        run: node tools/qa/talent-tree-browser.mjs
