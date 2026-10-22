@@ -2,9 +2,9 @@ import {combatLabel,type Effect,type Formula} from './combat';
 import type {TreeNode} from './talentTree';
 const branches:Record<string,[string,string]>={survival:['Túlélő','Survivor'],resourceful:['Találékony','Resourceful'],social:['Kapcsolatépítő','Diplomat'],weapons:['Fegyvermester','Weapons specialist'],assault:['Rohamkatona','Assault veteran'],tactics:['Taktikus','Tactician']};
 const flavors:Record<string,[string,string]>={
- 'Hardy Settler':['A határvidék megtanított talpon maradni.','The frontier taught you to stay on your feet.'],
- 'Common Sense':['Mindig akad egy megoldás, amit más még nem vett észre.','There is always a solution others have overlooked.'],
- 'Common Ground':['Idegenek között is megtalálod a közös hangot.','Find common ground even among strangers.'],
+ 'Hardy Settler':['A határvidék nem kegyelmez. Megtanultál talpon maradni ott is, ahol más már feladná.','The frontier shows no mercy. You learned to stay on your feet where others would give up.'],
+ 'Common Sense':['Ahol más csak hibát lát, te már a megoldást keresed. Egy apró részlet is elég, hogy összeálljon a kép.','Where others see a problem, you seek a solution. One small detail can bring the whole picture together.'],
+ 'Common Ground':['Idegen kikötőkben is megtalálod azokat a szavakat, amelyekből megértés és együttműködés születik.','Even in unfamiliar ports, you find the words that build understanding and cooperation.'],
  'Hardened Constitution':['A zord környezet megedzette a szervezeted.','Harsh environments have hardened your constitution.'],
  'Unbroken':['A félelem sem térít le az utadról.','Fear cannot turn you from your path.'],
  'Improviser':['Kevés eszközből is működő megoldást építesz.','Build a working solution with whatever is at hand.'],
