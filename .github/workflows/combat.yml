@@ -18,6 +18,8 @@ on:
       - 'supabase/migrations/*m86*'
       - 'supabase/migrations/*m87*'
       - 'tools/qa/combat-*'
+      - 'tools/qa/unified-*'
+      - 'supabase/migrations/*unified_talents*'
       - '.github/workflows/combat.yml'
 permissions:
   contents: read

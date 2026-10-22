@@ -4,6 +4,7 @@ import {notify} from './lib/toast';
 import './editor.css';
 import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
 import {EditorNavigation,type EditorSection} from './components/EditorNavigation';
+import {BranchCombatFields,defaultBranchCombat,type BranchCombat} from './components/BranchCombatFields';
 import {SkillArt} from './components/GameArt';
 
 type Attr = 'body'|'mind'|'soul'|'morale'|'social';
@@ -18,15 +19,15 @@ type WorldSector=WorldEntry&{quadrant_id:string};
 type WorldLocation={id:string;slug:string;sector_id:string;is_published:boolean;game_locations_i18n:{locale:string;name:string}[]};
 type HomeworldPath={galaxy:string;quadrant:string;sector:string};
 const emptyWorldPath=():HomeworldPath=>({galaxy:'',quadrant:'',sector:''});
-type CatalogRecord = {
+type CatalogRecord = BranchCombat & {
   id:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string|null;homeworld_location_id?:string|null;
   is_published:boolean;resistances?:{code:string;value:number}[];
   game_species_i18n?:Translation[];game_classes_i18n?:Translation[];
   game_species_skill_bonuses?:BonusRow[];game_classes_skill_bonuses?:BonusRow[];
 };
-type Skill = {id:string;slug:string;attribute:Attr;is_combat:boolean;icon_path:string|null;position:number;game_skills_i18n:{locale:string;name:string}[]};
+type Skill = {id:string;slug:string;attribute:Attr;is_combat:boolean;is_active_defense?:boolean;icon_path:string|null;position:number;game_skills_i18n:{locale:string;name:string}[]};
 type TranslationBody = {name:string;description:string;passives:string;starting_equipment:string;traits:string;gameplay_role:string};
-type FormBody = {
+type FormBody = BranchCombat & {
   id?:string;slug:string;primary_attribute:Attr;secondary_attribute:Attr;image_path:string;homeworld_location_id:string|null;is_published:boolean;
   resistances:{code:string;value:number}[];translations:Record<string,TranslationBody>;bonuses:Record<string,number>;
 };
@@ -40,7 +41,7 @@ hu:{
   title:'Szerkesztői vezérlőpult',back:'Vissza a játékhoz',species:'Fajok',classes:'Kasztok',newSpecies:'Új faj',newClass:'Új kaszt',
   general:'Alapadatok',skills:'Skillek',dictionary:'Szótár',name:'Megnevezés',slug:'Technikai azonosító (slug)',
   primary:'Elsődleges tulajdonság',secondary:'Másodlagos tulajdonság',image:'R2 kép útvonala',published:'Publikált',draft:'Vázlat',
-  description:'Leírás',passives:'Passzív sajátosságok',resistances:'Kezdő ellenállások',equipment:'Kezdő felszerelés',
+  description:'Leírás',passives:'Faji sajátosságok leírása',resistances:'Környezeti ellenállások (%)',equipment:'Kezdő felszerelés',
   traits:'Kezdő sajátosságok',role:'Játékbeli szerep',addResistance:'Ellenállás hozzáadása',
   save:'Mentés',delete:'Törlés',cancel:'Mégse',create:'Új bejegyzés',loading:'Betöltés…',saving:'Mentés…',missing:'Nincs még kép',
   bonusInfo:'Minden faj és kaszt +1D-t ad az elsődleges, +1 pipet a másodlagos tulajdonságra. Az alábbi skillbónuszok ezen felül járnak.',
@@ -61,7 +62,7 @@ en:{
   title:'Editor dashboard',back:'Return to game',species:'Species',classes:'Classes',newSpecies:'New species',newClass:'New class',
   general:'General',skills:'Skills',dictionary:'Dictionary',name:'Name',slug:'Technical identifier (slug)',
   primary:'Primary attribute',secondary:'Secondary attribute',image:'R2 image key',published:'Published',draft:'Draft',
-  description:'Description',passives:'Passive traits',resistances:'Starting resistances',equipment:'Starting equipment',
+  description:'Description',passives:'Species traits description',resistances:'Environmental resistances (%)',equipment:'Starting equipment',
   traits:'Starting traits',role:'Gameplay role',addResistance:'Add resistance',
   save:'Save',delete:'Delete',cancel:'Cancel',create:'New entry',loading:'Loading…',saving:'Saving…',missing:'No picture yet',
   bonusInfo:'Each species and class adds +1D to its primary and +1 pip to its secondary attribute. Additional skill bonuses are set below.',
@@ -80,7 +81,7 @@ en:{
 }};
 type UiKey=keyof typeof ui.hu;
 const emptyTranslation=():TranslationBody=>({name:'',description:'',passives:'',starting_equipment:'',traits:'',gameplay_role:''});
-const emptyForm=():FormBody=>({slug:'',primary_attribute:'body',secondary_attribute:'mind',image_path:'',homeworld_location_id:null,is_published:false,resistances:[],translations:{hu:emptyTranslation(),en:emptyTranslation()},bonuses:{}});
+const emptyForm=():FormBody=>({...defaultBranchCombat(),slug:'',primary_attribute:'body',secondary_attribute:'mind',image_path:'',homeworld_location_id:null,is_published:false,resistances:[],translations:{hu:emptyTranslation(),en:emptyTranslation()},bonuses:{}});
 const table=(k:Kind)=>k==='species'?'game_species':'game_classes';
 const i18nTable=(k:Kind)=>k==='species'?'game_species_i18n':'game_classes_i18n';
 const bonusTable=(k:Kind)=>k==='species'?'game_species_skill_bonuses':'game_classes_skill_bonuses';
@@ -95,7 +96,7 @@ function hydrate(item:CatalogRecord,k:Kind):FormBody{
  const translations:Record<string,TranslationBody>=Object.fromEntries(transList(item,k).map(x=>[x.locale,{...emptyTranslation(),...x}]));
  if(!translations.hu)translations.hu=emptyTranslation();
  if(!translations.en)translations.en=emptyTranslation();
- return {id:item.id,slug:item.slug,primary_attribute:item.primary_attribute,secondary_attribute:item.secondary_attribute,
+ return {hp_per_rank:item.hp_per_rank??5,passive_defenses:item.passive_defenses??defaultBranchCombat().passive_defenses,combat_resistances:item.combat_resistances??{},id:item.id,slug:item.slug,primary_attribute:item.primary_attribute,secondary_attribute:item.secondary_attribute,
   image_path:item.image_path||'',homeworld_location_id:item.homeworld_location_id||null,is_published:item.is_published,resistances:item.resistances||[],
   translations,bonuses:Object.fromEntries(bonusList(item,k).map(b=>[b.skill_id,b.bonus_pips]))};
 }
@@ -160,7 +161,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
    const other=k==='species'?'classes':'species';
    const [cat,sk,lang,otherCount]=await Promise.all([
      supabase.from(table(k)).select(editorSelect(k)).order('created_at'),
-     supabase.from('game_skills').select('id,slug,attribute,is_combat,position,icon_path,game_skills_i18n(locale,name)').order('attribute').order('position'),
+     supabase.from('game_skills').select('id,slug,attribute,is_combat,is_active_defense,position,icon_path,game_skills_i18n(locale,name)').order('attribute').order('position'),
      supabase.from('game_locales').select('code,native_name,name_en,is_enabled,sort_order').eq('is_enabled',true).order('sort_order'),
      supabase.from(table(other)).select('id',{head:true,count:'exact'})
    ]);
@@ -193,12 +194,13 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
    if(kind==='species'&&form.homeworld_location_id&&!worldLocations.some(loc=>loc.id===form.homeworld_location_id)){
     setTab('general');setError(t('homeworldMissing'));return;
    }
+   if(['primary','secondary','tertiary'].some((rank,i)=>Object.values(form.passive_defenses).filter(v=>v===rank).length!==[1,2,2][i])){setTab('general');setError(l==='hu'?'Áganként 1 elsődleges, 2 másodlagos és 2 harmadlagos passzív védelem szükséges.':'Each branch requires 1 primary, 2 secondary and 2 tertiary passive defenses.');return;}
    const slug=slugify(form.slug||form.translations.hu.name);
    if(!slug){setTab('general');setError(t('required'));return;}
    setBusy(true);
    try{
      let id=form.id;
-     const data={slug,primary_attribute:form.primary_attribute,secondary_attribute:form.secondary_attribute,
+     const data={hp_per_rank:form.hp_per_rank,passive_defenses:form.passive_defenses,combat_resistances:form.combat_resistances,slug,primary_attribute:form.primary_attribute,secondary_attribute:form.secondary_attribute,
        image_path:form.image_path.trim()||null,is_published:form.is_published,...(kind==='species'?{resistances:form.resistances,homeworld_location_id:form.homeworld_location_id}:{})};
      if(id){const result=await supabase.from(table(kind)).update(data).eq('id',id);if(result.error)throw result.error;}
      else {const result=await supabase.from(table(kind)).insert(data).select('id').single();if(result.error)throw result.error;id=result.data.id;}
@@ -319,6 +321,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
                 {homeworldIsDraft?t('homeworldDraft'):chosenHomeworld?t('homeworldSelected'):t('homeworldDefault')}
                </p>
               </section>}
+             <BranchCombatFields locale={locale} value={form} onChange={update}/>
              {kind==='species'?<div className="ed-resistance-box"><h3>{t('resistances')}</h3>
                {form.resistances.map((row,i)=><div className="ed-resistance-row" key={i}>
                  <select aria-label={t('resistances')} value={row.code} onChange={e=>update({resistances:form.resistances.map((r,j)=>i===j?{...r,code:e.target.value}:r)})}>{resistanceCodes.map((code,n)=><option key={code} value={code}>{resistanceNames[l][n]}</option>)}</select>
@@ -339,7 +342,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
            <h3>{attrNames[l][g.attr]} <span>{form.primary_attribute===g.attr?'+1D':form.secondary_attribute===g.attr?'+1':''}</span></h3>
            {g.skills.length===0?<p>{t('noSkill')}</p>:g.skills.map(s=><div className="ed-skill-row" key={s.id}>
              <label htmlFor={'skill-'+s.id}>{s.icon_path&&<SkillArt className="ed-skill-icon" slug={s.slug} path={s.icon_path}/>}{s.game_skills_i18n.find(x=>x.locale===l)?.name||s.game_skills_i18n.find(x=>x.locale==='hu')?.name||s.slug}
-               {s.is_combat&&<span className="ed-combat">{t('combat')}</span>}</label>
+               {s.is_active_defense&&<span className="ed-combat">{l==='hu'?'Aktív védelem':'Active defense'}</span>}{s.is_combat&&<span className="ed-combat">{t('combat')}</span>}</label>
              <select id={'skill-'+s.id} aria-label={t('bonusLabel')} value={form.bonuses[s.id]||0} onChange={e=>updateSkill(s.id,Number(e.target.value))}>
                {bonusOptions.map(pips=><option key={pips} value={pips}>{pips?asDice(pips):t('bonusNone')}</option>)}
              </select>

@@ -8,7 +8,7 @@ import {SkillArt} from './components/GameArt';
 type Attr='body'|'mind'|'soul'|'morale'|'social';
 type Locale={code:string;native_name:string};
 type Translation={locale:string;name:string;description:string};
-type Skill={id:string;slug:string;attribute:Attr;position:number;is_combat:boolean;icon_path:string|null;game_skills_i18n:Translation[]};
+type Skill={id:string;slug:string;attribute:Attr;position:number;is_combat:boolean;is_active_defense?:boolean;icon_path:string|null;game_skills_i18n:Translation[]};
 type Rules={id:number;base_attribute_pips:number;free_attribute_pips:number;max_attribute_pips:number;free_skill_pips:number;max_allocated_skill_pips:number};
 const attrs:Attr[]=['body','mind','soul','morale','social'];
 const attrsHu:Record<Attr,string>={body:'Test',mind:'Elme',soul:'Lélek',morale:'Morál',social:'Szociális'};
@@ -35,7 +35,7 @@ export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:stri
  useEffect(()=>{if(message)notify(message,'success');},[message]);
  const read=useCallback(async(keep?:string)=>{
   const [s,localeList,rule]=await Promise.all([
-   supabase.from('game_skills').select('id,slug,attribute,position,is_combat,icon_path,game_skills_i18n(locale,name,description)').order('attribute').order('position'),
+   supabase.from('game_skills').select('id,slug,attribute,position,is_combat,is_active_defense,icon_path,game_skills_i18n(locale,name,description)').order('attribute').order('position'),
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order'),
    supabase.from('game_rules').select('*').eq('id',1).single()
   ]);
@@ -82,7 +82,7 @@ export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:stri
      <div className="sk-group-name">{l==='hu'?attrsHu[g.attr]:attrsEn[g.attr]}</div>
      {g.items.map(s=><button type="button" className={'ed-record '+(selected===s.id?'selected':'')} onClick={()=>{pick(s);setTab('skills');}} key={s.id}>
       <span className="ed-thumbnail"><SkillArt slug={s.slug} path={s.icon_path}/></span>
-      <span className="ed-record-name"><strong>{trans(s)}</strong><small>{s.is_combat?t.combat:t.general}</small></span>
+      <span className="ed-record-name"><strong>{trans(s)}</strong><small>{s.is_active_defense?(l==='hu'?'Aktív védelem':'Active defense'):s.is_combat?t.combat:t.general}</small></span>
      </button>)}
     </div>)}</div>
    </EditorRoster>
@@ -92,7 +92,7 @@ export default function SkillEditor({locale,onBack,onSectionSelect}:{locale:stri
     <form className="ed-form" id="skills-editor-form" onSubmit={save}>
      {tab==='skills'&&active&&<div className="ed-tab-pane sk-editor-fields">
        <div className="sk-icon-row"><div className="sk-large-icon">{icon?<SkillArt slug={active.slug} path={icon}/>:<span>◈</span>}</div>
-        <div><strong>{l==='hu'?attrsHu[active.attribute]:attrsEn[active.attribute]}</strong><p>{active.is_combat?t.combat:t.general} · {active.position}/5</p>
+        <div><strong>{l==='hu'?attrsHu[active.attribute]:attrsEn[active.attribute]}</strong><p>{active.is_active_defense?(l==='hu'?'Aktív védelem':'Active defense'):active.is_combat?t.combat:t.general} · {active.position}/5</p>
          <label>{t.icon}<input value={icon} onChange={e=>setIcon(e.target.value)} placeholder="hatarvilag/skills/example.jpg"/></label>
          <div className="sk-gallery" aria-label={l==='hu'?'Elérhető skillikonok':'Available skill icons'}>{items.filter(s=>s.icon_path).map(s=><button type="button" key={s.id} className={active.slug===s.slug?'selected':''} title={trans(s)} aria-label={trans(s)} onClick={()=>setIcon(s.icon_path||'')}><SkillArt slug={s.slug} path={s.icon_path}/></button>)}</div>
         </div>
