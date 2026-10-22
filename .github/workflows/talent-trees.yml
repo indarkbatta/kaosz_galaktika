@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - 'src/TalentTreeEditor.tsx'
+      - 'src/CharacterPage.tsx'
+      - 'src/PlayerTalents.tsx'
+      - 'src/player-talents.css'
+      - 'src/character-v2.css'
+      - 'src/CombatPanel.tsx'
       - 'src/components/TalentTreeCanvas.tsx'
       - 'src/lib/talentTree.ts'
       - 'src/talent-tree.css'
@@ -11,6 +16,7 @@ on:
       - 'src/components/EditorNavigation.tsx'
       - 'supabase/migrations/*talent_tree*'
       - 'tools/qa/talent-tree-*'
+      - 'tools/qa/talent-learning-*'
       - '.github/workflows/talent-trees.yml'
 permissions:
   contents: read
@@ -44,3 +50,8 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools
         run: node tools/qa/talent-tree-browser.mjs
+
+      - name: Character creation starting talent choices in Chromium and Firefox
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-talent-tools
+        run: node tools/qa/talent-learning-browser.mjs
