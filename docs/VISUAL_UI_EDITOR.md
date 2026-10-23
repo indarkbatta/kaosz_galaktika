@@ -9,3 +9,9 @@ Save writes an editor-only draft. Publish atomically saves and exposes that snap
 Migration: `20261023164315_visual_ui_layout_editor.sql`. Apply before deploying the editor. Private layout/history tables have RLS and no player table access. RPCs require editor authorization; players can only fetch the published document. Server validates node identifiers, geometry and image paths. Artwork uploads are immutable, editor-only, at most 1 MB, restricted to PNG/JPEG/WebP/AVIF; published artwork is public. Reset does not delete uploaded files.
 
 Verification: production build, isolated PostgreSQL authorization/publication tests, real React → HTTP → PostgreSQL browser tests (drag, resize, undo, image upload policy, save/reload, publish, restore; 1920×1080, 1366×768, 1280×720). The editor deliberately permits overlapping elements. Small mobile layouts and other game screens are outside this first scope.
+
+## Editor/game size parity fix
+
+The editor and game share `layoutSizes` and `layoutProfileForWidth`: desktop is 1200×680, laptop is 960×600; browser viewports below 1400 px select laptop. The editor defaults to Game viewport (automatic), with explicit profile overrides for authoring. Both render the same logical canvas and panel chrome. The game fits the entire canvas uniformly into its available area, preserving aspect ratio, font/icon sizes relative to panels, and container-query behavior. Editor zoom only scales the preview. Editor control styles explicitly exclude the game surface. Existing saved layouts retain their coordinates and do not need a database migration.
+
+The browser test compares editor and player logical geometry (header, tabs, equipment, paperdoll, inventory, cargo, details, equipment slot, inventory grid), typography and automatic profiles at 1920×1080, 1366×768 and 1280×720, with a 1 px tolerance, using the game shell/body/footer around the player surface.

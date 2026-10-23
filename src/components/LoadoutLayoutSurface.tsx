@@ -1,11 +1,11 @@
 import {useEffect,useLayoutEffect,useRef,useState,type ReactNode} from 'react';
 import {supabase} from '../lib/supabase';
-import {layoutElements,layoutElement,nodeStyle,type UILayout,type Profile} from '../lib/uiLayout';
+import {layoutSizes,layoutProfileForWidth,layoutElements,layoutElement,nodeStyle,type UILayout,type Profile} from '../lib/uiLayout';
 import '../ui-layout.css';
 export default function LoadoutLayoutSurface({children,document:override,profile:forced,enabled=true,editing=false,onRoot,locale='hu'}:{children:ReactNode;document?:UILayout;profile?:Profile;enabled?:boolean;editing?:boolean;locale?:string;onRoot?:(root:HTMLElement|null)=>void}){
- const root=useRef<HTMLElement>(null),[published,setPublished]=useState<UILayout|null>(null),[profile,setProfile]=useState<Profile>('desktop');
+ const viewport=useRef<HTMLDivElement>(null),[fit,setFit]=useState(1),root=useRef<HTMLElement>(null),[published,setPublished]=useState<UILayout|null>(null),[profile,setProfile]=useState<Profile>('desktop');
  useEffect(()=>{if(override)return;let active=true;void supabase.rpc('get_published_ui_layout').then(r=>{if(active&&!r.error)setPublished(r.data);});return()=>{active=false;};},[override]);
- useEffect(()=>{const el=root.current;if(!el)return;onRoot?.(el);const observer=new ResizeObserver(([entry])=>setProfile(entry.contentRect.width<1150?'laptop':'desktop'));observer.observe(el.parentElement||el);return()=>{observer.disconnect();onRoot?.(null);};},[onRoot]);
+ useLayoutEffect(()=>{const el=viewport.current;if(!el)return;onRoot?.(root.current);const update=()=>{const next=forced||layoutProfileForWidth(window.innerWidth),size=layoutSizes[next];setProfile(next);setFit(Math.min(1,el.clientWidth/size.w,el.clientHeight/size.h));};const observer=new ResizeObserver(update);observer.observe(el);window.addEventListener('resize',update);update();return()=>{observer.disconnect();window.removeEventListener('resize',update);onRoot?.(null);};},[onRoot,forced]);
  const doc=enabled?(override||published):null,p=doc?.[forced||profile];
  useLayoutEffect(()=>{const el=root.current;if(!el||!p)return;let cleanups:Array<()=>void>=[];
  const apply=()=>{cleanups.reverse().forEach(f=>f());cleanups=[];for(const d of layoutElements){const target=layoutElement(el,d.id),n=p.nodes[d.id];if(!target||!n)continue;const style=target.getAttribute('style'),font=getComputedStyle(target).fontSize;target.classList.add('ui-layout-node');if(d.id!=='figure')target.classList.add('ui-layout-background');Object.assign(target.style,nodeStyle(n));if(n.fontSize)target.style.fontSize=n.fontSize+'px';for(const key of ['--ui-panel-image','--ui-panel-opacity','--ui-panel-fit','--ui-panel-repeat'])target.style.setProperty(key,String((nodeStyle(n) as Record<string,unknown>)[key]));
@@ -14,5 +14,6 @@ export default function LoadoutLayoutSurface({children,document:override,profile
  cleanups.push(()=>{target.classList.remove('ui-layout-node','ui-layout-background','ui-layout-label');delete target.dataset.uiLabel;if(style===null)target.removeAttribute('style');else target.setAttribute('style',style);});}};
  apply();const observer=new MutationObserver(apply);observer.observe(el,{childList:true,subtree:true});return()=>{observer.disconnect();cleanups.reverse().forEach(f=>f());};},[p,locale,children]);
 
- return <div className="ui-layout-host"><section lang={locale} ref={root} className={'exp-loadout ui-layout-surface'+(p?' ui-layout-applied':'')+(editing?' ui-layout-editing':'')} data-ui-profile={forced||profile}>{children}{p?.extras.map(n=><div data-ui-extra={n.id} className="ui-layout-extra ui-layout-background" key={n.id} style={nodeStyle(n)}>{n.type==='text'?(n.label?.[root.current?.closest('[lang]')?.getAttribute('lang')==='en'?'en':'hu']||''):null}</div>)}</section></div>;
+ const size=layoutSizes[forced||profile];
+ return <div ref={viewport} className="ui-layout-viewport"><div className="ui-layout-stage" style={{width:size.w*fit,height:size.h*fit}}><div className="ui-layout-host" style={{width:size.w,height:size.h,transform:`scale(${fit})`}}><section lang={locale} ref={root} className={'exp-loadout ui-layout-surface'+(p?' ui-layout-applied':'')+(editing?' ui-layout-editing':'')} data-ui-profile={forced||profile}>{children}{p?.extras.map(n=><div data-ui-extra={n.id} className="ui-layout-extra ui-layout-background" key={n.id} style={nodeStyle(n)}>{n.type==='text'?(n.label?.[root.current?.closest('[lang]')?.getAttribute('lang')==='en'?'en':'hu']||''):null}</div>)}</section></div></div></div>;
 }

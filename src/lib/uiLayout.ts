@@ -7,6 +7,8 @@ export type Extra=LayoutNode&{id:string;type:'text'|'image'};
 export type LayoutProfile={nodes:Record<string,LayoutNode>;extras:Extra[]};
 export type UILayout={version:1;desktop:LayoutProfile;laptop:LayoutProfile};
 export type Profile='desktop'|'laptop';
+export const layoutSizes={desktop:{w:1200,h:680},laptop:{w:960,h:600}} as const;
+export const layoutProfileForWidth=(width:number):Profile=>width<1400?'laptop':'desktop';
 export type LayoutRecord={revision:number;draft:UILayout;published:UILayout|null;previous:UILayout|null};
 export const emptyLayout=():UILayout=>({version:1,desktop:{nodes:{},extras:[]},laptop:{nodes:{},extras:[]}});
 export const layoutElements=[
