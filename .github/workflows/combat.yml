@@ -75,3 +75,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/crew-progression-browser.mjs
+      - name: Expedition loadout five-slot action bar save and reload
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-loadout-browser.mjs

@@ -8,13 +8,13 @@ import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery,type
 import Cantina,{type CrewMember} from './Cantina';
 import SkillChallengePanel from './SkillChallengePanel';
 import CraftingPanel from './CraftingPanel';
-import EquipmentInventory from './EquipmentInventory';
 import ShipLoadout from './ShipLoadout';
 import GameEdgeTabs,{type GameTab} from './components/GameEdgeTabs';
 import './captain-dashboard.css';
 import {BridgeEncounterCard} from './components/BridgeEncounterCard';
 import {DiceRollPanel,type DiceResult} from './components/DiceRollPanel';
 
+const ExpeditionLoadout=lazy(()=>import('./ExpeditionLoadout'));
 const CombatPanel=lazy(()=>import('./CombatPanel'));
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
 type Portrait={id:string;slug:string;image_path:string|null;game_species_i18n?:I18n[];game_classes_i18n?:I18n[]};
@@ -44,7 +44,6 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [inventory,setInventory]=useState<InventoryRow[]>([]);
  const [activeCrew,setActiveCrew]=useState<CrewMember[]>(crew);
  const [shipStatus,setShipStatus]=useState<{ready:boolean;base_speed:number;speed:number}|null>(null);
- const [cargoView,setCargoView]=useState<'stock'|'craft'>('stock');
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
  const [tab,setTab]=useState<GameTab>('bridge'),[group,setGroup]=useState('body');
  const [busy,setBusy]=useState(false);
@@ -190,9 +189,8 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    </>}
    {tab==='ship'&&<ShipLoadout characterId={captain.id} shipSlug={ship?.slug||'vagabond'} shipImage={ship?.image_path} shipName={local(ship?.game_starter_ships_i18n)?.name||'—'} locale={locale} onChanged={refresh}/>}
    {tab==='cantina'&&<><div className="cmd-title"><h2>{tr('HATÁRVIDÉKI KANTIN // TOBORZÁS','FRONTIER CANTINA // RECRUITMENT')}</h2><small>⚡ {energy}</small></div><Cantina locale={locale} atStation={here?.slug==='frontier_station'} crew={activeCrew} energy={energy} onChanged={refresh}/></>}
-   {tab==='inventory'&&<><div className="cmd-title"><h2>{cargoView==='stock'?tr('FELSZERELÉS ÉS RAKTÉR','EQUIPMENT AND CARGO'):tr('GYÁRTÁS','CRAFTING')}</h2><div className="cmd-cargo-tabs"><button className={cargoView==='stock'?'active':''} onClick={()=>setCargoView('stock')}>{tr('KÉSZLET','INVENTORY')}</button><button className={cargoView==='craft'?'active':''} onClick={()=>setCargoView('craft')}>{tr('GYÁRTÁS','CRAFTING')}</button></div></div>
-    {cargoView==='stock'?<EquipmentInventory characterId={captain.id} captainName={captain.captain_name} locale={locale} crew={activeCrew} onChanged={refresh}/>:<CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/>}
-   </>}
+   {tab==='loadout'&&<Suspense fallback={<p>{tr('Loadout betöltése…','Loading loadout…')}</p>}><ExpeditionLoadout characterId={captain.id} captainName={captain.captain_name} locale={locale} crew={activeCrew} onChanged={refresh}/></Suspense>}
+   {tab==='inventory'&&<><div className="cmd-title"><h2>{tr('RAKTÉR // GYÁRTÁS','CARGO // CRAFTING')}</h2></div><CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/></>}
    {tab==='log'&&<><div className="cmd-title"><h2>{tr('ESEMÉNYNAPLÓ','ACTIVITY LOG')}</h2></div><div className="cmd-log">{timeline.length?timeline.map(x=><div key={x.key}><small>{new Date(x.at).toLocaleString(en?'en-GB':'hu-HU')}</small><strong>{x.title}</strong><span>{x.detail}</span>{x.key.startsWith('act')&&<details><summary>{tr('Kockaeredmények','Dice results')}</summary><DiceRollPanel locale={locale} result={logs.find(log=>'act'+log.id===x.key)!}/></details>}</div>):<p>{tr('Még nincs végrehajtott akció vagy utazás.','No actions or travel yet.')}</p>}</div></>}
   </main>
   <footer className="cmd-footer"><span>SPACE D6 FREE · {tr('SZERVEROLDALI JÁTÉKMOTOR','SERVER-AUTHORITATIVE GAME ENGINE')}</span>
