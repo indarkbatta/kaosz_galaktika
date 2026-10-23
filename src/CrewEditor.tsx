@@ -28,6 +28,7 @@ export type CrewDraft = {
   name_en: string;
   species_id: string | null;
   class_id: string | null;
+  crew_class_id?: string | null;
   portrait_set_id: string | null;
   image_paths: string[];
   portrait_path: string | null;
@@ -56,6 +57,7 @@ export type CrewCatalog = {
   templates: CrewDraft[];
   species: Option[];
   classes: Option[];
+  crew_classes?: {id:string;name_hu:string;name_en:string}[];
   locales: { code: string; native_name: string }[];
 };
 type Mode = "named" | "generated" | "set";
@@ -587,10 +589,11 @@ export default function CrewEditor({
                     )}
                     {optionSelect(
                       "class_id",
-                      tr("Kaszt", "Class"),
+                      tr("Portré kasztja", "Portrait class"),
                       catalog.classes,
                     )}
                   </div>
+                  {mode !== "set" && <label>{tr("Legénységi kaszt", "Crew class")}<select value={draft.crew_class_id||''} onChange={e=>patch({crew_class_id:e.target.value||null})}><option value="">{tr("Szakterület szerinti alapértelmezés", "Default by specialty")}</option>{catalog.crew_classes?.map(c=><option key={c.id} value={c.id}>{en?c.name_en:c.name_hu}</option>)}</select></label>}
                   {mode !== "set" && (
                     <>
                       <div className="ed-two-fields">

@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - 'src/Combat*.tsx'
+      - 'src/Crew*.tsx'
+      - 'src/crew-progression.css'
+      - 'src/lib/crewProgression.ts'
+      - 'supabase/migrations/*simplified_crew*'
+      - 'tools/qa/crew-progression-*'
       - 'src/combat.css'
       - 'src/lib/combat.ts'
       - 'src/lib/itemPresentation.ts'
@@ -62,3 +67,11 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/energy-database.mjs
+      - name: Simplified crew growth, equipment, party and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/crew-progression-database.mjs
+      - name: Crew class editor and two-companion roster in Chromium and Firefox
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/crew-progression-browser.mjs

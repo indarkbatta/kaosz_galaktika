@@ -1,0 +1,23 @@
+import {useEffect,useRef,useState} from 'react';
+import {supabase} from './lib/supabase';
+import {crewAssetUrl} from './lib/crewPresentation';
+import {crewSkillName,type CrewRoster} from './lib/crewProgression';
+import {toDice} from './lib/d6';
+import './crew-progression.css';
+export default function CrewRosterPanel({locale,onChanged}:{locale:string;onChanged?:()=>void}){
+ const en=locale==='en',tr=(a:string,b:string)=>en?b:a;
+ const [data,setData]=useState<CrewRoster|null>(null),[selected,setSelected]=useState<string[]>([]),[tab,setTab]=useState<'combat'|'skills'>('combat'),[page,setPage]=useState(0),[skillPage,setSkillPage]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const lock=useRef(false);
+ useEffect(()=>{let active=true;void supabase.rpc('get_simple_crew').then(r=>{if(!active)return;if(r.error)setError(r.error.message);else{setData(r.data as CrewRoster);setSelected(r.data.party);}});return()=>{active=false;};},[]);
+ async function save(){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const r=await supabase.rpc('set_salvage_party',{p_crew:selected});if(r.error)throw new Error(r.error.message);setData(r.data as CrewRoster);setSelected(r.data.party);onChanged?.();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{lock.current=false;setBusy(false);}}
+ if(!data)return <p role="status">{error||tr('Legénység betöltése…','Loading crew…')}</p>;
+ const pages=Math.max(1,Math.ceil(data.crew.length/3)),p=Math.min(page,pages-1),dirty=JSON.stringify(selected)!==JSON.stringify(data.party);
+ return <section className="crew-roster" aria-label={tr('Legénység és roncscsapat','Crew and salvage party')}><h2>{tr('LEGÉNYSÉG // RONCSCSAPAT','CREW // SALVAGE PARTY')}</h2><p>{tr('A kapitány mellé legfeljebb két kísérőt választhatsz. A mentett összeállítást a későbbi roncsbejárás használja.','Choose up to two companions for the captain. The saved lineup is used by the upcoming salvage exploration.')}</p><nav className="crew-roster-tabs"><button className={tab==='combat'?'selected':''} onClick={()=>setTab('combat')}>{tr('Harci értékek','Combat stats')}</button><button className={tab==='skills'?'selected':''} onClick={()=>setTab('skills')}>{tr('Skillbónuszok','Skill bonuses')}</button></nav>
+ {error&&<p role="alert">{error}</p>}
+ <div className="crew-roster-cards">{data.crew.slice(p*3,p*3+3).map(c=><article className={'crew-roster-card '+(selected.includes(c.id)?'selected':'')} key={c.id}>{crewAssetUrl(c.portrait_path)?<img src={crewAssetUrl(c.portrait_path)} alt=""/>:<div/>}<div><h3>{c.name}</h3><p>{en?c.class_name_en:c.class_name_hu} · {c.level}. {tr('szint','level')} · {c.xp}/{c.next_level_xp??'MAX'} XP</p></div>
+ {tab==='combat'?<div className="crew-roster-stats"><span>HP <b>{c.stats.health}</b></span><span>{tr('Támadás','Attack')} <b>{toDice(c.stats.attack)}</b></span><span>{tr('Védelem · célszám','Defense · target')} <b>{c.stats.defense}</b></span><span>{tr('Sebzés','Damage')} <b>{toDice(c.stats.damage)}</b></span><span>{tr('Faji eredet','Species')} <b>{c.species_slug}</b></span><span>{tr('Felszerelt tárgy','Equipped items')} <b>{c.equipment.length}</b></span></div>:<div className="crew-roster-skills">{data.skills.slice(skillPage*3,skillPage*3+3).map(s=><span key={s.id}>{crewSkillName(s,locale)} <b>{(c.skills[s.id]||0)>=0?'+':''}{c.skills[s.id]||0} pip</b></span>)}</div>}
+ <button disabled={busy||(!selected.includes(c.id)&&selected.length>=2)} aria-pressed={selected.includes(c.id)} onClick={()=>setSelected(ids=>ids.includes(c.id)?ids.filter(id=>id!==c.id):[...ids,c.id])}>{selected.includes(c.id)?tr('✓ Kísérő · eltávolítás','✓ Companion · remove'):tr('Kísérőnek választom','Choose companion')}</button></article>)}</div>
+ {tab==='skills'&&<div className="crew-roster-footer"><button disabled={!skillPage} onClick={()=>setSkillPage(skillPage-1)}>‹</button><span>{tr('Skillek','Skills')} {skillPage+1}/{Math.ceil(data.skills.length/3)}</span><button disabled={(skillPage+1)*3>=data.skills.length} onClick={()=>setSkillPage(skillPage+1)}>›</button></div>}
+ <div className="crew-roster-footer"><button disabled={!p} onClick={()=>setPage(p-1)}>‹</button><span>{p+1}/{pages}</span><button disabled={p===pages-1} onClick={()=>setPage(p+1)}>›</button></div><div className="crew-party-actions"><span><strong>{tr('Kapitány','Captain')}</strong> + {selected.length}/2 · {selected.map(id=>data.crew.find(c=>c.id===id)?.name).join(' / ')||tr('Nincs kísérő','No companions')}</span><button disabled={busy||!dirty} onClick={()=>void save()}>{tr('CSAPAT MENTÉSE','SAVE PARTY')}</button></div>
+ </section>;
+}
