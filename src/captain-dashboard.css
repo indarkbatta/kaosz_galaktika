@@ -97,3 +97,11 @@
 @media(max-height:690px){
  .cmd-frame>.cmd-shell{grid-template-rows:46px 84px minmax(0,1fr) 34px}
 }
+/* Shared game panels use the full space below the global website header. */
+.cmd-frame>.cmd-shell{grid-template-rows:minmax(0,1fr) 38px}
+.cmd-frame>.cmd-edge-tabs{right:calc(100% + 8px);gap:6px}
+.cmd-frame .cmd-edge-tab{clip-path:none;border:1px solid #536675;border-radius:8px;padding:8px 12px;filter:none}
+.cmd-frame .cmd-edge-tab::before{display:none}
+.cmd-frame .cmd-edge-tab.active{border-color:#41bfe9}
+.cmd-frame .cmd-body{padding:14px;gap:10px}
+.cmd-frame .cmd-edge-tab{padding:8px;gap:6px;font-size:12px}.cmd-frame .cmd-edge-icon{width:20px;flex-basis:20px}

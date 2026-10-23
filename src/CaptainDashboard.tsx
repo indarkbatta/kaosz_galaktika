@@ -1,7 +1,8 @@
+import {createPortal} from 'react-dom';
 import {lazy,Suspense,useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
-import {SkillArt,AttributeArt,ShipArt} from './components/GameArt';
+import {SkillArt,AttributeArt} from './components/GameArt';
 import {LucidePlus,LucideZap} from './components/LucideSigns';
 import {attributes,toDice} from './lib/d6';
 import SectorMap,{type SectorLocation,type SectorRoute,type SectorDiscovery,type WorldGalaxy,type WorldQuadrant,type WorldSector} from './SectorMap';
@@ -35,6 +36,8 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
 }){
  const en=locale==='en',lang=en?'en':'hu',tr=(hu:string,eng:string)=>en?eng:hu;
  const local=(x:I18n[]|undefined)=>x?.find(y=>y.locale===lang)||x?.find(y=>y.locale==='hu');
+ const [headerHost,setHeaderHost]=useState<HTMLElement|null>(null);
+ useEffect(()=>{setHeaderHost(document.getElementById('captain-header-status'));},[]);
  const [progress,setProgress]=useState<Progress|null>(null),[rules,setRules]=useState<Rules|null>(null);
  const [actions,setActions]=useState<Action[]>([]),[logs,setLogs]=useState<Log[]>([]),[travelLogs,setTravelLogs]=useState<TravelLog[]>([]);
  const [locations,setLocations]=useState<SectorLocation[]>([]),[routes,setRoutes]=useState<SectorRoute[]>([]);
@@ -87,8 +90,6 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const elapsed=progress?Math.max(0,Math.floor((time-Date.parse(progress.energy_at))/1000)):0;
  const nextEnergy=rules?rules.energy_regen_seconds-elapsed%rules.energy_regen_seconds:0;
  const level=progress?.level||1, xpThreshold=rules?rules.xp_level_base*level*(level+1)/2:100;
- const prevXp=rules?rules.xp_level_base*(level-1)*level/2:0;
- const xpPct=progress?Math.min(100,Math.max(0,(progress.xp_total-prevXp)/(xpThreshold-prevXp)*100)):0;
  const race=species.find(x=>x.id===captain.species_id),klass=classes.find(x=>x.id===captain.class_id),ship=ships.find(x=>x.id===captain.starter_ship_id);
  const doAction=async(a:Action)=>{
   if(actionGate.current||actionRoll||busy||!progress||energy<a.energy_cost)return;
@@ -155,15 +156,12 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  return <div className="cmd-frame">
   <GameEdgeTabs locale={locale} active={tab} onChange={setTab}/>
   <section className="cmd-shell">
-  <header className="cmd-head"><div><small>{tr('HATÁRVILÁG // PARANCSNOKI TERMINÁL','HATÁRVILÁG // COMMAND TERMINAL')}</small><strong>{captain.captain_name}</strong></div>
-
-  </header>
-  <div className="cmd-summary">
-   <div className="cmd-identity"><img alt="" src={race?.image_path?'https://assets.voidnoir.net/'+race.image_path:undefined}/><span><strong>{captain.captain_name}</strong><small>{local(klass?.game_classes_i18n)?.name} · {local(race?.game_species_i18n)?.name}</small><b>{tr('Szint','Level')} {level}</b></span></div>
-   <div className="cmd-energy"><div><small>⚡ {tr('Energia','Energy')}</small><span className="cmd-energy-value"><strong>{energy} / {rules?.energy_max||16}</strong>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}><LucideZap width={15} height={15}/></button>}</span></div><div className="cmd-meter"><span style={{width:(100*energy/(rules?.energy_max||16))+'%'}}/></div><small>{energy===(rules?.energy_max||16)?tr('Feltöltve','Fully charged'):tr('Következő +','Next +')+(rules?.energy_per_tick||1)+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small></div>
-   <div className="cmd-energy"><div><small>XP</small><strong>{progress?.xp_total||0} / {xpThreshold}</strong></div><div className="cmd-meter"><span style={{width:xpPct+'%'}}/></div><small>{tr('Fejlesztési pont','Upgrade points')}: {progress?.upgrade_points||0}</small></div>
-   <div className="cmd-summary-ship"><ShipArt slug={ship?.slug||''} path={ship?.image_path}/><span>{local(ship?.game_starter_ships_i18n)?.name||'—'}</span></div>
-  </div>
+  {headerHost&&createPortal(<div className="captain-global-status" aria-label={tr('Kapitány állapota','Captain status')}>
+   <span className="captain-global-identity"><strong>{captain.captain_name}</strong><span>{local(race?.game_species_i18n)?.name} · {local(klass?.game_classes_i18n)?.name} · <b>{tr('Szint','Level')} {level}</b></span></span>
+   <span><small>{tr('ENERGIA','ENERGY')}</small><b>{energy}/{rules?.energy_max||16}</b><small>{energy===(rules?.energy_max||16)?tr('Feltöltve','Full'):'+'+(rules?.energy_per_tick||1)+' '+Math.floor(nextEnergy/60)+':'+String(nextEnergy%60).padStart(2,'0')}</small>{isEditor&&<button type="button" className="cmd-debug-refill" disabled={busy} title={tr('Teszt: energia maximumra töltése','Test: refill energy to maximum')} aria-label={tr('Energia feltöltése teszthez','Test energy refill')} onClick={()=>void refill()}><LucideZap width={15} height={15}/></button>}</span>
+   <span><small>XP</small><b>{progress?.xp_total||0}/{xpThreshold}</b><small>{tr('Fejl. pont','Points')} {progress?.upgrade_points||0}</small></span>
+   <span><small>{tr('HAJÓ','SHIP')}</small><b>{local(ship?.game_starter_ships_i18n)?.name||'—'}</b></span>
+  </div>,headerHost)}
   <main className="cmd-body" id="cmd-tab-panel" role="tabpanel" aria-labelledby={'cmd-tab-'+tab}>
    {tab==='bridge'&&<><div className="cmd-title"><h2>{tr('ELÉRHETŐ TEVÉKENYSÉGEK','AVAILABLE ACTIVITIES')}</h2><small>{hereName}</small></div>
     <SkillChallengePanel locale={locale} characterId={captain.id} locationId={position} energy={energy}

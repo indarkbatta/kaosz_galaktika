@@ -43,3 +43,23 @@ html,body,#root{height:100%;overflow:hidden}.shell{height:100dvh;overflow:hidden
 .ch-v2-mount:has(.cmd-frame){width:min(1290px,calc(100vw - 22px));padding-left:clamp(90px,10.2vw,138px);max-width:100%;overflow:visible}
 @media(max-width:870px){.ch-v2-mount:has(.cmd-frame){padding-left:96px}}
 @media(max-width:590px){.ch-v2-mount:has(.cmd-frame){padding-left:60px}}
+/* Character status lives in the top-level application masthead, outside every game panel. */
+#captain-header-status:empty{display:none}
+.topbar:has(.captain-global-status){height:64px;min-height:64px;gap:14px;padding:0 18px;flex-shrink:0}
+.topbar:has(.captain-global-status) .head-sub,.topbar:has(.captain-global-status)>.sigil,.topbar:has(.captain-global-status)>.spacer{display:none}
+.topbar:has(.captain-global-status) .brand{font-size:23px;letter-spacing:.1em;flex-shrink:0}
+#captain-header-status{flex:1;min-width:0}
+.captain-global-status{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0;font-size:13px;color:#c4d7e3}
+.captain-global-status>span{display:flex;align-items:center;gap:7px;border-left:1px solid #435867;padding-left:14px;white-space:nowrap;min-width:0}
+.captain-global-status .captain-global-identity{flex-wrap:wrap;gap:3px 9px;max-width:290px;white-space:normal}
+.captain-global-identity strong{font-size:17px;color:#eef5f8}
+.captain-global-identity>span{font-size:12px}
+.captain-global-status b{color:#f0ae82;font-weight:600}
+.captain-global-status small{font-size:11px}
+.captain-global-status button{width:24px;height:24px;flex-shrink:0}
+.topbar:has(.captain-global-status) .language>span{display:none}
+.shell:has(.captain-global-status)>.scene{height:calc(100dvh - 119px);padding:12px 16px;min-height:0}
+.ch-v2-mount:has(.cmd-frame){height:100%;max-height:none;width:min(1660px,calc(100vw - 32px));padding-left:140px}
+@media(max-width:1400px){.topbar:has(.captain-global-status){gap:9px;padding:0 12px}.topbar:has(.captain-global-status) .brand{font-size:19px}.captain-global-status{font-size:12px;gap:8px}.captain-global-status>span{padding-left:9px;gap:5px}.captain-global-identity strong{font-size:15px}.captain-global-identity>span{font-size:11px}.topbar:has(.captain-global-status) .topbar-account-actions button{padding:6px;font-size:10px}}
+@media(max-width:1100px){.topbar:has(.captain-global-status){height:88px;min-height:88px;flex-wrap:wrap;align-content:center;gap:6px 12px}#captain-header-status{order:5;flex-basis:100%}.captain-global-status .captain-global-identity{max-width:none}.shell:has(.captain-global-status)>.scene{height:calc(100dvh - 143px)}.ch-v2-mount:has(.cmd-frame){padding-left:104px}}
+@media(max-width:590px){.captain-global-status{flex-wrap:wrap;justify-content:flex-start;font-size:11px;gap:4px}.captain-global-status small{font-size:10px}.captain-global-status>span{padding-left:6px}.topbar:has(.captain-global-status){height:116px;min-height:116px}.shell:has(.captain-global-status)>.scene{height:calc(100dvh - 171px);padding:8px}.ch-v2-mount:has(.cmd-frame){width:100%;padding-left:64px}}
