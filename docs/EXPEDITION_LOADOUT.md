@@ -1,3 +1,7 @@
+# Historical implementation — replacement planned
+
+See [expedition transition](expedition/TRANSITION.md). The live two-companion/captain-power flow described below is scheduled for replacement by four full characters and shared expedition equipment.
+
 # Expedition loadout (HV-063)
 
 Loadout is a separate player navigation tab with Equipment, Companions and Powers. Equipment uses the existing authoritative captain and crew equipment records and the inventory slot persistence from HV-062. Only the two saved companions are shown beside the captain; the complete crew remains available in Companions. Cargo now opens crafting, with inventory handled under Loadout.
