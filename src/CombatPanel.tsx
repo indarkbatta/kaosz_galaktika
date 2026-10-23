@@ -1,3 +1,4 @@
+import CrewRosterPanel from './CrewRosterPanel';
 import PlayerTalents from './PlayerTalents';
 import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import {supabase} from './lib/supabase';import {notify} from './lib/toast';import {toDice} from './lib/d6';
@@ -8,7 +9,7 @@ const reasonNames:Record<string,[string,string]>={cooldown:['Cooldown','Cooldown
 const statuses:Record<string,[string,string]>={active:['Folyamatban','Active'],victory:['GYŐZELEM','VICTORY'],defeat:['KIEMELÉS / VERESÉG','EXTRACTION / DEFEAT'],retreated:['Visszavonulás','Retreated'],draw:['Körlimit / döntetlen','Round limit / draw']};
 export default function CombatPanel({locale,locationId,onChanged,simulation=false,enemies=[],initialEnemy,testPowerId}:{locale:string;locationId?:string;onChanged?:()=>void;simulation?:boolean;enemies?:Enemy[];initialEnemy?:string;testPowerId?:string|null}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
- const [catalog,setCatalog]=useState<Catalog|null>(null),[run,setRun]=useState<CombatRun|null>(null),[tab,setTab]=useState<'encounters'|'battle'|'talents'|'history'>('encounters');
+ const [catalog,setCatalog]=useState<Catalog|null>(null),[run,setRun]=useState<CombatRun|null>(null),[tab,setTab]=useState<'encounters'|'battle'|'talents'|'history'|'crew'>('encounters');
  const [enemy,setEnemy]=useState(initialEnemy||enemies[0]?.id||''),[attacker,setAttacker]=useState(''),[busy,setBusy]=useState(false),[loading,setLoading]=useState(!simulation),[error,setError]=useState(''),[review,setReview]=useState(false),[animating,setAnimating]=useState(false),[fromSeq,setFromSeq]=useState(0);
  const defenseRequest=useRef<{run:string;revision:number;skill:string;id:string}|null>(null);
  const startRequest=useRef<{encounter:string;id:string}|null>(null);
@@ -28,7 +29,7 @@ export default function CombatPanel({locale,locationId,onChanged,simulation=fals
  const hero=run?.state.actors[0]||catalog?.hero;
  const resultRound=events.find(e=>e.type==='power'&&e.source===0)?.round||events[0]?.round||run?.state.round;
  return <section className={'cb-panel '+(simulation?'cb-panel-simulation':'')} aria-label={tr('Karakterharc','Character combat')}>
- {!simulation&&<nav className="cb-local-tabs">{(['encounters','battle','talents','history'] as const).map(t=><button key={t} type="button" className={tab===t?'active':''} onClick={()=>setTab(t)}>{({encounters:tr('Összecsapások','Encounters'),battle:tr('Harc','Battle'),talents:tr('Talentek','Talents'),history:tr('Harci napló','Combat log')})[t]}</button>)}</nav>}
+ {!simulation&&<nav className="cb-local-tabs">{(['encounters','battle','talents','crew','history'] as const).map(t=><button key={t} type="button" className={tab===t?'active':''} onClick={()=>setTab(t)}>{({crew:tr('Legénység','Crew'),encounters:tr('Összecsapások','Encounters'),battle:tr('Harc','Battle'),talents:tr('Talentek','Talents'),history:tr('Harci napló','Combat log')})[t]}</button>)}</nav>}
  {error&&<div className="cb-error" role="alert">{error}<button type="button" disabled={busy} onClick={()=>void load()}>{tr('Újratöltés','Reload')}</button></div>}
  {loading&&<p role="status">{tr('Harci állapot betöltése…','Loading combat state…')}</p>}
  {simulation&&<div className="cb-grid"><label>{tr('Támadó','Attacker')}<select aria-label={tr('Támadó','Attacker')} value={attacker} onChange={e=>setAttacker(e.target.value)}><option value="">{tr('Kapitány / minta résztvevő','Captain / sample participant')}</option>{enemies.map(e=><option key={e.id} value={e.id}>{combatName(e,locale)}</option>)}</select></label><label>{tr('Ellenfél','Enemy')}<select aria-label={tr('Ellenfél','Enemy')} value={enemy} onChange={e=>setEnemy(e.target.value)}>{enemies.map(e=><option key={e.id} value={e.id}>{combatName(e,locale)}</option>)}</select></label><button type="button" disabled={busy||!enemy||testPowerId===null} onClick={()=>void command(testPowerId?'simulate_power':'simulate_combat',{p_enemy:enemy,p_attacker:attacker||null,...(testPowerId?{p_power:testPowerId}:{})},true)}>{tr('Új tesztharc','New test battle')}</button></div>}
@@ -41,6 +42,7 @@ export default function CombatPanel({locale,locationId,onChanged,simulation=fals
  <div className="cb-action-results" aria-live="polite"><strong>{review?tr('Aktuális akció eredménye','Current action result'):tr('Legutóbbi harci események','Latest combat events')}</strong>{events.map(e=><CombatEventView key={e.sequence} event={e} actors={run.state.actors} locale={locale}/>)}{review&&<button type="button" className="cb-continue" disabled={animating} onClick={()=>{setReview(false);if(run.status!=='active'&&!simulation)void load();}}>{animating?tr('Dobás…','Rolling…'):tr('Tovább','Continue')}</button>}{run.rewarded&&<p>{tr('Jóváírt jutalom','Reward granted')}: {run.reward_snapshot.xp||0} XP</p>}</div></div></>}
  {!simulation&&tab==='battle'&&!run&&!loading&&<p>{tr('Indíts egy összecsapást a helyszíni listából.','Start an encounter from the local list.')}</p>}
  {!simulation&&tab==='talents'&&<PlayerTalents locale={locale} onChanged={()=>{void load();onChanged?.();}}/>}
+ {!simulation&&tab==='crew'&&<CrewRosterPanel locale={locale} onChanged={onChanged}/>}
  {!simulation&&tab==='history'&&<div className="cb-history">{catalog?.history.map(h=><button key={h.id} type="button" onClick={async()=>{setBusy(true);try{const r=await supabase.from('combat_runs').select('*').eq('id',h.id).single();if(r.error)throw new Error(r.error.message);const data=r.data as CombatRun;const logs=await supabase.from('combat_events').select('event').eq('run_id',h.id).order('sequence');if(logs.error)throw new Error(logs.error.message);setRun({...data,state:{...data.state,events:(logs.data||[]).map(x=>x.event as CombatEvent)},available_powers:[]});setFromSeq(0);setTab('battle');setReview(false);}catch(e){notify(e instanceof Error?e.message:'Load failed','error');}finally{setBusy(false);}}}><strong>{statuses[h.status]?.[en?1:0]||h.status}</strong><span>{new Date(h.started_at).toLocaleString(en?'en-GB':'hu-HU')} · {h.status==='victory'?h.reward_snapshot.xp+' XP':'—'}</span></button>)}</div>}
  </section>;
 }
