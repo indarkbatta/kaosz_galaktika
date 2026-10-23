@@ -10,6 +10,7 @@ on:
       - 'tools/qa/crew-progression-*'
       - 'src/UILayoutEditor.tsx'
       - 'src/components/LoadoutLayoutSurface.tsx'
+      - 'src/components/GamePanelFrame.tsx'
       - 'src/lib/uiLayout.ts'
       - 'src/ui-layout*.css'
       - 'supabase/migrations/*visual_ui_layout*'
