@@ -20,6 +20,7 @@ on:
       - 'tools/qa/combat-*'
       - 'tools/qa/unified-*'
       - 'supabase/migrations/*unified_talents*'
+      - 'supabase/migrations/*passive_defense_target*'
       - '.github/workflows/combat.yml'
 permissions:
   contents: read

@@ -16,7 +16,7 @@ const db={
   {id:ember,slug:'ember',primary_attribute:'body',secondary_attribute:'mind',image_path:null,homeworld_location_id:null,is_published:true,resistances:[],game_species_i18n:[{locale:'hu',name:'Ember',description:''},{locale:'en',name:'Ember',description:''}],game_species_skill_bonuses:[]},
   {id:noxari,slug:'noxari',primary_attribute:'soul',secondary_attribute:'mind',image_path:null,homeworld_location_id:loc3,is_published:true,resistances:[],game_species_i18n:[{locale:'hu',name:'Noxari',description:''},{locale:'en',name:'Noxari',description:''}],game_species_skill_bonuses:[]}
  ],
- game_classes:[],game_skills:[],
+ game_classes:[{id:id(20),slug:'mercenary',primary_attribute:'morale',secondary_attribute:'body',image_path:null,is_published:true,game_classes_i18n:[{locale:'hu',name:'Mercenary',description:''},{locale:'en',name:'Mercenary',description:''}],game_classes_skill_bonuses:[]}],game_skills:[],
  game_locales:[{code:'hu',native_name:'Magyar',name_en:'Hungarian',is_enabled:true,sort_order:0},{code:'en',native_name:'English',name_en:'English',is_enabled:true,sort_order:1}],
  game_galaxies:[{id:g1,slug:'borderworld',name_hu:'Határvilág',name_en:'Borderworld',is_published:true},{id:g2,slug:'andromeda',name_hu:'Androméda',name_en:'Andromeda',is_published:true}],
  game_quadrants:[{id:q1,galaxy_id:g1,slug:'frontier',name_hu:'Határvidék',name_en:'Frontier',is_published:true},{id:q2,galaxy_id:g2,slug:'outer',name_hu:'Külső',name_en:'Outer',is_published:true}],
@@ -27,6 +27,7 @@ const db={
   {id:loc3,sector_id:s3,slug:'gamma_planet',is_published:true,game_locations_i18n:[{locale:'hu',name:'Gamma bolygó'},{locale:'en',name:'Gamma Planet'}]}
  ]
 };
+db.game_skills=['body','mind','soul','morale','social'].flatMap((attribute,a)=>Array.from({length:5},(_,n)=>({id:id(100+a*5+n),slug:attribute+n,attribute,position:n+1,is_combat:n===4,icon_path:null,game_skills_i18n:[{locale:'hu',name:attribute+' képzettség '+(n+1)}]})));
 const mocks="const clone=v=>JSON.parse(JSON.stringify(v));\nexport const supabase={\n from(table){\n  return {\n   select(columns,options={}){\n    const data=clone(window.__speciesHomeworld.db[table]||[]);\n    const response=Promise.resolve({data:options.head?null:data,error:null,count:options.head?data.length:null});\n    response.order=()=>response;response.eq=()=>response;\n    return response;\n   },\n   update(value){return {eq(field,id){\n    const row=window.__speciesHomeworld.db[table].find(x=>x[field]===id);\n    if(!row)return Promise.resolve({error:{message:'Missing test record'}});\n    Object.assign(row,value);\n    window.__speciesHomeworld.updates.push({table,value,id});\n    return Promise.resolve({error:null});\n   }};},\n   insert(value){return {select(){return {single(){\n    const id='99999999-9999-4999-8999-999999999999';\n    window.__speciesHomeworld.db[table].push({id,...value});\n    return Promise.resolve({data:{id},error:null});\n   }};}};},\n   upsert(rows){window.__speciesHomeworld.translations.push({table,rows});return Promise.resolve({error:null});},\n   delete(){return {eq(){return Promise.resolve({error:null});}}}\n  };\n },\n rpc(){return Promise.resolve({error:null});}\n};";
 try{
  const compiled=await build({entryPoints:['tools/qa/species-homeworld-fixture.tsx'],bundle:true,write:false,format:'iife',outdir:temp,jsx:'automatic',define:{'import.meta.env':'{}'},
@@ -39,8 +40,8 @@ try{
  const html='<!doctype html><html lang="hu"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,#root{margin:0;height:100%;width:100%;background:#030711;color:#d4dfe8}'+css+'</style><div id="root"></div><script>window.__speciesHomeworld={db:'+JSON.stringify(db)+',updates:[],translations:[]}</script><script>'+js.replaceAll('</script','<\\/script')+'</script>';
  server=createServer((_,res)=>{res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'});res.end(html);});
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
- for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]){
-  const browser=await engine.launch({headless:true});
+ for(const [name,engine] of (process.env.TREE_LOCAL_CHROMIUM?[['chromium',chromium]]:[['chromium',chromium],['firefox',firefox]])){
+  const browser=await engine.launch(process.env.TREE_LOCAL_CHROMIUM?{headless:true,executablePath:process.env.TREE_LOCAL_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage']}:{headless:true});
   try{
    const page=await browser.newPage({viewport:{width:1450,height:920}});
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -51,7 +52,7 @@ try{
     sector:page.getByRole('combobox',{name:'Szektor / naprendszer'}),
     location:page.getByRole('combobox',{name:'Kezdőhelyszín'})
    };
-   await fields.galaxy.waitFor();
+   await page.getByRole('button',{name:'Kezdővilág',exact:true}).click();await fields.galaxy.waitFor();
    assert.equal(await fields.galaxy.inputValue(),'','Original Ember has no homeworld');
    assert.equal(await fields.sector.isDisabled(),true);
    await fields.galaxy.selectOption(g1);await fields.quadrant.selectOption(q1);await fields.sector.selectOption(s1);
@@ -68,7 +69,7 @@ try{
    const updates=await page.evaluate(()=>window.__speciesHomeworld.updates);
    assert.equal(updates.at(-1).table,'game_species');
    assert.equal(updates.at(-1).value.homeworld_location_id,loc2);
-   await page.locator('.ed-roster-list .ed-record').nth(1).click();
+   await page.locator('.ed-roster-list .ed-record').nth(1).click();await page.getByRole('button',{name:'Kezdővilág',exact:true}).click();
    await page.waitForFunction(target=>document.querySelector('select[aria-label="Kezdőhelyszín"]')?.value===target,loc3);
    assert.equal(await fields.galaxy.inputValue(),g2);
    assert.equal(await fields.quadrant.inputValue(),q2);
@@ -76,6 +77,10 @@ try{
    assert.equal(await fields.location.inputValue(),loc3);
    const width=await page.locator('.ed-editor').evaluate(el=>({content:el.clientWidth,scroll:el.scrollWidth}));
    assert.ok(width.scroll<=width.content+3,'No editor horizontal overflow '+JSON.stringify(width));
+   for(const origin of ['species','classes']){if(origin==='classes'){await page.locator('.ed-nav-leaf').filter({hasText:'Kasztok'}).click();await page.getByText('Mercenary',{exact:true}).first().waitFor();}
+    for(const viewport of [{width:1920,height:1080},{width:1366,height:768},{width:1280,height:720}]){await page.setViewportSize(viewport);for(const tab of ['Alapadatok','HP / védelem','Ellenállások','Skillek','Szótár']){await page.locator('.ed-editor>.ed-tabs').getByRole('button',{name:tab,exact:true}).click();await page.waitForTimeout(40);const bounds=await page.locator('.ed-form').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight,width:el.clientWidth,scrollWidth:el.scrollWidth}));const pane=await page.locator('.ed-form>.ed-tab-pane').evaluate(el=>({height:el.clientHeight,scroll:el.scrollHeight}));assert.ok(pane.scroll<=pane.height+2,JSON.stringify({origin,viewport,tab,pane}));assert.ok(bounds.height>100&&bounds.scroll<=bounds.height+2&&bounds.scrollWidth<=bounds.width+2,JSON.stringify({origin,viewport,tab,bounds}));}
+    await page.getByRole('button',{name:'HP / védelem',exact:true}).click();assert.equal(await page.locator('.ed-branch-combat select').count(),5);assert.equal(await page.locator('.ed-form').evaluate(el=>getComputedStyle(el.querySelector('.ed-branch-combat')).borderRadius),'0px');}
+   }await page.screenshot({path:'/tmp/origin-defense-tabs.png'});
    assert.deepEqual(errors,[],'Browser errors');
    console.log(name+': PASS species homeworld hierarchy, cascade, save, reload and old-world fallback');
   }finally{await browser.close();}

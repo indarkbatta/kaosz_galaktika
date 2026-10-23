@@ -32,8 +32,16 @@ const db=new PGlite();try{
  await db.exec('set role authenticated');await q('select learn_talent_tree_node($1,2)',[doc.nodes[1].id]);await db.exec('reset role');
  const after=(await q('select private.branch_defenses($1,$2,$3) d',[c.species[0].id,c.classes[0].id,cid])).d;assert.equal(after.body,base.body+2);assert.equal(after.mind,base.mind+1);
  const active={...actor,active_defense:actor.active_defense_skills.find(s=>s.attribute==='body')};
+ const passiveDefense=(await q("select private.combat_defense($1,'body') d",[JSON.stringify(actor)])).d;assert.deepEqual(passiveDefense,{kind:'passive',target_number:actor.defenses.body+1});const activeDefense=(await q("select private.combat_defense($1,'body') d",[JSON.stringify(active)])).d;assert.equal(activeDefense.kind,'active');assert.equal(activeDefense.roll.mode,'skill');assert.ok(Array.isArray(activeDefense.roll.dice));
  const activePool=(await q("select private.active_defense_pool($1,'body') p",[JSON.stringify(active)])).p;assert.equal(activePool,actor.skills[active.active_defense.id]);
  assert.equal((await q("select private.active_defense_pool($1,'mind') p",[JSON.stringify(active)])).p,actor.defenses.mind);
+ const basic=(await q("select to_jsonb(p) p from game_powers p where slug='basic_body'")).p;
+ const attacker={...actor,player:false,attributes:{body:3,mind:3,soul:3,morale:3,social:3},powers:[basic],effects:[],danger:0};
+ const defender={...actor,defenses:{body:4,mind:4,soul:4,morale:4,social:4},effects:[],active_defense:null};
+ const state={status:'active',current:0,round:1,event_sequence:0,events:[],operation_uses:{},actors:[attacker,defender]};
+ await db.exec('delete from private.qa_dice;insert into private.qa_dice(n) values(3),(6)');
+ const resolved=(await q('select private.combat_resolve_action($1,$2,1) s',[JSON.stringify(state),basic.id])).s;
+ const defenseEvent=resolved.events.find(e=>e.type==='defense');assert.equal(defenseEvent.defense_kind,'passive');assert.equal(defenseEvent.target_number,4);assert.equal(defenseEvent.roll,null);assert.equal(defenseEvent.hit,false);assert.equal((await q('select private.secure_d6() n')).n,6,'Passive defense consumed a random die');
  // Real RPC command: authoritative AP cost, idempotent retry and expiry after enemy actions.
  await db.exec("update game_enemies set health=10000,power_ids=array[(select id from game_powers where slug='basic_morale')],attributes='{\"body\":3,\"mind\":3,\"soul\":3,\"morale\":3,\"social\":3}',defenses='{\"body\":0,\"mind\":0,\"soul\":0,\"morale\":0,\"social\":0}'");
  const enemy=(await q('select id from game_enemies limit 1')).id;
