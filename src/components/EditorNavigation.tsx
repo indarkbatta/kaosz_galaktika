@@ -4,7 +4,7 @@ import {useEffect,useState} from 'react';
 export type EditorSection=
  'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
  'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|
- 'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
+ 'ui-layout'|'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
 
 type GroupId='characters'|'world'|'equipment'|'gameplay'|'combat'|'system';
 type MenuItem={id:EditorSection;icon:string;hu:string;en:string};
@@ -36,6 +36,7 @@ const groups:MenuGroup[]=[
   {id:'talents',icon:'git-branch',hu:'Talentek',en:'Talents'},
   {id:'combat-rules',icon:'sliders',hu:'Harci szabályok',en:'Combat rules'}]},
  {id:'system',icon:'settings',hu:'Rendszer',en:'System',items:[
+  {id:'ui-layout',icon:'sliders',hu:'Felületszerkesztő',en:'UI layout editor'},
   {id:'balance',icon:'gauge',hu:'Globális beállítások (energia / XP)',en:'Global settings (energy / XP)'},
   {id:'languages',icon:'languages',hu:'Szótár és nyelvek',en:'Dictionary & languages'}]}
 ];

@@ -8,6 +8,13 @@ on:
       - 'src/lib/crewProgression.ts'
       - 'supabase/migrations/*simplified_crew*'
       - 'tools/qa/crew-progression-*'
+      - 'src/UILayoutEditor.tsx'
+      - 'src/components/LoadoutLayoutSurface.tsx'
+      - 'src/components/GamePanelFrame.tsx'
+      - 'src/lib/uiLayout.ts'
+      - 'src/ui-layout*.css'
+      - 'supabase/migrations/*visual_ui_layout*'
+      - 'tools/qa/ui-layout-*'
       - 'src/combat.css'
       - 'src/lib/combat.ts'
       - 'src/lib/itemPresentation.ts'
@@ -83,3 +90,12 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/global-header-browser.mjs
+
+      - name: Visual UI layout draft, publishing and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/ui-layout-database.mjs
+      - name: Visual UI editor and published game layout
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/ui-layout-browser.mjs

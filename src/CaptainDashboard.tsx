@@ -1,3 +1,4 @@
+import GamePanelFrame from './components/GamePanelFrame';
 import {createPortal} from 'react-dom';
 import {lazy,Suspense,useCallback,useEffect,useRef,useState} from 'react';
 import {supabase} from './lib/supabase';
@@ -153,7 +154,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   ...travelLogs.map(x=>({key:'travel'+x.id,at:x.traveled_at,title:tr('Utazás','Travel')+' → '+siteName(x.destination_id),detail:siteName(x.origin_id)+' · ⚡ '+x.energy_spent}))
  ].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,9);
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
- return <div className="cmd-frame">
+ return <GamePanelFrame compact>
   <GameEdgeTabs locale={locale} active={tab} onChange={setTab}/>
   <section className="cmd-shell">
   {headerHost&&createPortal(<div className="captain-global-status" aria-label={tr('Kapitány állapota','Captain status')}>
@@ -201,5 +202,5 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   </section></div>}
   {confirmReset&&<div className="cmd-modal-bg"><div className="cmd-modal" role="dialog" aria-modal="true"><h3>{tr('Tesztkarakter törlése','Reset test captain')}</h3><p>{tr('Ez csak a saját karakteredet törli! Írd be: RESET','Deletes only your own captain! Type RESET.')}</p><input autoFocus value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/><div><button onClick={()=>setConfirmReset(false)}>{tr('Mégse','Cancel')}</button><button disabled={busy||resetWord!=='RESET'} onClick={()=>void reset()}>{tr('Törlés','Delete')}</button></div></div></div>}
  </section>
- </div>;
+ </GamePanelFrame>;
 }
