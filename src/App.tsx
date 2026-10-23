@@ -139,6 +139,7 @@ function App(){
   <header className="topbar">
    <img className="sigil" alt="" src={assetOrigin+'/hatarvilag/branding/crest.svg'}/>
    <strong className="brand">{t('brand')}</strong>
+   <div id="captain-header-status"/>
    <span className="head-sub">{t('explore')} <em>//</em> {t('command')} <em>//</em> {t('survive')}</span>
    <div className="spacer"/>{selector}
    {user&&mode!=='change'&&<nav className="topbar-account-actions" aria-label={locale==='hu'?'Fiók menü':'Account menu'}>

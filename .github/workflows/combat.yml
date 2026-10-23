@@ -79,3 +79,7 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/expedition-loadout-browser.mjs
+      - name: Global captain header and rounded tabs at desktop sizes
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/global-header-browser.mjs
