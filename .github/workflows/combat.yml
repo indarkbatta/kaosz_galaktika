@@ -31,6 +31,8 @@ on:
       - 'supabase/migrations/*m87*'
       - 'tools/qa/combat-*'
       - 'tools/qa/unified-*'
+      - 'tools/qa/expedition-actors-*'
+      - 'supabase/migrations/*expedition_actor_foundation*'
       - 'supabase/migrations/*unified_talents*'
       - 'supabase/migrations/*passive_defense_target*'
       - '.github/workflows/combat.yml'
@@ -62,6 +64,10 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/combat-database.mjs
+      - name: Shared expedition actors, captain parity and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-actors-database.mjs
       - name: Power, Enemy, Item editors and complete PvE through HTTP and PostgreSQL
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools

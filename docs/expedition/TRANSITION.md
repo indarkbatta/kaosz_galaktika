@@ -3,7 +3,7 @@
 Állapot: végrehajtási leltár és tervezett szerződések; **nem élesített funkció**.
 Forrás: 2026-10-23-i beszélgetés, repository és kapcsolt Supabase read-only leltár.
 Kódalap: `26b33b3d28d6f704381881155165ff5125db64d0`.
-Az alábbi célobjektumok tervek, nem már létező táblák/RPC-k.
+A HV-067 fejlesztési ágon elkészült karakteralapját az `ACTOR_FOUNDATION.md` írja le; a többi célobjektum továbbra is terv. Éles adatbázis-migráció nem történt.
 
 ## Felhasználói döntések
 
@@ -66,10 +66,10 @@ Mindkét crew rendelkezik feloldható faji és rendes kaszthivatkozással, de a 
 | `game_powers`, `game_power_grants`, talentfa node hivatkozások | Megmaradó katalógusazonosítók, pozíciós séma, szerepek; elavult konfiguráció kivezetve | HV-071/072 |
 | `UILayoutEditor`, `LoadoutLayoutSurface`, `GamePanelFrame` | Négy karakter választója, közös készlet, öt power/karakter; azonos keret és editor/játék geometria megőrzése | HV-070/073 |
 
-## HV-067 tervezett adatszerződés
+## HV-067 adatszerződés és további célállapot
 
 - A `characters` rekord a játékállás horgonya marad. Társ nem kap saját hajót, utazási energiát vagy külön világállást.
-- Egy új, közös `expedition_actors` jellegű entitás kezeli a kapitányt és a társakat: `id`, `character_id` (játékállás), `kind` (captain/companion), név, faj, rendes kaszt, portré, attribútum- és skillkiosztás. Pontosan egy captain az account-játékálláson belül.
+- A fejlesztési ág `private.expedition_actors` entitása kezeli a kapitányt és a társakat: `id`, `character_id` (játékállás), `kind` (captain/companion), név, faj, rendes kaszt, portré, attribútum- és skillkiosztás. Pontosan egy captain az account-játékálláson belül. A kapitány sora csak identitás; a build/progress az eddigi táblákban marad, közös kontextusadapterrel.
 - Actorhoz kötött progress, sérülés/HP, skill upgrade, megtanult node/talent/power és előkészített loadout; ezek ugyanazt a kiértékelőt hívják.
 - A party pozíció és az actor-azonosító külön mező. Mozgáskor az actor nem kap új identitást, és a köre/CD-je nem cserélődik el.
 - A hajós crew nem FK-zik teljes karakterként az expedition actorra, és nem birtokol felszerelést.
@@ -95,7 +95,7 @@ Ezek nem implementálhatók hallgatólagosan a jóváhagyott statok helyett. A k
 ## Bevezetési/kivezetési kapuk
 
 1. HV-066: leltár és szerződések. Ez a dokumentum és audit megvan; a fenti nyitott szabályok Review alatt.
-2. HV-067: közös actor- és jogosultsági alap, ugyanazon szabályokkal; a kapitányi képletek aranymintatesztje.
+2. HV-067: közös actor- és jogosultsági alap, ugyanazon szabályokkal; implementálva és aranymintával tesztelve a fejlesztési ágon. Részletek: `ACTOR_FOUNDATION.md`.
 3. HV-068/069: új társ editor/toborzás és tiszta új állás. Nem fut régi kapitány/crew konverzió. A felhasználó által végzett reset a meglévő saját-karakter törlési folyamat.
 4. HV-070/071: négyfős csapat, közös készlet, viselés, actor-power loadout és pozíciós katalógus. A régi max. kétfős UI/RPC aktív használata megszűnik.
 5. HV-045/072/073: teljes csapatharc, tartalom és új megjelenítés; régi 1v1/3 AP végrehajtás megszűnik.
