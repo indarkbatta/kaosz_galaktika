@@ -154,7 +154,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
   ...travelLogs.map(x=>({key:'travel'+x.id,at:x.traveled_at,title:tr('Utazás','Travel')+' → '+siteName(x.destination_id),detail:siteName(x.origin_id)+' · ⚡ '+x.energy_spent}))
  ].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,9);
  const pool=(s:Skill)=>((captain.attribute_pips[s.attribute]||3)+(captain.skill_bonus_pips[s.id]||0)+(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0));
- return <GamePanelFrame compact={tab==='loadout'}>
+ return <GamePanelFrame compact>
   <GameEdgeTabs locale={locale} active={tab} onChange={setTab}/>
   <section className="cmd-shell">
   {headerHost&&createPortal(<div className="captain-global-status" aria-label={tr('Kapitány állapota','Captain status')}>

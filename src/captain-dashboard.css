@@ -106,5 +106,5 @@
 .cmd-frame .cmd-body{padding:14px;gap:10px}
 .cmd-frame .cmd-edge-tab{padding:8px;gap:6px;font-size:12px}.cmd-frame .cmd-edge-icon{width:20px;flex-basis:20px}
 
-/* The Loadout shell hugs the scaled canvas; other game screens keep their full size. */
+/* Every game shell uses the same frame dimensions as the Loadout canvas. */
 .cmd-frame-compact{flex:none}

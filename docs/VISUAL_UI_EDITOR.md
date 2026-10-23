@@ -18,4 +18,4 @@ The browser test compares editor and player logical geometry (header, tabs, equi
 
 ## Outer game frame
 
-On Loadout, `GamePanelFrame` measures available mount space and the real body padding, shell border and footer. It fits the outer frame directly around the scaled canvas. Edge tabs remain anchored to that frame. Other main game tabs retain their previous full frame dimensions; switching away removes compact sizing. Tests assert that Loadout has only the normal 14 px body padding around the canvas at all three desktop sizes, fits the viewport, and restores the exact previous dimensions on returning to Bridge.
+On every main game tab, `GamePanelFrame` measures available mount space and the real body padding, shell border and footer. It fits the outer frame directly around the scaled canvas. Edge tabs remain anchored to that frame. All nine main game tabs use identical outer dimensions and the same anchored navigation. Tests assert that Loadout has only the normal 14 px body padding around the canvas at all three desktop sizes, fits the viewport, and asserts identical outer dimensions and no body overflow across all nine main tabs.

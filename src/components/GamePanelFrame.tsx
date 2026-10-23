@@ -1,7 +1,7 @@
 import {useLayoutEffect,useRef,useState,type CSSProperties,type ReactNode} from 'react';
 import {layoutProfileForWidth,layoutSizes} from '../lib/uiLayout';
 
-/** Fit the outer Loadout frame to its canvas, including the real body/footer chrome. */
+/** Fit every outer game frame to its canvas, including the real body/footer chrome. */
 export default function GamePanelFrame({compact=false,children}:{compact?:boolean;children:ReactNode}){
  const frame=useRef<HTMLDivElement>(null);
  const [size,setSize]=useState<CSSProperties>({});
