@@ -326,3 +326,8 @@ New branch `feature/talent-tree-editor`, based on deployed salvage commit `9cd9c
 ## 2026-10-22 — HV-031/032 starting talent selection
 
 The user specified one reserved species and one reserved class point at level 1, then one shared point per later level. Implemented wizard Talents step, later player learning, authoritative point accounting shared with legacy talent purchases, level gates, all incoming prerequisites, single-purchase nodes and real combat/action/challenge rewards. Existing characters retain two reserved starter choices. See `docs/TALENT_LEARNING.md` for verification and release order. Migration `20261022162724_talent_tree_learning.sql` was tested on the linked database inside rollback transactions and is intentionally NOT permanently applied before the matching frontend release. Current production remains 733f552; no deployment or main merge in this task. Other progression decisions in HV-028 remain open.
+
+
+## 2026-10-24 — HV-070 négyfős Loadout (fejlesztési ág, nincs release)
+
+`feature/expedition-transition`, draft PR #25, base `feature/visual-ui-editor`. A helyi/távoli hotfix tartalom azonosságát ellenőriztük, a történetet a távoli `54b14ded` commitra igazítottuk munkavesztés nélkül. Új csapat/sorrend/actor-power/közös gear és a régi játékos-party kivezetése: [TEAM_LOADOUT.md](expedition/TEAM_LOADOUT.md). SQL, Chromium HU/EN három méret, UI editor geometria és kapcsolt authenticated rollback PASS. Két valódi DB-kapcsolatos konkurencia, Firefox és production E2E nincs igazolva. Migráció nincs alkalmazva, nincs Vercel deploy/main merge. Production frontend továbbra 07cad61; a restore_expedition_loadout_permission hotfix éles. HV-070 Review; HV-069/077/075/076 kapuk nyitottak.

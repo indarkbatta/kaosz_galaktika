@@ -1,6 +1,6 @@
 # Közös expedíciós karakteralap — HV-067
 
-Állapot: implementálva a fejlesztési ágon; nincs élesítve. A társak létrehozó felülete HV-068-ban elkészült a fejlesztési ágon (lásd `COMPANION_RECRUITMENT.md`); a négyfős loadout HV-070 következő lépése.
+Állapot: HV-067 éles a 2026-10-24-i kiadás óta. A társak létrehozó felülete HV-068-ban elkészült a fejlesztési ágon (lásd `COMPANION_RECRUITMENT.md`); a négyfős loadout HV-070 fejlesztési implementációját a `TEAM_LOADOUT.md` írja le; az még nincs élesítve.
 
 ## Adatok és számítás
 

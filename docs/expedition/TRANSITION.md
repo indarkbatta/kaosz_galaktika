@@ -1,9 +1,9 @@
 # Expedíciós átállás — HV-066
 
-Állapot: végrehajtási leltár és tervezett szerződések; **nem élesített funkció**.
+Állapot (2026-10-24): HV-067/068/078 éles; HV-070 négyfős Loadout implementálva és tesztelve a fejlesztési ágon, nem élesítve. Részletek: [TEAM_LOADOUT.md](TEAM_LOADOUT.md). A teljes átállás nincs kész.
 Forrás: 2026-10-23-i beszélgetés, repository és kapcsolt Supabase read-only leltár.
 Kódalap: `26b33b3d28d6f704381881155165ff5125db64d0`.
-A HV-067 karakteralapját az `ACTOR_FOUNDATION.md`, a HV-068 társ editor/toborzás/fejlődés lépését a `COMPANION_RECRUITMENT.md` írja le; a további célobjektumok tervekként szerepelnek. Éles adatbázis-migráció nem történt.
+A HV-067 karakteralapját az `ACTOR_FOUNDATION.md`, a HV-068 társ editor/toborzás/fejlődés lépését a `COMPANION_RECRUITMENT.md` írja le; a további célobjektumok tervekként szerepelnek. A HV-067/068 migrációk és a célzott loadout jogosultság-hotfix élesek; a HV-070 migráció még nincs alkalmazva.
 
 ## Felhasználói döntések
 

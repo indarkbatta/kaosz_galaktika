@@ -1,6 +1,6 @@
 # Expedíciós társ editor és toborzás — HV-068
 
-Állapot: fejlesztési ágon, nem élesítve. Előfeltétel: HV-067 közös karakteralap. Nincs régi karakter/crew konverzió vagy törlés.
+Állapot: HV-068 és HV-078 éles. Hat publikált sablon kézzel létrehozva; nincs játékosállásként seedelve. A HV-070 Loadout külön, még nem élesített fejlesztés (`TEAM_LOADOUT.md`). Előfeltétel: HV-067 közös karakteralap. Nincs régi karakter/crew konverzió vagy törlés.
 
 ## Hol található?
 

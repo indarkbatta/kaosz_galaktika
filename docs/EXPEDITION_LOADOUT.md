@@ -1,6 +1,6 @@
-# Historical implementation — replacement planned
+# Aktuális fejlesztési szerződés — HV-070
 
-See [expedition transition](expedition/TRANSITION.md). The live two-companion/captain-power flow described below is scheduled for replacement by four full characters and shared expedition equipment.
+A négyfős, actoronkénti Loadout implementációja és pontos kiadási/QA állapota: [TEAM_LOADOUT.md](expedition/TEAM_LOADOUT.md). A HV-063 alábbi leírása történeti; a régi két-crew-s és captain-only írási útvonalat az új migráció lezárja. HV-070 még nincs élesítve.
 
 # Expedition loadout (HV-063)
 
