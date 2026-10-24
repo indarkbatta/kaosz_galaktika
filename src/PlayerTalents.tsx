@@ -1,4 +1,5 @@
 import {useEffect,useRef,useState} from 'react';
+import {Shield,Users,Search,Crosshair} from 'lucide-react';
 import {supabase} from './lib/supabase';
 import type {TalentTree} from './lib/talentTree';
 import {effectSummary,talentBranch,talentFlavor,talentRules} from './lib/talentPresentation';
@@ -6,22 +7,22 @@ import type {Power} from './lib/combat';
 import {treeName} from './lib/talentTree';
 import './player-talents.css';
 type Catalog={hp?:{species_base:number;class_base:number;species_total:number;class_total:number;max_health:number};powers?:Power[];skills?:{id:string;name_hu:string;name_en:string}[];level:number;points:{species:number;class:number;shared:number};owned:string[];trees:(TalentTree&{revision:number})[]};
-function TalentSymbol({node}:{node:{description_en:string;kind:string}}){const key=node.description_en.match(/Branch:\s*([a-z]+)/i)?.[1];return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{key==='survival'?<path d="M12 3 3 7v5c0 5 9 9 9 9s9-4 9-9V7l-9-4Z"/>:key==='social'?<path d="M21 11a9 8 0 0 1-9 8H5l-3 3V11a9 8 0 0 1 19 0Z"/>:key==='resourceful'?<><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></>:<><circle cx="12" cy="12" r="7"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></>}</svg>}
-export default function PlayerTalents({locale,speciesId,classId,creation=false,choices,onChoices,onReady,onChanged}:{locale:string;speciesId?:string;classId?:string;creation?:boolean;choices?:{species:string;class:string};onChoices?:(v:{species:string;class:string})=>void;onReady?:(ready:boolean)=>void;onChanged?:()=>void}){
+function TalentSymbol({node}:{node:{description_en:string;kind:string}}){const key=node.description_en.match(/Branch:\s*([a-z]+)/i)?.[1];const Icon=key==='survival'?Shield:key==='social'?Users:key==='resourceful'?Search:Crosshair;return <Icon size={22} aria-hidden="true"/>}
+export default function PlayerTalents({locale,speciesId,classId,actorId,cardsPerPage=3,creation=false,choices,onChoices,onReady,onChanged}:{locale:string;actorId?:string;cardsPerPage?:number;speciesId?:string;classId?:string;creation?:boolean;choices?:{species:string;class:string};onChoices?:(v:{species:string;class:string})=>void;onReady?:(ready:boolean)=>void;onChanged?:()=>void}){
  const en=locale==='en',tr=(a:string,b:string)=>en?b:a;
  const [data,setData]=useState<Catalog|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[branch,setBranch]=useState<'species'|'class'>('species');
  const [details,setDetails]=useState<string|null>(null),[page,setPage]=useState(0),[detailPage,setDetailPage]=useState(0);
  const dialog=useRef<HTMLDialogElement>(null);
  useEffect(()=>{if(details)dialog.current?.showModal();else dialog.current?.close();},[details]);
  const generation=useRef(0),lock=useRef(false),readyRef=useRef(onReady);readyRef.current=onReady;
- useEffect(()=>{const gen=++generation.current;setData(null);setError('');readyRef.current?.(false);void supabase.rpc('get_player_talent_trees',{p_species:speciesId||null,p_class:classId||null}).then(r=>{if(gen!==generation.current)return;if(r.error){setError(r.error.message);return;}setData(r.data as Catalog);});return()=>{generation.current++;};},[speciesId,classId]);
+ useEffect(()=>{const gen=++generation.current;setData(null);setError('');readyRef.current?.(false);void supabase.rpc(actorId?'get_expedition_actor_trees':'get_player_talent_trees',actorId?{p_actor:actorId}:{p_species:speciesId||null,p_class:classId||null}).then(r=>{if(gen!==generation.current)return;if(r.error){setError(r.error.message);return;}setData(r.data as Catalog);});return()=>{generation.current++;};},[speciesId,classId,actorId]);
  useEffect(()=>{if(!creation)return;const valid=!!data&&(['species','class'] as const).every(b=>{const tree=data.trees.find(t=>b==='species'?t.species_id:t.class_id);return !tree||tree.nodes.some(n=>n.id===choices?.[b]&&(n.kind==='power'?(n as typeof n&{power_published?:boolean}).power_published===true:(n as typeof n&{talent_published?:boolean}).talent_published!==false)&&(n.min_level||1)===1&&!tree.connections.some(e=>e.to_node_id===n.id));});readyRef.current?.(valid);},[data,choices,creation]);
- async function learn(id:string,revision:number){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const r=await supabase.rpc('learn_talent_tree_node',{p_node:id,p_revision:revision});if(r.error)throw new Error(r.error.message);setData(r.data as Catalog);onChanged?.();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{lock.current=false;setBusy(false);}}
+ async function learn(id:string,revision:number){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const r=await supabase.rpc(actorId?'learn_expedition_talent':'learn_talent_tree_node',actorId?{p_actor:actorId,p_node:id,p_revision:revision}:{p_node:id,p_revision:revision});if(r.error)throw new Error(r.error.message);setData(r.data as Catalog);onChanged?.();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{lock.current=false;setBusy(false);}}
  if(!data)return <div role="status">{error||tr('Talentfák betöltése…','Loading talent trees…')}</div>;
  const tree=data.trees.find(t=>branch==='species'?t.species_id:t.class_id),owned=data.owned||[];
  const skills=Object.fromEntries((data.skills||[]).map(s=>[s.id,en?s.name_en:s.name_hu]));
  const nodeDetails=tree?.nodes.find(n=>n.id===details),detailPower=data.powers?.find(p=>p.id===nodeDetails?.power_id);
- const allNodes=tree?.nodes.filter(n=>!creation||(n.min_level||1)===1)||[],pages=Math.max(1,Math.ceil(allNodes.length/3)),safePage=Math.min(page,pages-1),nodes=allNodes.slice(safePage*3,safePage*3+3);
+ const allNodes=tree?.nodes.filter(n=>!creation||(n.min_level||1)===1)||[],pages=Math.max(1,Math.ceil(allNodes.length/cardsPerPage)),safePage=Math.min(page,pages-1),nodes=allNodes.slice(safePage*cardsPerPage,safePage*cardsPerPage+cardsPerPage);
  const detailEffects=nodeDetails?.kind==='power'?detailPower?.effects||[]:nodeDetails?.effects||[];
  const detailText=nodeDetails?talentRules(nodeDetails,en):'';
  const detailChunks=splitDetails(detailText);

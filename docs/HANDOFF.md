@@ -326,3 +326,18 @@ New branch `feature/talent-tree-editor`, based on deployed salvage commit `9cd9c
 ## 2026-10-22 — HV-031/032 starting talent selection
 
 The user specified one reserved species and one reserved class point at level 1, then one shared point per later level. Implemented wizard Talents step, later player learning, authoritative point accounting shared with legacy talent purchases, level gates, all incoming prerequisites, single-purchase nodes and real combat/action/challenge rewards. Existing characters retain two reserved starter choices. See `docs/TALENT_LEARNING.md` for verification and release order. Migration `20261022162724_talent_tree_learning.sql` was tested on the linked database inside rollback transactions and is intentionally NOT permanently applied before the matching frontend release. Current production remains 733f552; no deployment or main merge in this task. Other progression decisions in HV-028 remain open.
+
+
+## 2026-10-24 — HV-070 négyfős Loadout (fejlesztési ág, nincs release)
+
+`feature/expedition-transition`, draft PR #25, base `feature/visual-ui-editor`. A helyi/távoli hotfix tartalom azonosságát ellenőriztük, a történetet a távoli `54b14ded` commitra igazítottuk munkavesztés nélkül. Új csapat/sorrend/actor-power/közös gear és a régi játékos-party kivezetése: [TEAM_LOADOUT.md](expedition/TEAM_LOADOUT.md). SQL, Chromium HU/EN három méret, UI editor geometria és kapcsolt authenticated rollback PASS. Két valódi DB-kapcsolatos konkurencia, Firefox és production E2E nincs igazolva. Migráció nincs alkalmazva, nincs Vercel deploy/main merge. Production frontend továbbra 07cad61; a restore_expedition_loadout_permission hotfix éles. HV-070 Review; HV-069/077/075/076 kapuk nyitottak.
+
+
+## 2026-10-24 — HV-079: saját készlet és hátizsák minden teljes karakternek
+
+Felhasználó megerősítette: a társnál külön hátizsák-slotok jelenjenek meg, szabad tárgyátadással. Saját 6 + saját hátizsák kapacitás és készlettartalom, közös hajóraktér. Az addigi shared/captain-only kapacitás felülírva. Implementáció és QA: [BACKPACKS.md](expedition/BACKPACKS.md). Új migráció még NINCS élesítve, nincs új Vercel deploy. Aktuális production már `569315b` / `dpl_BHaUMvqBY7fg9bCt2nip6UxtLTmW`, a HV-070 migráció éles; ez felülírja az előző HV-070 nincs release szakaszt. A manaBoard release komment/event rögzült, a korábbi context_markdown frissítés technikai requestState hibát adott; a legfrissebb session/decision és e dokumentum az irányadó.
+
+
+## 2026-10-24 — HV-079 éles, újállás- és konkurencia QA
+
+Production `9eadfe9`, `dpl_3hWJS3KLRaGKYSkKxJuaNs2cNK9D` READY, `index-CZNi02xz.js`. Saját hátizsák migráció éles, post-release authenticated SQL PASS. Új kapitány tényleges create RPC → két induló szolgálati crew → három idempotens publikus hire → teljes gear/power/bag/party lánc kapcsolt PostgreSQL-ben PASS, minden QA-adat rollback. Részletes bizonyíték és korlátok: [FRESH_START_QA.md](expedition/FRESH_START_QA.md). Új két valódi PG-kapcsolatos concurrency teszt a Windows self-hosted CI-ben; helyi root-only környezetben nem futtatható. CI-fixture javítások a Chromium/Firefox megosztott adatokra, kasztmenü locatorra és híd mountgeometriára. Nincs main merge, a QA-commit önmagában nem új frontend-kiadás.
