@@ -47,5 +47,5 @@ try{
  console.log('PASS real PostgreSQL: two distinct backend sessions; confirmed blocking in equip/transfer/revision/capacity races; exactly one winner, no copied or lost stock, full backpack preserved.');
 }finally{
  for(const c of connections){await c.query('rollback').catch(()=>{});await c.end().catch(()=>{});}
- await pg.stop().catch(()=>{});await rm(root,{recursive:true,force:true});
+ await pg.stop().catch(()=>{});await rm(root,{recursive:true,force:true,maxRetries:20,retryDelay:250});
 }
