@@ -34,6 +34,7 @@ try {
   const baseline = (await one('select private.combat_hero_before_loadout($1) s', [cid])).s;
   const oldPoints = (await one('select private.tree_points($1) p', [cid])).p;
   await db.exec(await readFile(actorMigration, 'utf8'));
+  await db.exec(await readFile('supabase/migrations/20261024081147_restore_expedition_loadout_permission.sql', 'utf8'));
   assert.deepEqual((await one('select private.combat_hero_before_loadout($1) s', [cid])).s, baseline,
     'Complete legacy captain result is unchanged, including powers, equipment and AP');
   assert.deepEqual((await one('select private.tree_points($1) p', [cid])).p, oldPoints);
@@ -102,6 +103,7 @@ try {
   await db.query('insert into character_progress(character_id) values($1)',[otherCid]);
   assert.equal((await one('select count(*)::int n from private.expedition_actors where id=$1',[otherCid])).n,1,'New captain trigger');
   await db.exec('set role authenticated');
+  assert.ok(Array.isArray((await one('select public.get_expedition_loadout() r')).r.prepared), 'Authenticated loadout RPC survives actor helper lockdown');
   assert.equal((await one('select public.get_expedition_roster() r')).r.actors.length,2);
   await assert.rejects(sheet(otherCid),/Actor not found/);
   await assert.rejects(db.query('select private.expedition_actor_context($1)',[aid]),/permission denied/);
@@ -112,11 +114,12 @@ try {
   await assert.rejects(sheet(aid),/Actor not found/);
   await db.exec("select set_config('request.jwt.claim.sub','',false)");
   await assert.rejects(db.query('select public.get_expedition_roster()'),/Login required/);
+  await assert.rejects(db.query('select public.get_expedition_loadout()'),/Login required/);
   await db.exec('reset role;set role anon');
   await assert.rejects(db.query('select public.get_expedition_roster()'),/permission denied/);
   await db.exec('reset role');
   assert.equal((await one("select bool_and(relrowsecurity) p from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relkind='r' and c.relname like 'expedition_actor%'")).p,true);
-  assert.equal((await one("select count(*)::int n from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname like 'expedition_%' and has_function_privilege('authenticated',p.oid,'execute')")).n,0);
+  assert.equal((await one("select count(*)::int n from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname like 'expedition_%' and p.proname <> 'expedition_loadout' and has_function_privilege('authenticated',p.oid,'execute')")).n,0);
   await db.query('delete from characters where id=$1',[cid]);
   assert.equal((await one('select count(*)::int n from private.expedition_actor_nodes')).n,0);
   assert.equal((await one('select count(*)::int n from private.expedition_actor_equipment')).n,0);
