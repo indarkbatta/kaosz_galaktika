@@ -12,7 +12,7 @@ const EmbeddedPostgres=require('embedded-postgres').default;
 if(process.platform!=='win32'&&process.getuid?.()===0)throw new Error('Real PostgreSQL QA requires a non-root user. Use the self-hosted Windows CI; no PGlite fallback.');
 const root=await mkdtemp(join(tmpdir(),'hatarvilag-concurrency-'));
 const portProbe=createServer();await new Promise(r=>portProbe.listen(0,'127.0.0.1',r));const port=portProbe.address().port;await new Promise(r=>portProbe.close(r));
-const pg=new EmbeddedPostgres({databaseDir:join(root,'db'),user:'postgres',password:randomBytes(24).toString('hex'),authMethod:'scram-sha-256',port,persistent:false,createPostgresUser:false,postgresFlags:['-h','127.0.0.1'],onLog:()=>{},onError:()=>{}});
+const pg=new EmbeddedPostgres({databaseDir:join(root,'db'),user:'postgres',password:randomBytes(24).toString('hex'),authMethod:'scram-sha-256',port,persistent:false,createPostgresUser:false,initdbFlags:['--encoding=UTF8','--locale=C'],postgresFlags:['-h','127.0.0.1'],onLog:()=>{},onError:()=>{}});
 const connections=[];
 try{
  await pg.initialise();await pg.start();await pg.createDatabase('hatarvilag_qa');
