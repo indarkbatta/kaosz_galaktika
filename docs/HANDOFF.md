@@ -336,3 +336,8 @@ The user specified one reserved species and one reserved class point at level 1,
 ## 2026-10-24 — HV-079: saját készlet és hátizsák minden teljes karakternek
 
 Felhasználó megerősítette: a társnál külön hátizsák-slotok jelenjenek meg, szabad tárgyátadással. Saját 6 + saját hátizsák kapacitás és készlettartalom, közös hajóraktér. Az addigi shared/captain-only kapacitás felülírva. Implementáció és QA: [BACKPACKS.md](expedition/BACKPACKS.md). Új migráció még NINCS élesítve, nincs új Vercel deploy. Aktuális production már `569315b` / `dpl_BHaUMvqBY7fg9bCt2nip6UxtLTmW`, a HV-070 migráció éles; ez felülírja az előző HV-070 nincs release szakaszt. A manaBoard release komment/event rögzült, a korábbi context_markdown frissítés technikai requestState hibát adott; a legfrissebb session/decision és e dokumentum az irányadó.
+
+
+## 2026-10-24 — HV-079 éles, újállás- és konkurencia QA
+
+Production `9eadfe9`, `dpl_3hWJS3KLRaGKYSkKxJuaNs2cNK9D` READY, `index-CZNi02xz.js`. Saját hátizsák migráció éles, post-release authenticated SQL PASS. Új kapitány tényleges create RPC → két induló szolgálati crew → három idempotens publikus hire → teljes gear/power/bag/party lánc kapcsolt PostgreSQL-ben PASS, minden QA-adat rollback. Részletes bizonyíték és korlátok: [FRESH_START_QA.md](expedition/FRESH_START_QA.md). Új két valódi PG-kapcsolatos concurrency teszt a Windows self-hosted CI-ben; helyi root-only környezetben nem futtatható. CI-fixture javítások a Chromium/Firefox megosztott adatokra, kasztmenü locatorra és híd mountgeometriára. Nincs main merge, a QA-commit önmagában nem új frontend-kiadás.

@@ -25,6 +25,7 @@ try{
  server=createServer(async(req,res)=>{if(req.url==='/rpc'){let body='';for await(const c of req)body+=c;const {method,args={}}=JSON.parse(body);try{assert.ok(method in methods);const keys=methods[method],r=await db.query('select public.'+method+'('+keys.map((_,i)=>'$'+(i+1)).join(',')+') result',keys.map(k=>typeof args[k]==='object'&&args[k]!==null?JSON.stringify(args[k]):args[k]));res.end(JSON.stringify({data:r.rows[0].result,error:null}));}catch(e){res.end(JSON.stringify({data:null,error:{message:e.message}}));}return;}res.setHeader('content-type','text/html; charset=utf-8');res.end('<meta charset="utf-8"><style>'+css+'</style><div id="root"></div><script>'+js+'</script>');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port;
  for(const [name,driver] of process.env.TREE_LOCAL_CHROMIUM?[['chromium',chromium]]:[['chromium',chromium],['firefox',firefox]]){
+  await db.exec('begin');
   const browser=await driver.launch(process.env.TREE_LOCAL_CHROMIUM?{executablePath:process.env.TREE_LOCAL_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage']}:{});
   try{
    const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
@@ -35,9 +36,9 @@ try{
    const style=async(p,selector)=>p.locator(selector).first().evaluate((el,keys)=>{const s=getComputedStyle(el);return Object.fromEntries(keys.map(k=>[k,s[k]]));},properties);
    for(const [actual,baseline] of [['.ed-submit','.ed-submit'],['.ed-secondary-button','.ed-secondary-button'],['.ed-roster-action','.ed-roster-action'],['.ed-roster-top button','.ed-roster-top button'],['.ed-pager button','.ed-pager button'],['.ed-record.selected','.ed-record.selected'],['.ed-tabs-detail button.active','.ed-tabs-detail button.active'],['.ed-nav-group-trigger','.ed-nav-group-trigger'],['.ed-nav-leaf.active','.ed-nav-leaf.active'],['.ed-form input:not([type=checkbox])','[data-reference=field]'],['.ed-checkbox input','.ed-checkbox input']])assert.deepEqual(await style(page,actual),await style(reference,baseline),'Shared template style: '+actual);
    await reference.close();
-   await page.getByRole('button',{name:'Szótár',exact:true}).click();await page.getByLabel('Magyar leírás',{exact:true}).fill('Böngészőből mentett társ.');
+   await page.getByRole('button',{name:'Szótár',exact:true}).click();await page.getByLabel('Magyar leírás',{exact:true}).fill(name+' böngészőből mentett társ.');
    await page.getByRole('button',{name:'MENTÉS',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.ed-footer span')?.textContent==='Mentve');
-   await page.reload();await page.getByRole('button',{name:'Szótár',exact:true}).click();await page.getByLabel('Magyar leírás',{exact:true}).waitFor();assert.equal(await page.getByLabel('Magyar leírás',{exact:true}).inputValue(),'Böngészőből mentett társ.');
+   await page.reload();await page.getByRole('button',{name:'Szótár',exact:true}).click();await page.getByLabel('Magyar leírás',{exact:true}).waitFor();assert.equal(await page.getByLabel('Magyar leírás',{exact:true}).inputValue(),name+' böngészőből mentett társ.');
    const sizes=[{width:1920,height:1080},{width:1366,height:768},{width:1280,height:720}];
    for(const size of sizes){await page.setViewportSize(size);for(const tab of ['Alapadatok','Tulajdonságok','Skillek','Kezdő talentek','Szótár','Összesítés']){await page.getByRole('navigation',{name:'Társ szerkesztőfülek'}).getByRole('button',{name:tab,exact:true}).click();for(const selector of ['.ed-form','.exp-edit-fields','.ed-nav','.ed-nav-groups'])assert.ok(await page.locator(selector).evaluate(e=>e.scrollHeight<=e.clientHeight+1),`${name} ${selector} ${tab} ${JSON.stringify(size)}`);}}
    await page.getByRole('button',{name:'Előnézet számítása',exact:true}).click();await page.locator('.exp-edit-fields h3').filter({hasText:'HP'}).waitFor();
@@ -62,6 +63,6 @@ try{
    await page.goto(url+'/?play=1&lang=en');await page.getByRole('button',{name:'My characters',exact:true}).click();await page.getByRole('button',{name:/Ironhand.*Level/}).waitFor();
    assert.deepEqual(errors,[]);
    console.log('PASS '+name+': editor SQL save/reload, six tabs/three sizes without scroll, preview, dirty guard, double-click hire/reload, actor talent view, real skill growth, HU/EN.');
-  }finally{await browser.close();}
+  }finally{await browser.close();await db.exec('rollback');}
  }
 }catch(e){console.error(e.message,e.stack);process.exitCode=1;}finally{server?.close();await db.close();}

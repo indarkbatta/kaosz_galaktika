@@ -30,6 +30,6 @@ Minden írás a meglévő saját játékállás/progress lock alatt fut, ellenő
 
 ## Kiadás
 
-**HV-079 még nincs élesítve.** Új migráció: `20261024112854_expedition_actor_backpacks.sql`. A hozzá tartozó frontenddel együtt, külön kért kiadásban alkalmazandó. Jelenlegi production: `569315b` / `dpl_BHaUMvqBY7fg9bCt2nip6UxtLTmW`; a korábbi HV-070 migráció már éles.
+**HV-079 éles.** A `20261024112854_expedition_actor_backpacks.sql` migráció alkalmazva. Production `9eadfe9` / `dpl_3hWJS3KLRaGKYSkKxJuaNs2cNK9D` READY, bundle `index-CZNi02xz.js`. Post-release authenticated SQL PASS. Újállás- és konkurenciaellenőrzés: [FRESH_START_QA.md](FRESH_START_QA.md).
 
 Új társi készletírások után egy régi frontend nem mutatná a társak külön készletét: a release utáni visszaállítást ennek megfelelően kell kezelni. A HV-070 valós kétkapcsolatos konkurencia- és HV-069 teljes újállásos E2E-kapuja továbbra is nyitott; a HV-077 többi harci javaslata nem vált elfogadott szabállyá. Helyben Firefox nincs igazolva.

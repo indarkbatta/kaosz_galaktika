@@ -1,6 +1,6 @@
 # Négyfős expedíciós Loadout — HV-070
 
-2026-10-24: HV-070 éles, commit `569315b`, deployment `dpl_BHaUMvqBY7fg9bCt2nip6UxtLTmW`; az `expedition_party_loadouts` migráció alkalmazva. A HV-079 karakterenkénti készlet javítása külön, még nem élesített változat: [BACKPACKS.md](BACKPACKS.md).
+2026-10-24: HV-070 éles, commit `569315b`, deployment `dpl_BHaUMvqBY7fg9bCt2nip6UxtLTmW`; az `expedition_party_loadouts` migráció alkalmazva. A HV-079 karakterenkénti készlet javítása külön, éles változat (`9eadfe9`): [BACKPACKS.md](BACKPACKS.md).
 
 ## Viselkedés
 
@@ -33,7 +33,7 @@ A belső segédfüggvények tiltottak; csak a saját tulajdont ellenőrző priv�
 
 A régi `CrewRosterPanel` és fel nem használt játékos-CSS törölve. A `set_salvage_party(uuid[])` és a kapitány-only `save_expedition_powers(uuid[])` public és private írási végpontjai elveszítik a kliensjogot a migrációval. A legacy gear adapter csak a kapitányt kezeli, hajós crew felszerelése tiltott. Régi rekordot a migráció nem töröl; a további történeti táblák, egyszerű crew-katalógus és a régi 1v1 motor végleges kivezetése HV-075/HV-045.
 
-**HV-079 pontosítás:** karakterenként saját 6 + saját hátizsák készlethely, szabad tárgyátadással; a hajóraktér közös. Ez felülírja a HV-070 korábbi kapitány-only kapacitását. [BACKPACKS.md](BACKPACKS.md). A pontosítás még nincs élesítve.
+**HV-079 pontosítás:** karakterenként saját 6 + saját hátizsák készlethely, szabad tárgyátadással; a hajóraktér közös. Ez felülírja a HV-070 korábbi kapitány-only kapacitását. [BACKPACKS.md](BACKPACKS.md). A pontosítás HV-079-ben éles.
 
 ## Bizonyíték és korlát
 
