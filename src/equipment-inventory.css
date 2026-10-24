@@ -23,3 +23,7 @@
 .eq-figure.eq-crew-portrait{object-fit:cover;object-position:center 20%;opacity:.9}
 .eq-tabs{overflow:hidden}
 @container(min-width:1051px){.eq-workspace{--eq-size:min(78px,calc((100cqw - 98px)/16),calc((100cqh - 225px)/6))}.eq-slot-label{font-size:11px}.eq-pane-head{font-size:13px}.eq-capacity{font-size:12px}.eq-grid-label{font-size:11px}}
+
+/* Slot artwork fills the inner frame independently of source aspect ratio. */
+.eq-slot>.eq-art,.eq-cell>.eq-art{position:absolute;inset:0;width:100%;height:100%}
+.eq-slot>.eq-art img,.eq-cell>.eq-art img{object-fit:cover}
