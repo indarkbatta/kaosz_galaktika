@@ -9,7 +9,7 @@ A HV-067 karakteralapját az `ACTOR_FOUNDATION.md`, a HV-068 társ editor/toborz
 
 - Külön expedíciós csapat és külön hajós szolgálati legénység.
 - Expedíció: kapitány + három teljes értékű karakter; faj, kaszt, öt tulajdonság, skillek, két talentfa, HP, öt passzív védelmi célszám, powerek, fejlődés.
-- Oldalanként négy harci pozíció; az 1. van elöl. Mozgás helycserével; karakterenként egy akció a saját körében.
+- Oldalanként négy harci pozíció; az 1. van elöl. Mozgás helycserével; karakterenként 1 standard + 1 partial akció a saját körében (2026-10-24-i elfogadott pontosítás).
 - Kasztpowerek: DPS, Tank, Controller, Leader szerepek. A meglévő statok és dobásképletek változatlanok.
 - Minden kiváltott rendszer eltűnik a játékból, editorból és aktív backendből.
 - **Legutóbbi pontosítás felülírja a karakterkonverziós tervet:** a felhasználó törli a régi kapitányt és társakat. Tiszta új állásra készülünk. Ez nem felhatalmazás agent által végzett tömeges törlésre.
@@ -59,7 +59,7 @@ Mindkét crew rendelkezik feloldható faji és rendes kaszthivatkozással, de a 
 | `character_inventory`, `character_personal_inventory`, `private.inventory_positions` | Hajóraktér + közös expedíciós készlet; nem négy külön tárgymásolat | HV-070 |
 | `private.character_power_loadouts`, `get_expedition_loadout`, `save_expedition_powers` | Karakterenként max. öt elérhető aktív power, explicit actor-azonosítóval | HV-070 |
 | `combat_hero`, `combat_hero_before_loadout`, `talent_hp`, `branch_defenses` | Egy közös karakterkiértékelő; a wrapperlánc feloldása, nem újabb másolt szabályimplementáció | HV-067 |
-| `combat_initial`, `combat_next_turn`, `combat_auto`, `combat_resolve_action`, `combat_act`, `combat_commit/view/start` | Pozíciós csapatharc, egy akció, több vezérelhető társ és több ellenfél | HV-045 |
+| `combat_initial`, `combat_next_turn`, `combat_auto`, `combat_resolve_action`, `combat_act`, `combat_commit/view/start` | Pozíciós csapatharc, 1 standard + 1 partial akció, több vezérelhető társ és több ellenfél | HV-045 |
 | `combat_runs/commands/events`, `combat_start_requests`, `combat_operations` | Ownership/revision/idempotencia és egyszeri reward megtartása; állapotséma verziózása | HV-045/076 |
 | `activate_combat_defense`, régi AP számláló és feliratok | Új akciómodellhez igazított védelem; 3 AP útvonal eltávolítása | HV-045/073/075 |
 | `CombatPanel.tsx`, `src/lib/combat.ts` | Oldalnézet, karakter/pozíció célzás, actionbar és új történeti olvasó | HV-073 |
@@ -84,7 +84,7 @@ Mindkét crew rendelkezik feloldható faji és rendes kaszthivatkozással, de a 
 Ezek nem implementálhatók hallgatólagosan a jóváhagyott statok helyett. A karaktermodell elkülönítése nem igényli az összes alábbi részlet lezárását; a HV-045 igen.
 
 1. Kezdeményezés: meglévő `level*3` pip plain dobás, ellenfélnél meglévő danger hozzáadása; szereplőnként, körönként újradobva, döntetlen stabil, szerver által meghatározott sorrenddel. Nincs új Speed stat.
-2. Aktív védelem: a saját akció felhasználásával egy tulajdonságra bekapcsolható a következő saját kör kezdetéig; nincs védelem után ingyen támadás. Társ cseréje nem rövidíti az időtartamot.
+2. Aktív védelem (részben felülírt javaslat): az elfogadott akciómodellben partial akció felhasználásával egy tulajdonságra bekapcsolható a következő saját kör kezdetéig; a standard akció ettől még felhasználható. Társ cseréje nem rövidíti az időtartamot.
 3. Helycsere: szomszédos élő társ, a kezdeményező akcióját fogyasztja; a másik actor köre nem vész el. Powerbe épített mozgás ugyanannak az akciónak része, nem plusz akció.
 4. Kényszermozgás: minden szomszédos lépés konzisztens átrendezés; nincs két actor ugyanazon a helyen. Mozgásgátlás ellenőrizendő használó és célpont oldalon.
 5. Kiesés: a jelenlegi 0 HP/sérülés/extraction szabály marad. Extraction után a sor elölre tömörül, nincs új hulla- vagy Death's Door rendszer. A kieső nem kap több kört.
@@ -123,3 +123,11 @@ Ezek nem implementálhatók hallgatólagosan a jóváhagyott statok helyett. A k
 - Pozíciócsere közben nincs extra kör, akció vagy CD-rövidülés. Nincs actor 0/1-hez kötött csapatgyőzelmi logika.
 - Reward és XP parancsismétléssel/dupla kéréssel sem duplázódik. Két valódi DB-kapcsolatos konkurenciateszt is kell; a soros PGlite nem helyettesíti.
 - HU/EN, három desktop méret, egységes keret, editor/játék geometria és főablakscroll hiánya.
+
+## Elfogadott akcióköltség — 2026-10-24
+
+Saját körönként 1 standard és 1 partial akció. Támadás és nagyobb gyógyítás standard; védekezés, kisebb gyógyítás vagy buff lehet partial. Powerenként szerkeszthető `action_cost`: `standard` vagy `partial`. Az új és meglévő powerek biztonságos alapértéke standard; nincs automatikus hatásalapú átsorolás. Az átváltás, sorrend és védelem időtartama továbbra nyitott döntés. A régi 1v1 motor még nem fogyasztja az új adatot; ez nem a kétakciós motor kiadása.
+
+A powereditor Aktiválás fülén a meglévő közös select kontroll kezeli a két értéket HU/EN címkékkel; nincs új vezérlőstílus. A célzott power_action_cost migrációt a hozzá tartozó frontend kiadása előtt kell alkalmazni; ebben a fejlesztési blokkban nincs deploy.
+
+Ellenőrzés: build és izolált harci SQL regresszió; kapcsolt adatbázison authenticated editor mentés/visszaolvasás standard és partial értékkel, érvénytelen érték és jogosulatlan mentés elutasítása, teljes ROLLBACK. Böngészős regresszió bővítve HU/EN mentés/újratöltéssel; a jelenlegi helyi Chromium indítását az operációsrendszer socket-korlátozása megakadályozta, ezért böngészős PASS még nincs.
