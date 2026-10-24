@@ -2,7 +2,7 @@ import {Users,Orbit,Package,Gamepad2,Swords,Settings,Dna,Shield,Sparkles,UserRou
 import {useEffect,useState} from 'react';
 
 export type EditorSection=
- 'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
+ 'expedition-companions'|'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
  'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|
  'ui-layout'|'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
 
@@ -16,6 +16,7 @@ const groups:MenuGroup[]=[
   {id:'classes',icon:'shield',hu:'Kasztok',en:'Classes'},
   {id:'skills',icon:'sparkles',hu:'Skillek',en:'Skills'},
   {id:'talent-trees',icon:'git-branch',hu:'Talentfák',en:'Talent trees'},
+  {id:'expedition-companions',icon:'users',hu:'Expedíciós társak',en:'Expedition companions'},
   {id:'crew-classes',icon:'shield',hu:'Legénységi kasztok',en:'Crew classes'},
   {id:'crew',icon:'user-round',hu:'Legénységi sablonok',en:'Crew templates'}]},
  {id:'world',icon:'orbit',hu:'Világ',en:'World',items:[

@@ -3,7 +3,7 @@
 Állapot: végrehajtási leltár és tervezett szerződések; **nem élesített funkció**.
 Forrás: 2026-10-23-i beszélgetés, repository és kapcsolt Supabase read-only leltár.
 Kódalap: `26b33b3d28d6f704381881155165ff5125db64d0`.
-A HV-067 fejlesztési ágon elkészült karakteralapját az `ACTOR_FOUNDATION.md` írja le; a többi célobjektum továbbra is terv. Éles adatbázis-migráció nem történt.
+A HV-067 karakteralapját az `ACTOR_FOUNDATION.md`, a HV-068 társ editor/toborzás/fejlődés lépését a `COMPANION_RECRUITMENT.md` írja le; a további célobjektumok tervekként szerepelnek. Éles adatbázis-migráció nem történt.
 
 ## Felhasználói döntések
 
@@ -96,7 +96,7 @@ Ezek nem implementálhatók hallgatólagosan a jóváhagyott statok helyett. A k
 
 1. HV-066: leltár és szerződések. Ez a dokumentum és audit megvan; a fenti nyitott szabályok Review alatt.
 2. HV-067: közös actor- és jogosultsági alap, ugyanazon szabályokkal; implementálva és aranymintával tesztelve a fejlesztési ágon. Részletek: `ACTOR_FOUNDATION.md`.
-3. HV-068/069: új társ editor/toborzás és tiszta új állás. Nem fut régi kapitány/crew konverzió. A felhasználó által végzett reset a meglévő saját-karakter törlési folyamat.
+3. HV-068: új társ editor/toborzás/fejlődés implementálva és tesztelve a fejlesztési ágon (`COMPANION_RECRUITMENT.md`). HV-069: tiszta új állás ellenőrzése. Nem fut régi kapitány/crew konverzió. A felhasználó által végzett reset a meglévő saját-karakter törlési folyamat.
 4. HV-070/071: négyfős csapat, közös készlet, viselés, actor-power loadout és pozíciós katalógus. A régi max. kétfős UI/RPC aktív használata megszűnik.
 5. HV-045/072/073: teljes csapatharc, tartalom és új megjelenítés; régi 1v1/3 AP végrehajtás megszűnik.
 6. HV-074 és HV-035/036/037: meglévő roncs authoringből runok, csapatskillek/harc/jutalom integráció. Nincs párhuzamos roncs- vagy harcmotor.

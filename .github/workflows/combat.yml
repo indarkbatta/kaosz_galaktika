@@ -32,6 +32,13 @@ on:
       - 'tools/qa/combat-*'
       - 'tools/qa/unified-*'
       - 'tools/qa/expedition-actors-*'
+      - 'tools/qa/expedition-recruit-*'
+      - 'src/ExpeditionCompanionEditor.tsx'
+      - 'src/ExpeditionRecruitment.tsx'
+      - 'src/expedition-companions.css'
+      - 'src/lib/expeditionActors.ts'
+      - 'src/PlayerTalents.tsx'
+      - 'supabase/migrations/*expedition_companion_recruitment*'
       - 'supabase/migrations/*expedition_actor_foundation*'
       - 'supabase/migrations/*unified_talents*'
       - 'supabase/migrations/*passive_defense_target*'
@@ -68,6 +75,14 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/expedition-actors-database.mjs
+      - name: Full expedition recruitment, progression and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-recruit-database.mjs
+      - name: Expedition companion editor and recruitment in browsers
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-recruit-browser.mjs
       - name: Power, Enemy, Item editors and complete PvE through HTTP and PostgreSQL
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
