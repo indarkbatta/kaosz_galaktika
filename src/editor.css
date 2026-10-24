@@ -224,3 +224,14 @@
 @media(max-height:780px){.ed-origin-editor .ed-tab-pane{padding:10px}.ed-origin-editor .ed-origin-settings h3{font-size:16px}.ed-origin-editor .ed-origin-settings p{font-size:11px;margin:5px 0}.ed-origin-editor .ed-origin-resistances>.cb-stat-grid{gap:8px}.ed-origin-editor .ed-branch-combat .cb-stat-grid{gap:10px;margin:10px 0}.ed-origin-editor .ed-origin-settings label{font-size:11px;gap:4px}.ed-origin-editor .ed-origin-settings input,.ed-origin-editor .ed-origin-settings select{height:34px}.ed-origin-editor .ed-tab-help{margin:0 0 8px;font-size:11px}.ed-origin-editor .ed-dictionary-fields textarea{height:64px}}
 .ed-origin-editor .ed-nav,.ed-origin-editor .ed-nav-groups{overflow:hidden}
 @media(max-height:780px){.ed-origin-editor .ed-nav{padding:8px}.ed-origin-editor .ed-nav h2{font-size:11px;padding:4px 6px 8px}.ed-origin-editor .ed-nav>button.ed-nav-exit{min-height:32px;padding:6px}.ed-origin-editor .ed-nav-bottom{display:none}.ed-origin-editor .ed-nav-group-trigger{min-height:32px;padding:6px;font-size:12px}.ed-origin-editor .ed-nav-leaf{min-height:29px;padding:4px 6px;font-size:12px}}
+
+/* Shared compact navigation for every editor; modules must not restyle their own menu. */
+@media(max-height:780px) and (min-width:761px){
+ .ed-layout .ed-nav{padding:8px}
+ .ed-layout .ed-nav h2{font-size:11px;padding:4px 6px 8px}
+ .ed-layout .ed-nav>button.ed-nav-exit{min-height:32px;padding:6px}
+ .ed-layout .ed-nav-bottom{display:none}
+ .ed-layout .ed-nav-group-trigger{min-height:32px;padding:6px;font-size:12px}
+ .ed-layout .ed-nav-leaf{min-height:29px;padding:4px 6px;font-size:12px}
+}
+.ed-submit>svg,.ed-secondary-button>svg,.ed-roster-action>svg,.ed-roster-top button>svg{vertical-align:middle;margin-inline-end:6px}

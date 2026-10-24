@@ -36,6 +36,8 @@ on:
       - 'src/ExpeditionCompanionEditor.tsx'
       - 'src/ExpeditionRecruitment.tsx'
       - 'src/expedition-companions.css'
+      - 'src/expedition-companion-editor.css'
+      - 'src/editor.css'
       - 'src/lib/expeditionActors.ts'
       - 'src/PlayerTalents.tsx'
       - 'supabase/migrations/*expedition_companion_recruitment*'

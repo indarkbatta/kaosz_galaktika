@@ -30,6 +30,11 @@ try{
    const page=await browser.newPage({viewport:{width:1366,height:768}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('https://assets.voidnoir.net/**',r=>r.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect width="400" height="600" fill="#263c46"/></svg>'}));
    await page.goto(url);await page.getByRole('button',{name:'Vaskéz',exact:false}).waitFor();
+   const reference=await browser.newPage({viewport:{width:1366,height:768}});await reference.goto(url+'/?reference=1');
+   const properties=['backgroundColor','backgroundImage','color','fontFamily','fontSize','fontWeight','lineHeight','borderTopColor','borderTopWidth','borderRadius','paddingTop','paddingRight','paddingBottom','paddingLeft','textTransform','boxShadow'];
+   const style=async(p,selector)=>p.locator(selector).first().evaluate((el,keys)=>{const s=getComputedStyle(el);return Object.fromEntries(keys.map(k=>[k,s[k]]));},properties);
+   for(const [actual,baseline] of [['.ed-submit','.ed-submit'],['.ed-secondary-button','.ed-secondary-button'],['.ed-roster-action','.ed-roster-action'],['.ed-roster-top button','.ed-roster-top button'],['.ed-pager button','.ed-pager button'],['.ed-record.selected','.ed-record.selected'],['.ed-tabs-detail button.active','.ed-tabs-detail button.active'],['.ed-nav-group-trigger','.ed-nav-group-trigger'],['.ed-nav-leaf.active','.ed-nav-leaf.active'],['.ed-form input:not([type=checkbox])','[data-reference=field]'],['.ed-checkbox input','.ed-checkbox input']])assert.deepEqual(await style(page,actual),await style(reference,baseline),'Shared template style: '+actual);
+   await reference.close();
    await page.getByRole('button',{name:'Szótár',exact:true}).click();await page.getByLabel('Magyar leírás',{exact:true}).fill('Böngészőből mentett társ.');
    await page.getByRole('button',{name:'MENTÉS',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.ed-footer span')?.textContent==='Mentve');
    await page.reload();await page.getByRole('button',{name:'Szótár',exact:true}).click();await page.getByLabel('Magyar leírás',{exact:true}).waitFor();assert.equal(await page.getByLabel('Magyar leírás',{exact:true}).inputValue(),'Böngészőből mentett társ.');

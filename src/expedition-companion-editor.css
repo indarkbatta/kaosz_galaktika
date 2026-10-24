@@ -1,0 +1,11 @@
+/* Geometry only. Controls, colors, typography, navigation and tabs come from editor.css. */
+.exp-form{overflow:hidden}
+.exp-content>.ed-form-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(155px,32%);gap:14px;grid-template-rows:minmax(0,1fr);height:100%;min-height:0}
+.exp-content{height:100%;min-height:0}
+.exp-edit-fields{min-height:0}
+.ed-form-fields label.exp-allocation-row{display:grid;grid-template-columns:minmax(0,1fr) 90px;align-items:center;gap:12px}
+.exp-form textarea{resize:none;min-height:76px;height:76px}
+.exp-form .ed-tab-help{margin:0}
+.exp-form .ed-image-area{display:flex;flex-direction:column;min-height:0}
+.exp-form .ed-image-frame{flex:1;min-height:0;height:auto;max-height:360px}
+.exp-preview-grid{grid-template-columns:repeat(5,minmax(0,1fr))}

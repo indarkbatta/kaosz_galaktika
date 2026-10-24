@@ -60,3 +60,10 @@ A sablon kezdő-node FK-k halasztottak: a meglévő faeditor törlés/újrabesz�
 ## Ami a következő kártyák feladata
 
 HV-070: négy aktív karakter, sorrend, közös készletből felszerelés és karakterenként öt előkészített power. HV-045/073: pozíciós csapatharc. HV-074: XP/reward/run-integráció. HV-075: régi egyszerűsített expedíciós crew, gear- és party-útvonalak végleges kivezetése. Az új társak most még nem kerülnek a régi két-crew-s salvage partyba és a régi 1v1 harcba.
+
+
+## HV-078 — editor-template javítás
+
+A társ-editorból kikerültek az egyedi gomb-, mező-, checkbox-, menü-, thumbnail-, footer- és modalmegjelenítések. Az editor közvetlenül az `editor.css` fájlt és az `EditorTemplate` komponenseket használja; a játékbeli toborzás stíluslapját külön importálja a játékfelület. A modul saját CSS-e csak tartalomgeometriát, oszlopokat és túlcsordulás-kezelést tartalmaz. A kisebb képernyős navigáció közös template-szabály, nem az expedíciós modul saját kinézete.
+
+A böngészős QA külön, ugyanazon komponensekből felépített referenciaeditort jelenít meg, és a tényleges computed style értékeket hasonlítja össze: mentés/másodlagos/új/másolat/lapozó gomb, kiválasztott kártya és fül, menücsoport és aktív menüpont, mező, checkbox. Ezt követi a mentés/másolat/újratöltés, hat fül és három méret görgetésellenőrzése, a toborzás és a karakterfejlődés. Chromium PASS; a meglévő crew-kaszt editor/party böngészős regresszió és a build is PASS. A javítás külön fejlesztési commit, élesítése külön követhető.
