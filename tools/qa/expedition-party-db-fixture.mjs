@@ -1,5 +1,6 @@
 import {readFile} from 'node:fs/promises';
 import {setupRecruitDatabase} from './expedition-recruit-db-fixture.mjs';
+export const bagMigration='supabase/migrations/20261024112854_expedition_actor_backpacks.sql';
 export const partyMigration='supabase/migrations/20261024082637_expedition_party_loadouts.sql';
 export async function setupPartyDatabase(db){
  await setupRecruitDatabase(db);
@@ -16,6 +17,7 @@ export async function setupPartyDatabase(db){
  await db.exec(await readFile('supabase/migrations/20261020175313_separate_personal_and_ship_inventory.sql','utf8'));
  await db.exec(await readFile('supabase/migrations/20261023130618_inventory_slot_positions.sql','utf8'));
  await db.exec(await readFile(partyMigration,'utf8'));
+ await db.exec(await readFile(bagMigration,'utf8'));
  const cid=(await db.query('select id from characters limit 1')).rows[0].id;
  const companions=[];
  for(const name of ['Vaskéz','Nyx','Tessel','Mora']){

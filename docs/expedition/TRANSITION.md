@@ -1,9 +1,9 @@
 # Expedíciós átállás — HV-066
 
-Állapot (2026-10-24): HV-067/068/078 éles; HV-070 négyfős Loadout implementálva és tesztelve a fejlesztési ágon, nem élesítve. Részletek: [TEAM_LOADOUT.md](TEAM_LOADOUT.md). A teljes átállás nincs kész.
+Állapot (2026-10-24): HV-067/068/078 éles; HV-070 négyfős Loadout éles (`569315b`); HV-079 külön karakterkészlet-javítás fejlesztési ágon, nem élesítve. Részletek: [TEAM_LOADOUT.md](TEAM_LOADOUT.md). A teljes átállás nincs kész.
 Forrás: 2026-10-23-i beszélgetés, repository és kapcsolt Supabase read-only leltár.
 Kódalap: `26b33b3d28d6f704381881155165ff5125db64d0`.
-A HV-067 karakteralapját az `ACTOR_FOUNDATION.md`, a HV-068 társ editor/toborzás/fejlődés lépését a `COMPANION_RECRUITMENT.md` írja le; a további célobjektumok tervekként szerepelnek. A HV-067/068 migrációk és a célzott loadout jogosultság-hotfix élesek; a HV-070 migráció még nincs alkalmazva.
+A HV-067 karakteralapját az `ACTOR_FOUNDATION.md`, a HV-068 társ editor/toborzás/fejlődés lépését a `COMPANION_RECRUITMENT.md` írja le; a további célobjektumok tervekként szerepelnek. A HV-067/068 migrációk és a célzott loadout jogosultság-hotfix élesek; a HV-070 migráció is alkalmazva; a HV-079 migráció még nincs élesítve.
 
 ## Felhasználói döntések
 
@@ -74,7 +74,7 @@ Mindkét crew rendelkezik feloldható faji és rendes kaszthivatkozással, de a 
 - A party pozíció és az actor-azonosító külön mező. Mozgáskor az actor nem kap új identitást, és a köre/CD-je nem cserélődik el.
 - A hajós crew nem FK-zik teljes karakterként az expedition actorra, és nem birtokol felszerelést.
 - Közös készletből explicit actorhoz felszerelt darab; közös hozzáférés, nincs faj/kaszt alapú viselési tiltás. Slot/fegyvertípus fizikai kompatibilitása megmarad. Egy darab egy időben egy viselőn lehet — technikai alapértelmezés, nem tárgyduplázás.
-- A csapat közös készletének kapacitása külön termékdöntés; nem szorozzuk meg automatikusan néggyel és nem vezetünk be új súlyszabályt.
+- HV-079 felhasználói pontosítás: karakterenként saját 6 + saját hátizsák tárolóhelyek, szabad tárgyátadás; hajóraktér közös. Nincs új súlyszabály. Részletek: BACKPACKS.md.
 - Új autoritatív RPC minden aktorműveletnél ellenőrzi az actor játékállásához tartozást. A kliens UUID-je önmagában nem jogosultság.
 - Zárolási sorrend: játékállás/progress → expedíciós run → actorok rendezett UUID szerint → készlet/felszerelés. Minden régi és új írás ugyanazt a sorrendet követi az átállás idején.
 - Runinduláskor pillanatkép: actor build, állapot, felszerelés, öt power, kezdő felállás. Futó expedíció alatt a snapshotot érintő átállítás tiltott.

@@ -13,8 +13,8 @@ type Store='personal'|'cargo';
 type Stock={item_id:string;quantity:number;position?:number};
 type Equipped={id:string;crew_id:string|null;slot:string;item_id:string};
 type Slot={key:string;hu:string;en:string};
-export type StorageSnapshot={cargo:Stock[];personal:Stock[];equipped:Equipped[];items:Item[];cargo_capacity:number;personal_capacity:number;ship:{translations:{locale:string;name:string}[]}};
-type DragData={kind:'stock';storage:Store;itemId:string;quantity:number}|{kind:'gear';slot:string;crewId:string|null;itemId:string};
+export type StorageSnapshot={cargo:Stock[];personal:Stock[];equipped:Equipped[];items:Item[];cargo_capacity:number;personal_capacity:number;personal_inventories?:{actor_id:string;capacity:number;items:Stock[]}[];ship:{translations:{locale:string;name:string}[]}};
+type DragData={kind:'stock';storage:Store;itemId:string;quantity:number;actorId?:string}|{kind:'gear';slot:string;crewId:string|null;itemId:string};
 type Selection={storage:Store;itemId:string}|{slot:string;crewId:string|null;itemId:string|null};
 const DRAG_TYPE='application/x-hatarvilag-equipment';
 const captainSlots:Slot[]=[{key:'relic',hu:'Relikvia',en:'Relic'},{key:'body_armor',hu:'Testpáncél',en:'Body armor'},{key:'main_weapon',hu:'Főfegyver',en:'Main weapon'},{key:'sidearm',hu:'Oldalfegyver',en:'Sidearm'},{key:'utility1',hu:'Utility 1',en:'Utility 1'},{key:'utility2',hu:'Utility 2',en:'Utility 2'},{key:'belt',hu:'Öv',en:'Belt'},{key:'backpack',hu:'Hátizsák',en:'Backpack'}];
@@ -36,7 +36,9 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  useEffect(()=>{if(initialData)return;setData(null);void refresh();return()=>{generation.current++;};},[refresh,initialData]);
  const members=expeditionActors?expeditionActors.filter(a=>a.kind==='companion').map(a=>({id:a.id,name:en?a.name_en:a.name_hu,portrait_path:a.portrait_path,position:''})):crew;
  const member=members.find(c=>c.id===target),crewId=member?.id||null,slots=crewId&&!expeditionActors?crewSlots:captainSlots,currentName=member?.name||captainName;
- const items=data?.items||[],cargo=data?.cargo||[],personal=data?.personal||[],equipped=data?.equipped||[];
+ const bagOwnerId=crewId||characterId,bag=data?.personal_inventories?.find(b=>b.actor_id===bagOwnerId);
+ const personalCapacity=bag?.capacity??(data?.personal_inventories?6:data?.personal_capacity??6);
+ const items=data?.items||[],cargo=data?.cargo||[],personal=bag?.items??(data?.personal_inventories?[]:data?.personal||[]),equipped=data?.equipped||[];
  const itemById=(id:string|null)=>items.find(i=>i.id===id),name=(i:Item|undefined)=>itemName(i,locale);
  const positionItem=(slot:string,id:string|null)=>equipped.find(e=>e.slot===slot&&e.crew_id===id);
  const fits=(i:Item|undefined,slot:string,id:string|null)=>!!i&&i.equip_owner===(id&&!expeditionActors?'crew':'captain')&&(i.equip_slot===slot||((!id||expeditionActors)&&['utility1','utility2'].includes(i.equip_slot||'')&&['utility1','utility2'].includes(slot)));
@@ -50,28 +52,36 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  } as Record<string,string>)[message]||message;
  async function perform(rpc:string,args:Record<string,string|number|null>){if(guard.current||initialData||locked)return;guard.current=true;setBusy(true);setTip(null);
   try{
-  if(expeditionActors){
-   if(rpc==='set_equipment_from_storage'){rpc='equip_expedition_actor';args={p_actor:args.p_crew||characterId,p_slot:args.p_slot,p_item:args.p_item,p_storage:args.p_storage};}
-   else if(rpc==='move_equipment'){rpc='move_expedition_equipment';args={p_from_actor:args.p_from_crew||characterId,p_from_slot:args.p_from_slot,p_to_actor:args.p_to_crew||characterId,p_to_slot:args.p_to_slot};}
-   else if(rpc==='drop_inventory_item'&&args.p_from==='gear'){rpc='equip_expedition_actor';args={p_actor:args.p_crew||characterId,p_slot:args.p_slot,p_item:null,p_storage:args.p_to,p_position:args.p_position};}
-  }
   const r=await supabase.rpc(rpc,args);if(r.error)throw new Error(errorText(r.error.message));await Promise.all([refresh(),onChanged()]);setSelected(null);notify(tr('Készlet frissítve.','Inventory updated.'),'success');}
   catch(e){notify(e instanceof Error?e.message:String(e),'error');}finally{guard.current=false;setBusy(false);setDragged(null);setHover('');}
  }
- function equip(slot:string,itemId:string|null,id:string|null,storage:Store){void perform('set_equipment_from_storage',{p_slot:slot,p_item:itemId,p_crew:id,p_storage:storage});}
- function transfer(itemId:string,amount:number,to:Store){void perform('move_storage_item',{p_item:itemId,p_quantity:amount,p_to:to});}
+ function equip(slot:string,itemId:string|null,id:string|null,storage:Store,storageActor=bagOwnerId){
+  if(expeditionActors)void perform('equip_expedition_actor_from',{p_actor:id||characterId,p_slot:slot,p_item:itemId,p_storage:storage,p_storage_actor:storageActor});
+  else void perform('set_equipment_from_storage',{p_slot:slot,p_item:itemId,p_crew:id,p_storage:storage});
+ }
+ function transfer(itemId:string,amount:number,to:Store){
+  if(expeditionActors)void perform('transfer_expedition_item',{p_item:itemId,p_quantity:amount,p_from:to==='cargo'?'personal':'cargo',p_from_actor:bagOwnerId,p_to:to,p_to_actor:bagOwnerId});
+  else void perform('move_storage_item',{p_item:itemId,p_quantity:amount,p_to:to});
+ }
  function start(e:DragEvent,payload:DragData){setTip(null);setDragged(payload);e.dataTransfer.setData(DRAG_TYPE,JSON.stringify(payload));e.dataTransfer.effectAllowed='move';}
  function read(e:DragEvent):DragData|null{try{return JSON.parse(e.dataTransfer.getData(DRAG_TYPE)) as DragData;}catch{return dragged;}}
  const clearDrag=()=>{setDragged(null);setHover('');setTip(null);};
- function dropOnSlot(e:DragEvent,slot:string){e.preventDefault();e.stopPropagation();const d=read(e);clearDrag();if(!d||busy)return;
+ function dropOnSlot(e:DragEvent,slot:string){e.preventDefault();e.stopPropagation();const d=read(e);clearDrag();if(!d||busy||locked)return;
   if(!fits(itemById(d.itemId),slot,crewId)){notify(tr('Ez a felszerelés nem használható itt.','Equipment incompatible with this slot.'),'error');return;}
-  if(d.kind==='stock')equip(slot,d.itemId,crewId,d.storage);
-  else if(d.slot!==slot||d.crewId!==crewId)void perform('move_equipment',{p_from_slot:d.slot,p_from_crew:d.crewId,p_to_slot:slot,p_to_crew:crewId});
+  if(d.kind==='stock')equip(slot,d.itemId,crewId,d.storage,d.actorId||characterId);
+  else if(d.slot!==slot||d.crewId!==crewId){
+   if(expeditionActors)void perform('move_expedition_equipment',{p_from_actor:d.crewId||characterId,p_from_slot:d.slot,p_to_actor:bagOwnerId,p_to_slot:slot});
+   else void perform('move_equipment',{p_from_slot:d.slot,p_from_crew:d.crewId,p_to_slot:slot,p_to_crew:crewId});
+  }
  }
- function dropOnStorage(e:DragEvent,to:Store,position?:number){e.preventDefault();e.stopPropagation();const d=read(e);clearDrag();if(!d||busy)return;
-  if(position!==undefined){void perform('drop_inventory_item',{p_item:d.itemId,p_quantity:d.kind==='stock'?d.quantity:1,p_from:d.kind==='stock'?d.storage:'gear',p_to:to,p_position:position,p_slot:d.kind==='gear'?d.slot:null,p_crew:d.kind==='gear'?d.crewId:null});}
+ function dropOnStorage(e:DragEvent,to:Store,position?:number,toActor=bagOwnerId){e.preventDefault();e.stopPropagation();const d=read(e);clearDrag();if(!d||busy||locked)return;
+  if(expeditionActors){
+   void perform('transfer_expedition_item',{p_item:d.itemId,p_quantity:d.kind==='stock'?d.quantity:1,p_from:d.kind==='stock'?d.storage:'gear',p_from_actor:d.kind==='stock'?d.actorId||characterId:d.crewId||characterId,p_to:to,p_to_actor:toActor,p_position:position??null,p_slot:d.kind==='gear'?d.slot:null});
+  }else if(position!==undefined){void perform('drop_inventory_item',{p_item:d.itemId,p_quantity:d.kind==='stock'?d.quantity:1,p_from:d.kind==='stock'?d.storage:'gear',p_to:to,p_position:position,p_slot:d.kind==='gear'?d.slot:null,p_crew:d.kind==='gear'?d.crewId:null});}
   else if(d.kind==='gear')equip(d.slot,null,d.crewId,to);else if(d.storage!==to)transfer(d.itemId,d.quantity,to);
  }
+ function chooseActor(id:string){if(busy)return;setTarget(id);setSelected(null);setBagPage(0);setTip(null);}
+ function allowActorDrop(e:DragEvent){if(expeditionActors&&dragged&&!busy&&!locked)e.preventDefault();}
  function showTip(e:ReactMouseEvent<HTMLButtonElement>|ReactFocusEvent<HTMLButtonElement>,item:Item|undefined,stock?:number,storage?:Store){if(!item||dragged||busy)return;
   const rect=e.currentTarget.getBoundingClientRect();const mouse='clientX'in e;
   setTip({item,quantity:stock,equipped:storage===undefined,storage,x:Math.max(8,Math.min((mouse?e.clientX:rect.right)+14,window.innerWidth-336)),y:Math.max(8,Math.min(mouse?e.clientY:rect.top,window.innerHeight-325))});
@@ -79,7 +89,7 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  function stockCell(row:Stock|undefined,storage:Store,key:number){const item=row&&itemById(row.item_id),active=selected&&'storage'in selected&&selected.storage===storage&&selected.itemId===row?.item_id;
   return <button type="button" key={key} className={'eq-cell '+(row?'filled ':'')+(item?.rarity||'')+(active?' active':'')} disabled={busy||locked} draggable={!!row&&!busy&&!locked}
    data-storage={storage} data-position={key} onDragOver={e=>{if(dragged)e.preventDefault();}} onDrop={e=>dropOnStorage(e,storage,key)}
-   onDragStart={e=>row&&start(e,{kind:'stock',itemId:row.item_id,quantity:row.quantity,storage})} onDragEnd={clearDrag}
+   onDragStart={e=>row&&start(e,{kind:'stock',itemId:row.item_id,quantity:row.quantity,storage,actorId:bagOwnerId})} onDragEnd={clearDrag}
    onClick={()=>{setTip(null);if(!row)return;if(selectedGear&&fits(item,selectedGear.slot,selectedGear.crewId))equip(selectedGear.slot,row.item_id,selectedGear.crewId,storage);else{setSelected({storage,itemId:row.item_id});setQuantity(row.quantity);}}}
    aria-label={row?name(item)+' ×'+row.quantity:tr('Üres hely','Empty slot')}
    onMouseEnter={e=>showTip(e,item,row?.quantity,storage)} onMouseMove={e=>showTip(e,item,row?.quantity,storage)} onMouseLeave={()=>setTip(null)} onFocus={e=>showTip(e,item,row?.quantity,storage)} onBlur={()=>setTip(null)}>
@@ -88,13 +98,13 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
  }
  if(!data)return <div className="eq-loading" role="status">{error||tr('Készletek betöltése…','Loading inventories…')}{error&&<button onClick={()=>void refresh()}>{tr('Újrapróbálás','Retry')}</button>}</div>;
  const cargoPageSize=compact?25:40;
- const cargoPages=Math.max(1,Math.ceil(data.cargo_capacity/cargoPageSize)),cp=Math.min(cargoPage,cargoPages-1),bonus=Math.max(0,data.personal_capacity-6),bagPages=Math.max(1,Math.ceil(bonus/12)),bp=Math.min(bagPage,bagPages-1);
+ const cargoPages=Math.max(1,Math.ceil(data.cargo_capacity/cargoPageSize)),cp=Math.min(cargoPage,cargoPages-1),bonus=Math.max(0,personalCapacity-6),bagPages=Math.max(1,Math.ceil(bonus/12)),bp=Math.min(bagPage,bagPages-1);
  const at=(rows:Stock[],position:number)=>rows.find((r,i)=>(r.position??i)===position);
  const shipName=data.ship?.translations?.find(t=>t.locale===locale)?.name||data.ship?.translations?.find(t=>t.locale==='hu')?.name||'—';
  const crewPageSize=compact?2:4,crewPages=Math.max(1,Math.ceil(members.length/crewPageSize)),crewCurrentPage=Math.min(crewPage,crewPages-1);
  const preferredSlot=selectedItem?.equip_slot||'',canEquip=selected&&'storage'in selected&&fits(selectedItem,preferredSlot,crewId);
  return <section ref={root} className="eq-root" aria-busy={busy} aria-label={tr('Felszerelés és raktér','Equipment and cargo')}>
-  <nav className="eq-tabs" aria-label={tr('Karakter felszerelése','Character equipment')}><button className={!crewId?'active':''} onClick={()=>{setTarget('captain');setSelected(null);}}>{tr('KAPITÁNY','CAPTAIN')}</button>{crewPages>1&&<button disabled={!crewCurrentPage} aria-label={tr('Előző legénységi tagok','Previous crew')} onClick={()=>setCrewPage(crewCurrentPage-1)}>‹</button>}{members.slice(crewCurrentPage*crewPageSize,(crewCurrentPage+1)*crewPageSize).map(c=><button key={c.id} className={target===c.id?'active':''} title={crewPositionName(c.position,en)} onClick={()=>{setTarget(c.id);setSelected(null);}}>{c.name}</button>)}{crewPages>1&&<button disabled={crewCurrentPage===crewPages-1} aria-label={tr('További legénységi tagok','More crew')} onClick={()=>setCrewPage(crewCurrentPage+1)}>› {crewCurrentPage+1}/{crewPages}</button>}</nav>
+  <nav className="eq-tabs" aria-label={tr('Karakter felszerelése','Character equipment')}><button className={!crewId?'active':''} disabled={busy} onClick={()=>chooseActor('captain')} onDragOver={allowActorDrop} onDrop={e=>expeditionActors&&dropOnStorage(e,'personal',undefined,characterId)}>{tr('KAPITÁNY','CAPTAIN')}</button>{crewPages>1&&<button disabled={!crewCurrentPage} aria-label={tr('Előző legénységi tagok','Previous crew')} onClick={()=>setCrewPage(crewCurrentPage-1)}>‹</button>}{members.slice(crewCurrentPage*crewPageSize,(crewCurrentPage+1)*crewPageSize).map(c=><button key={c.id} className={target===c.id?'active':''} disabled={busy} title={expeditionActors?tr('Húzz ide tárgyat az átadáshoz.','Drop an item here to give it to this character.'):crewPositionName(c.position,en)} onClick={()=>chooseActor(c.id)} onDragOver={allowActorDrop} onDrop={e=>expeditionActors&&dropOnStorage(e,'personal',undefined,c.id)}>{c.name}</button>)}{crewPages>1&&<button disabled={crewCurrentPage===crewPages-1} aria-label={tr('További legénységi tagok','More crew')} onClick={()=>setCrewPage(crewCurrentPage+1)}>› {crewCurrentPage+1}/{crewPages}</button>}</nav>
   {error&&<p role="alert" className="eq-error">{error}</p>}
   <div className="eq-workspace">
    <section className="eq-paperdoll"><header className="eq-pane-head"><strong>{tr('FELSZERELÉS','EQUIPMENT')}</strong><span>{currentName}</span></header>
@@ -108,12 +118,12 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
     </div><p className="eq-help">{tr('Húzd a tárgyat egy felszerelési helyre.','Drag an item onto an equipment slot.')}</p>
    </section>
    <section className={'eq-personal '+(hover==='personal'?'eq-stock-hover':'')} onDragOver={e=>{if(dragged){e.preventDefault();setHover('personal');}}} onDragLeave={()=>setHover('')} onDrop={e=>dropOnStorage(e,'personal')} aria-label={tr('Karakter inventory','Personal inventory')}>
-    <header className="eq-pane-head"><strong>{tr('KÖZÖS KÉSZLET','SHARED INVENTORY')}</strong></header><div className="eq-capacity">{captainName}<br/>{tr('Alap','Base')}: 6 + {tr('hátizsák','backpack')}: {bonus}<span>{personal.length} / {data.personal_capacity}</span></div>
+    <header className="eq-pane-head"><strong>{tr('SZEMÉLYES KÉSZLET','PERSONAL INVENTORY')}</strong></header><div className="eq-capacity">{currentName}<br/>{tr('Alap','Base')}: 6 + {tr('hátizsák','backpack')}: {bonus}<span>{personal.length} / {personalCapacity}</span></div>
     <h3 className="eq-grid-label">{tr('ALAPHELYEK','BASE SLOTS')} · 6</h3><div className="eq-grid eq-personal-grid">{Array.from({length:6},(_,i)=>stockCell(at(personal,i),'personal',i))}</div>
     <h3 className="eq-grid-label eq-bonus-label">{tr('HÁTIZSÁK','BACKPACK')} · +{bonus}</h3>
     {bonus?<div className="eq-grid eq-personal-grid">{Array.from({length:Math.min(12,bonus-bp*12)},(_,i)=>stockCell(at(personal,6+bp*12+i),'personal',6+bp*12+i))}</div>:<p className="eq-help">{tr('A felszerelt hátizsák további helyeket ad.','Equip a backpack to add more slots.')}</p>}
     {bagPages>1&&<nav className="eq-pager" aria-label={tr('Hátizsák lapozása','Backpack pages')}><button disabled={bp===0} onClick={()=>setBagPage(bp-1)}>‹</button><span>{bp+1} / {bagPages}</span><button disabled={bp===bagPages-1} onClick={()=>setBagPage(bp+1)}>›</button></nav>}
-    <p className="eq-help eq-personal-total">{tr('Külön tároló · a hajó rakterét nem bővíti.','Separate storage · does not expand ship cargo.')}</p>
+    <p className="eq-help eq-personal-total">{expeditionActors?tr('Átadás: húzd a tárgyat a másik karakter fülére.','Give items: drag onto another character’s tab.'):tr('Külön tároló · a hajó rakterét nem bővíti.','Separate storage · does not expand ship cargo.')}</p>
    </section>
    <section className={'eq-cargo '+(hover==='cargo'?'eq-stock-hover':'')} onDragOver={e=>{if(dragged){e.preventDefault();setHover('cargo');}}} onDragLeave={()=>setHover('')} onDrop={e=>dropOnStorage(e,'cargo')} aria-label={tr('Hajó raktere','Ship cargo')}>
     <header className="eq-pane-head"><strong>{tr('HAJÓ RAKTERE','SHIP CARGO')}</strong><span>{cargo.length} / {data.cargo_capacity}</span></header><div className="eq-capacity">{shipName} · {tr('Kapacitás','Capacity')}: {data.cargo_capacity}</div>
@@ -121,7 +131,7 @@ export default function EquipmentInventory({characterId,captainName,locale,crew,
     <nav className="eq-pager" aria-label={tr('Raktér lapozása','Cargo pages')}><button disabled={cp===0} onClick={()=>setCargoPage(cp-1)}>‹</button><span>{cp+1} / {cargoPages}</span><button disabled={cp===cargoPages-1} onClick={()=>setCargoPage(cp+1)}>›</button></nav>
     <div className="eq-detail"><header>{selectedGear&&!selectedItem?tr('KIJELÖLT FELSZERELÉSI HELY','SELECTED EQUIPMENT SLOT'):tr('KIJELÖLT TÁRGY','SELECTED ITEM')}</header>
      {selectedItem?<><div className="eq-detail-item"><ItemPicture item={selectedItem}/><div><strong>{name(selectedItem)}</strong><p>{itemDescription(selectedItem,locale)}</p></div></div>
-      <div className="eq-detail-actions">{selected&&'storage'in selected?<><label>{tr('Darab','Qty')}<input type="number" min={1} max={selectedStock?.quantity||1} value={quantity} onChange={e=>setQuantity(Number(e.target.value))}/></label><button disabled={busy||!Number.isInteger(quantity)||quantity<1||quantity>(selectedStock?.quantity||0)} onClick={()=>transfer(selected.itemId,quantity,selected.storage==='cargo'?'personal':'cargo')}>{selected.storage==='cargo'?tr('→ Hátizsák','→ Backpack'):tr('→ Hajóraktér','→ Ship cargo')}</button>{canEquip&&<button disabled={busy||locked} onClick={()=>equip(preferredSlot,selected.itemId,crewId,selected.storage)}>{tr('Felszerelés','Equip')}</button>}</>:selectedGear&&<><button disabled={busy||locked} onClick={()=>equip(selectedGear.slot,null,selectedGear.crewId,'personal')}>{tr('→ Hátizsák','→ Backpack')}</button><button disabled={busy||locked} onClick={()=>equip(selectedGear.slot,null,selectedGear.crewId,'cargo')}>{tr('→ Hajóraktér','→ Ship cargo')}</button></>}</div>
+      <div className="eq-detail-actions">{selected&&'storage'in selected?<><label>{tr('Darab','Qty')}<input type="number" min={1} max={selectedStock?.quantity||1} value={quantity} onChange={e=>setQuantity(Number(e.target.value))}/></label><button disabled={busy||locked||!Number.isInteger(quantity)||quantity<1||quantity>(selectedStock?.quantity||0)} onClick={()=>transfer(selected.itemId,quantity,selected.storage==='cargo'?'personal':'cargo')}>{selected.storage==='cargo'?tr('→ Hátizsák','→ Backpack'):tr('→ Hajóraktér','→ Ship cargo')}</button>{canEquip&&<button disabled={busy||locked} onClick={()=>equip(preferredSlot,selected.itemId,crewId,selected.storage)}>{tr('Felszerelés','Equip')}</button>}</>:selectedGear&&<><button disabled={busy||locked} onClick={()=>equip(selectedGear.slot,null,selectedGear.crewId,'personal')}>{tr('→ Hátizsák','→ Backpack')}</button><button disabled={busy||locked} onClick={()=>equip(selectedGear.slot,null,selectedGear.crewId,'cargo')}>{tr('→ Hajóraktér','→ Ship cargo')}</button></>}</div>
      </>:<p className="eq-help">{selectedGear?tr('Kattints egy megfelelő tárgyra, vagy húzd erre a helyre.','Click a matching item or drag it onto this slot.'):tr('Válassz tárgyat. A két tároló között húzással vagy kattintással mozgathatsz.','Select an item. Move between storages by dragging or clicking.')}</p>}
     </div>
    </section>

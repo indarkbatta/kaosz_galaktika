@@ -331,3 +331,8 @@ The user specified one reserved species and one reserved class point at level 1,
 ## 2026-10-24 — HV-070 négyfős Loadout (fejlesztési ág, nincs release)
 
 `feature/expedition-transition`, draft PR #25, base `feature/visual-ui-editor`. A helyi/távoli hotfix tartalom azonosságát ellenőriztük, a történetet a távoli `54b14ded` commitra igazítottuk munkavesztés nélkül. Új csapat/sorrend/actor-power/közös gear és a régi játékos-party kivezetése: [TEAM_LOADOUT.md](expedition/TEAM_LOADOUT.md). SQL, Chromium HU/EN három méret, UI editor geometria és kapcsolt authenticated rollback PASS. Két valódi DB-kapcsolatos konkurencia, Firefox és production E2E nincs igazolva. Migráció nincs alkalmazva, nincs Vercel deploy/main merge. Production frontend továbbra 07cad61; a restore_expedition_loadout_permission hotfix éles. HV-070 Review; HV-069/077/075/076 kapuk nyitottak.
+
+
+## 2026-10-24 — HV-079: saját készlet és hátizsák minden teljes karakternek
+
+Felhasználó megerősítette: a társnál külön hátizsák-slotok jelenjenek meg, szabad tárgyátadással. Saját 6 + saját hátizsák kapacitás és készlettartalom, közös hajóraktér. Az addigi shared/captain-only kapacitás felülírva. Implementáció és QA: [BACKPACKS.md](expedition/BACKPACKS.md). Új migráció még NINCS élesítve, nincs új Vercel deploy. Aktuális production már `569315b` / `dpl_BHaUMvqBY7fg9bCt2nip6UxtLTmW`, a HV-070 migráció éles; ez felülírja az előző HV-070 nincs release szakaszt. A manaBoard release komment/event rögzült, a korábbi context_markdown frissítés technikai requestState hibát adott; a legfrissebb session/decision és e dokumentum az irányadó.

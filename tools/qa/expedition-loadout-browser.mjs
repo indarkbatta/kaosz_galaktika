@@ -11,9 +11,15 @@ try{
  await db.exec(`reset role;update game_items set image_path='hatarvilag/items/qa.webp';
  insert into character_inventory select c.id,i.id,1,now() from characters c cross join game_items i where i.equip_slot='main_weapon';
  set role authenticated;`);
+ await db.exec(`reset role;
+ insert into game_items(slug,equip_owner,equip_slot,capacity_bonus,image_path) values('qa_backpack','captain','backpack',12,'hatarvilag/items/bag.webp');
+ insert into game_items_i18n select id,'hu','QA hátizsák','Tizenkét hely.' from game_items where slug='qa_backpack';
+ insert into game_items_i18n select id,'en','QA backpack','Twelve slots.' from game_items where slug='qa_backpack';
+ insert into character_inventory select c.id,i.id,1,now() from characters c cross join game_items i where i.slug='qa_backpack';
+ set role authenticated;`);
  const result=await build({entryPoints:['tools/qa/expedition-party-browser-fixture.tsx'],bundle:true,write:false,format:'iife',outdir:'/tmp/expedition-team-ui',jsx:'automatic',define:{'import.meta.env':'{}'},plugins:[{name:'rpc-boundary',setup(b){b.onResolve({filter:/[\\/]lib[\\/]supabase$/},()=>({path:'rpc',namespace:'qa'}));b.onLoad({filter:/.*/,namespace:'qa'},()=>({contents:`export const supabase={rpc:async(method,args)=>fetch('/rpc',{method:'POST',body:JSON.stringify({method,args})}).then(r=>r.json())};`,loader:'js'}));}}]});
  const js=result.outputFiles.find(f=>f.path.endsWith('.js')).text,css=result.outputFiles.find(f=>f.path.endsWith('.css')).text;
- const methods={get_expedition_team_loadout:[],save_expedition_party:['p_actors','p_revision'],save_expedition_actor_powers:['p_actor','p_powers'],get_expedition_storage:[],equip_expedition_actor:['p_actor','p_slot','p_item','p_storage','p_position'],move_expedition_equipment:['p_from_actor','p_from_slot','p_to_actor','p_to_slot'],drop_inventory_item:['p_item','p_quantity','p_from','p_to','p_position','p_slot','p_crew'],move_storage_item:['p_item','p_quantity','p_to']};
+ const methods={get_expedition_team_loadout:[],save_expedition_party:['p_actors','p_revision'],save_expedition_actor_powers:['p_actor','p_powers'],get_expedition_storage:[],equip_expedition_actor_from:['p_actor','p_slot','p_item','p_storage','p_storage_actor','p_position'],transfer_expedition_item:['p_item','p_quantity','p_from','p_from_actor','p_to','p_to_actor','p_position','p_slot'],equip_expedition_actor:['p_actor','p_slot','p_item','p_storage','p_position'],move_expedition_equipment:['p_from_actor','p_from_slot','p_to_actor','p_to_slot'],drop_inventory_item:['p_item','p_quantity','p_from','p_to','p_position','p_slot','p_crew'],move_storage_item:['p_item','p_quantity','p_to']};
  server=createServer(async(req,res)=>{if(req.url==='/rpc'){let body='';for await(const c of req)body+=c;const {method,args={}}=JSON.parse(body);if(method==='get_published_ui_layout'){res.end(JSON.stringify({data:null,error:null}));return;}try{assert.ok(method in methods,method);const keys=methods[method],r=await db.query('select public.'+method+'('+keys.map((_,i)=>'$'+(i+1)).join(',')+') result',keys.map(k=>args[k]??null));res.end(JSON.stringify({data:r.rows[0].result,error:null}));}catch(e){res.end(JSON.stringify({data:null,error:{message:e.message}}));}return;}res.setHeader('content-type','text/html; charset=utf-8');res.end('<meta charset="utf-8"><style>'+css+'</style><div id="root"></div><script>window.captain='+JSON.stringify(cid)+';</script><script>'+js+'</script>');});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const url='http://127.0.0.1:'+server.address().port;
  for(const [name,driver] of process.env.TREE_LOCAL_CHROMIUM?[['chromium',chromium]]:[['chromium',chromium],['firefox',firefox]]){
@@ -35,7 +41,23 @@ try{
  await page.waitForFunction(()=>document.querySelector('.exp-order button:last-child')?.disabled);
  saved=(await db.query('select get_expedition_team_loadout() r')).rows[0].r;assert.deepEqual(saved.actors.find(a=>a.id===cid).prepared,captainPrepared);assert.equal(saved.actors.find(a=>a.id===companions[0]).prepared.length,Math.max(0,captainPrepared.length-1));
  await page.getByRole('button',{name:'Felszerelés',exact:true}).first().click();await page.locator('.eq-tabs button').filter({hasText:'Vaskéz'}).click();assert.equal(await page.locator('.eq-slot').count(),8);
- await page.locator('[data-storage=cargo].filled').first().dragTo(page.locator('.slot-main_weapon .eq-slot'));
+ assert.equal(await page.locator('[data-storage=personal]').count(),6);
+ await page.locator('[data-storage=cargo][aria-label^="QA hátizsák"]').dragTo(page.locator('.slot-backpack .eq-slot'));
+ await page.waitForFunction(()=>document.querySelectorAll('[data-storage=personal]').length===18&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
+ await page.getByRole('button',{name:'KAPITÁNY',exact:true}).click();assert.equal(await page.locator('[data-storage=personal]').count(),6);
+ await page.locator('.eq-tabs button').filter({hasText:'Vaskéz'}).click();assert.equal(await page.locator('[data-storage=personal]').count(),18);
+ await page.locator('[data-storage=cargo][aria-label^="captain_rifle"]').dragTo(page.locator('[data-storage=personal][data-position="14"]'));
+ await page.waitForFunction(()=>document.querySelector('[data-storage=personal][data-position="14"]')?.classList.contains('filled')&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
+ await page.locator('[data-storage=personal][data-position="14"]').dragTo(page.locator('.eq-tabs button').filter({hasText:'Nyx'}));
+ await page.waitForFunction(()=>!document.querySelector('[data-storage=personal][data-position="14"]')?.classList.contains('filled')&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
+ await page.locator('.eq-tabs button').filter({hasText:'Nyx'}).click();assert.equal(await page.locator('[data-storage=personal]').count(),6);assert.equal(await page.locator('[data-storage=personal].filled').count(),1);
+ await page.locator('[data-storage=personal].filled').dragTo(page.getByRole('button',{name:'KAPITÁNY',exact:true}));
+ await page.waitForFunction(()=>document.querySelectorAll('[data-storage=personal].filled').length===0&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
+ await page.getByRole('button',{name:'KAPITÁNY',exact:true}).click();await page.locator('[data-storage=personal].filled').dragTo(page.locator('[data-storage=cargo][data-position="0"]'));
+ await page.waitForFunction(()=>document.querySelector('[data-storage=cargo][data-position="0"]')?.classList.contains('filled')&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
+ await page.reload();await page.locator('.eq-tabs button').filter({hasText:'Vaskéz'}).click();assert.equal(await page.locator('[data-storage=personal]').count(),18,'Companion backpack survives reconnect');await page.screenshot({path:'/tmp/expedition-companion-backpack.png'});
+ await page.locator('[data-storage=cargo][aria-label^="captain_rifle"]').dragTo(page.locator('.slot-main_weapon .eq-slot'));
+
  await page.waitForFunction(()=>document.querySelector('.slot-main_weapon .eq-slot')?.getAttribute('aria-label')?.includes('captain_rifle')&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
  await page.locator('.slot-main_weapon .eq-slot').dragTo(page.locator('[data-storage=personal][data-position="3"]'));
  await page.waitForFunction(()=>document.querySelector('[data-storage=personal][data-position="3"]')?.classList.contains('filled')&&document.querySelector('.eq-root')?.getAttribute('aria-busy')==='false');
@@ -48,12 +70,13 @@ try{
  await page.setViewportSize(size);
  for(const tab of lang==='hu'?['Felszerelés','Társak','Powerek']:['Equipment','Companions','Powers']){
  await page.locator('.exp-tabs').first().getByRole('button',{name:tab,exact:true}).click();
+ if(tab==='Felszerelés'||tab==='Equipment'){await page.locator('.eq-tabs button').filter({hasText:'Vaskéz'}).click();assert.equal(await page.locator('[data-storage=personal]').count(),18);}
  for(const selector of ['.exp-loadout',...(tab==='Felszerelés'||tab==='Equipment'?['.eq-root','.eq-tabs']:[])])assert.ok(await page.locator(selector).evaluate(e=>e.scrollHeight<=e.clientHeight+1&&e.scrollWidth<=e.clientWidth+1),`${name} ${lang} ${tab} ${selector} ${JSON.stringify(size)}`);
  assert.ok(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1),'No document scroll');
  }
  }
  }
- assert.deepEqual(errors,[]);await page.screenshot({path:'/tmp/expedition-team-loadout.png'});console.log('PASS '+name+': React→HTTP→SQL party drag/save/reload, independent powers, eight gear slots and real inventory DnD round trip, HU/EN × three viewport sizes.');
+ assert.deepEqual(errors,[]);await page.screenshot({path:'/tmp/expedition-team-loadout.png'});console.log('PASS '+name+': React→HTTP→SQL party drag/save/reload, independent powers, eight gear slots, independent backpack slots/reconnect, actor→actor→captain item DnD and gear round trip, HU/EN × three viewport sizes.');
  }finally{await browser.close();}
  }
 }finally{server?.close();await db.close();}

@@ -34,6 +34,8 @@ on:
       - 'tools/qa/expedition-actors-*'
       - 'tools/qa/expedition-recruit-*'
       - 'tools/qa/expedition-party-*'
+      - 'tools/qa/expedition-backpacks-*'
+      - 'supabase/migrations/*expedition_actor_backpacks*'
       - 'tools/qa/expedition-loadout-*'
       - 'src/ExpeditionLoadout.tsx'
       - 'src/ExpeditionPartyPanel.tsx'
@@ -88,6 +90,10 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/expedition-party-database.mjs
+      - name: Independent actor backpacks, transfer and capacity rollback
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-backpacks-database.mjs
       - name: Full expedition recruitment, progression and authorization
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
