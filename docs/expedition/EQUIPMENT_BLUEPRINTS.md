@@ -55,3 +55,7 @@ Az Összeállítás külön, nagy EditorWorkspaceDialog modalt nyit. Balra álla
 Mégse/X/Escape visszaállítja a modal megnyitáskori draftot és korábbi dirty állapotát, a Mentés atomi blueprint RPC-n át ment és siker esetén bezár; hiba esetén nyitva marad, olvasható hiba és konfliktus-újratöltés. Revíziózár változatlan. Modal focus trap, Escape kezelés, fókuszvisszaadás és body scroll-lock közös komponensben, a vezérlők továbbra is közös editor.css osztályok. Láthatóság/zárolás opcionális hidden/locked slot JSON mezők; külön migráció validálja a boolean típusukat, régi slotok érvényesek. `20261025203501_blueprint_layer_flags_validation.sql` még nem éles.
 
 QA: natív drag/drop rétegsorrend, valódi wheel zoom, kis méretezőfül pointerhúzás, lock/visibility, típusos snap és eltérő típus elutasítása; modal mentés/újranyitás, Mégse rollback és stale-save hibahelyreállítás; HU/EN három desktop méret, SQL flag roundtrip és rossz típus elutasítása. Nem történt deploy.
+
+### Snap pont működésének pontosítása
+
+A felhasználó pontosítása szerint pont létrehozása sosem mozgat alkatrészt. Csak bekapcsolt pontillesztésnél, húzás közben, 14 képernyőpixeles közelségben illeszkedik a megfelelő típusú komponens közepe a pontra. A vászonhoz rögzített pont a tulajdonos rétegét is fogadhatja, ha a típusa megfelel; a tulajdonos csak a tárolás helye, nem használati tiltás. A rács-snap és a pont-snap külön kapcsolható. Nincs migráció. QA: pontlerakás változatlan alkatrészpozícióval, majd natív pointerhúzás pontos ráilleszkedéssel.
