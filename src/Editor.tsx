@@ -109,7 +109,7 @@ function editorSelect(k:Kind){
 }
 export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,initialTab='general',activeSection}:{locale:string;onBack:()=>void;kind:Kind;onKindChange:(kind:Kind)=>void;onSectionSelect:(section:EditorSection)=>void;initialTab?:Tab;activeSection?:EditorSection}){
  const l=locale==='en'?'en':'hu',dict=ui[l],t=(key:UiKey)=>dict[key];
- const [skillAttribute,setSkillAttribute]=useState<Attr>('body'),[dictionaryField,setDictionaryField]=useState<keyof TranslationBody>('description'),[recordPage,setRecordPage]=useState(0),[resistancePage,setResistancePage]=useState(0);
+ const [skillAttribute,setSkillAttribute]=useState<Attr>('body'),[dictionaryField,setDictionaryField]=useState<keyof TranslationBody>('description'),[resistancePage,setResistancePage]=useState(0);
  const [tab,setTab]=useState<Tab>(initialTab);
  const [records,setRecords]=useState<CatalogRecord[]>([]);
  const [worldGalaxies,setWorldGalaxies]=useState<WorldEntry[]>([]);
@@ -176,7 +176,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
    const items=cat.data as unknown as CatalogRecord[];
    setRecords(items);setSkills(sk.data as unknown as Skill[]);setLocales(lang.data as LocaleRow[]);
    setCounts(v=>({...v,[k]:items.length,[other]:otherCount.count||0}));
-   const picked=items.find(x=>x.id===keep)||items[0];setRecordPage(Math.floor(Math.max(0,items.findIndex(x=>x.id===picked?.id))/4));
+   const picked=items.find(x=>x.id===keep)||items[0];
    // Keep the selected hierarchy when refreshing the same saved Homeworld.
    // A blank/default homeworld explicitly clears the cascade.
    if(!picked?.homeworld_location_id)setHomeworldPath(emptyWorldPath());
@@ -185,7 +185,7 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
  },[]);
  useEffect(()=>{void refresh(kind);},[kind,refresh]);
  const navigate=(fn:()=>void)=>{if(dirty){pending.current=fn;setModal('discard');}else fn();};
- const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{onKindChange(k);setRecordPage(0);setResistancePage(0);setTab('general');setMessage('');setError('');});};
+ const chooseKind=(k:Kind)=>{if(k===kind)return;navigate(()=>{onKindChange(k);setResistancePage(0);setTab('general');setMessage('');setError('');});};
  const chooseRecord=(item:CatalogRecord)=>navigate(()=>{setResistancePage(0);setHomeworldPath(emptyWorldPath());setForm(hydrate(item,kind));setDirty(false);setMessage('');setError('');setTab('general');});
  const createNew=()=>navigate(()=>{setHomeworldPath(emptyWorldPath());setForm(emptyForm());setDirty(false);setMessage('');setError('');setTab('general');});
  const update=(patch:Partial<FormBody>)=>{setForm(prev=>({...prev,...patch}));setDirty(true);setMessage('');};
@@ -262,14 +262,13 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
      <div className="ed-roster-top"><strong>{kind==='species'?t('species'):t('classes')} ({records.length})</strong>
        <button type="button" onClick={createNew}>＋ {kind==='species'?t('newSpecies'):t('newClass')}</button>
      </div>
-     <div className="ed-roster-list">{loading?<p>{t('loading')}</p>:records.length===0?<p>{t('noRecords')}</p>:records.slice(Math.min(recordPage,Math.max(0,Math.ceil(records.length/4)-1))*4,Math.min(recordPage,Math.max(0,Math.ceil(records.length/4)-1))*4+4).map(item=>
+     <div className="ed-roster-list">{loading?<p>{t('loading')}</p>:records.length===0?<p>{t('noRecords')}</p>:records.map(item=>
        <button type="button" key={item.id} className={'ed-record '+(form.id===item.id?'selected':'')} onClick={()=>chooseRecord(item)}>
          <span className="ed-thumbnail">{item.image_path?<img alt="" loading="lazy" src={picture(item.image_path)}/>:<span>◈</span>}</span>
          <span className="ed-record-name"><strong>{translated(item,kind,l)}</strong><small>{attrNames[l][item.primary_attribute]} +1D / {attrNames[l][item.secondary_attribute]} +1</small></span>
          <span className={item.is_published?'ed-pub':'ed-draft'}>{item.is_published?'●':'○'}</span>
        </button>)}
      </div>
-    {records.length>4&&<div className="ed-pager"><button type="button" disabled={recordPage===0} onClick={()=>setRecordPage(v=>v-1)}>←</button><span>{recordPage+1} / {Math.ceil(records.length/4)}</span><button type="button" disabled={(recordPage+1)*4>=records.length} onClick={()=>setRecordPage(v=>v+1)}>→</button></div>}
    </EditorRoster>
    <section className="ed-editor">
      <EditorHeader><strong>{form.id?form.translations[l]?.name||form.translations.hu?.name||form.slug:t('create')}</strong>

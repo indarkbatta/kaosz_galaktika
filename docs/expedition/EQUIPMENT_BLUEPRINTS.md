@@ -31,3 +31,7 @@ Felszerelés és gazdaság → Komponensek: ugyanaz a Tárgyeditor, kizárólag 
 A komponensbesorolás és harci kép mentetlen módosításait a közös elvetésablak védi. A komponensmentés frissíti a szűrők alapjául szolgáló katalógust. Nincs adatbázis-migráció vagy játékadat-módosítás. QA: `tools/qa/components-browser.mjs`, böngésző → HTTP → izolált SQL katalógus/mentés; csak komponensek, lapozás, összetett és üres szűrés, HU/EN nevek és slug, mentetlen cancel/discard, valódi fajta-mentés és frissített lista, komponensek megmaradnak az Items alatt. Chromium headless-shell, mindhárom desktop méret.
 
 A Blueprint és Komponensek tárgylistája közös `useRosterCapacity` hookkal méri a belső listamagasságot és a kártyát. ResizeObserver és tartalomfigyelés újraszámolja a kapacitást átméretezéskor, szűréskor és névváltozáskor; kizárólag teljes kártyák férhetnek ki. Nem fix négyes lapozás.
+
+### Frissítés: görgetés váltja a lapozást
+
+2026-10-25 legújabb felhasználói döntése: a Blueprint és Komponensek teljes szűrt rekordlistája görgethető a jobb oldali panelen. Nincs sem fix, sem méretfüggő lapozás; a korábbi kapacitás-hook kivezetve. Ez felülírja a fenti történeti leírás lapozásra vonatkozó részeit.

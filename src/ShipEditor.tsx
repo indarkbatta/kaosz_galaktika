@@ -24,12 +24,11 @@ const kindLabels:Record<ModuleKind,[string,string]>={engine:['Hajtómű','Engine
 const blank=():Ship=>({id:'',slug:'',image_path:null,hull:100,cargo:60,speed:5,is_published:false,revision:0,translations:[{locale:'hu',name:'',description:''},{locale:'en',name:'',description:''}],slots:[
  ...(['engine','reactor','hull'] as ModuleKind[]).map((k,i)=>({slot_key:k+'_1',kind:'module' as const,module_kind:k,crew_role:null,size:1,min_aptitude:1,required:true,sort_order:i,name_hu:kindLabels[k][0],name_en:kindLabels[k][1]})),
  {slot_key:'crew_pilot',kind:'crew',module_kind:null,crew_role:'pilot',size:1,min_aptitude:2,required:true,sort_order:3,name_hu:'Pilóta',name_en:'Pilot'}]});
-const PAGE=5;
 export default function ShipEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [catalog,setCatalog]=useState<Catalog>({ships:[],starters:[]}),[draft,setDraft]=useState<Ship>(blank);
  const [languages,setLanguages]=useState<{code:string;native_name:string}[]>([]),[language,setLanguage]=useState('hu');
- const [tab,setTab]=useState<Tab>('general'),[search,setSearch]=useState(''),[page,setPage]=useState(0),[slotPage,setSlotPage]=useState(0),[selected,setSelected]=useState('');
+ const [tab,setTab]=useState<Tab>('general'),[search,setSearch]=useState(''),[slotPage,setSlotPage]=useState(0),[selected,setSelected]=useState('');
  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[dirty,setDirty]=useState(false),[error,setError]=useState(''),[discard,setDiscard]=useState(false);
  const guard=useRef(false),generation=useRef(0),pending=useRef<(()=>void)|null>(null);
  const choose=useCallback((ship:Ship)=>{setDraft(structuredClone(ship));setDirty(false);setSelected('');setSlotPage(0);setError('');},[]);
@@ -51,7 +50,6 @@ export default function ShipEditor({locale,onBack,onSectionSelect}:{locale:strin
  const name=(s:Ship)=>s.translations.find(t=>t.locale===locale)?.name||s.translations.find(t=>t.locale==='hu')?.name||s.slug;
  const label=(s:Slot)=>en?s.name_en:s.name_hu;
  const filtered=catalog.ships.filter(s=>(s.slug+' '+s.translations.map(t=>t.name).join(' ')).toLocaleLowerCase().includes(search.toLocaleLowerCase()));
- const pages=Math.max(1,Math.ceil(filtered.length/PAGE)),safePage=Math.min(page,pages-1);
  const slotKind=tab==='crew'?'crew':'module',slots=draft.slots.filter(s=>s.kind===slotKind),slotPages=Math.max(1,Math.ceil(slots.length/4)),safeSlotPage=Math.min(slotPage,slotPages-1);
  const current=slots.find(s=>s.slot_key===selected)||slots[safeSlotPage*4];
  const content=draft.translations.find(t=>t.locale===language)||{locale:language,name:'',description:''};
@@ -89,9 +87,8 @@ export default function ShipEditor({locale,onBack,onSectionSelect}:{locale:strin
  return <EditorFrame>
   <EditorNavigation locale={locale} active="ships" onBack={()=>navigate(onBack)} onSelect={section=>navigate(()=>onSectionSelect(section))}/>
   <EditorRoster className="se-roster"><div className="ed-roster-top"><strong>{tr('Hajók','Ships')} ({catalog.ships.length})</strong><button type="button" disabled={busy||loading} aria-label={tr('Új hajó','New ship')} title={tr('Új hajó','New ship')} onClick={()=>navigate(()=>{choose(blank());setTab('general');})}><LucidePlus/></button></div>
-   <input className="se-search" aria-label={tr('Hajó keresése','Search ships')} placeholder={tr('Hajó keresése…','Search ships…')} value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/>
-   <div className="se-ship-list">{filtered.slice(safePage*PAGE,safePage*PAGE+PAGE).map(s=><button type="button" disabled={busy} key={s.id} className={'ed-record '+(draft.id===s.id?'selected':'')} onClick={()=>navigate(()=>choose(s))}><span className="ed-thumbnail"><ShipArt slug={s.slug} path={s.image_path}/></span><span className="ed-record-name"><strong>{name(s)}</strong><small>{s.slots.filter(x=>x.kind==='module').length} / {s.slots.filter(x=>x.kind==='crew').length} · {s.slug}</small></span><span className={s.is_published?'ed-pub':'ed-draft'} aria-label={s.is_published?tr('Publikált','Published'):tr('Piszkozat','Draft')}>{s.is_published?'●':'○'}</span></button>)}{!filtered.length&&!loading&&<p>{tr('Nincs találat.','No matches.')}</p>}{loading&&<p role="status">{tr('Betöltés…','Loading…')}</p>}</div>
-   <div className="se-pagination"><button type="button" disabled={safePage===0} onClick={()=>setPage(safePage-1)} aria-label={tr('Előző hajók','Previous ships')}>‹</button><span>{safePage+1} / {pages}</span><button type="button" disabled={safePage===pages-1} onClick={()=>setPage(safePage+1)} aria-label={tr('További hajók','More ships')}>›</button></div>
+   <input className="se-search" aria-label={tr('Hajó keresése','Search ships')} placeholder={tr('Hajó keresése…','Search ships…')} value={search} onChange={e=>{setSearch(e.target.value);}}/>
+   <div className="ed-roster-list se-ship-list">{filtered.map(s=><button type="button" disabled={busy} key={s.id} className={'ed-record '+(draft.id===s.id?'selected':'')} onClick={()=>navigate(()=>choose(s))}><span className="ed-thumbnail"><ShipArt slug={s.slug} path={s.image_path}/></span><span className="ed-record-name"><strong>{name(s)}</strong><small>{s.slots.filter(x=>x.kind==='module').length} / {s.slots.filter(x=>x.kind==='crew').length} · {s.slug}</small></span><span className={s.is_published?'ed-pub':'ed-draft'} aria-label={s.is_published?tr('Publikált','Published'):tr('Piszkozat','Draft')}>{s.is_published?'●':'○'}</span></button>)}{!filtered.length&&!loading&&<p>{tr('Nincs találat.','No matches.')}</p>}{loading&&<p role="status">{tr('Betöltés…','Loading…')}</p>}</div>
    <button className="se-clone" type="button" disabled={busy||loading||!draft.id} onClick={()=>navigate(()=>{choose({...structuredClone(draft),id:'',slug:draft.slug+'_copy',revision:0,is_published:false});setDirty(true);setTab('general');})}>{tr('Másolat új hajóként','Duplicate as new ship')}</button>
   </EditorRoster>
   <section className="ed-editor"><EditorHeader><strong>{draft.id?name(draft):tr('ÚJ HAJÓ','NEW SHIP')}</strong><span>{draft.is_published?tr('Publikált','Published'):tr('Piszkozat','Draft')}</span></EditorHeader>

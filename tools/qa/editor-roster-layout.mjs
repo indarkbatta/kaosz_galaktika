@@ -4,6 +4,8 @@ export async function assertEditorRosterLayout(page){
  const nav=await page.locator('.ed-shell > .ed-nav').boundingBox();
  const editor=await page.locator('.ed-shell > .ed-editor').boundingBox();
  const roster=await page.locator('.ed-shell > .ed-roster').boundingBox();
+ assert.equal(await page.locator('.ed-roster .ed-pager').count(),0,'Record rosters have no pagination');
+ if(await page.locator('.ed-shell > .ed-roster > .ed-roster-list').count())assert.equal(await page.locator('.ed-shell > .ed-roster > .ed-roster-list').evaluate(e=>getComputedStyle(e).overflowY),'auto','Roster scrolls independently');
  const shell=await page.locator('.ed-shell').boundingBox();
  assert.ok(nav.x+nav.width<=editor.x+1,'Navigation stays left of editing surface');
  assert.ok(editor.x+editor.width<=roster.x+1,'Roster is right of editing surface');

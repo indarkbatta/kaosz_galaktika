@@ -1,7 +1,5 @@
-import {useRosterCapacity} from './hooks/useRosterCapacity';
 import {DiscardChangesDialog} from './components/DecisionDialog';
 import EquipmentBlueprintEditor from './EquipmentBlueprintEditor';
-import {ChevronLeft,ChevronRight} from 'lucide-react';
 import CombatVisualEditor from './CombatVisualEditor';
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
@@ -23,9 +21,8 @@ type Plant=Manufacturer&{faction_id:string};
 type Lang={code:string;native_name:string};
 const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published:false,image_path:null,equip_owner:null,equip_slot:null,capacity_bonus:0,manufacturer_faction_id:null,manufacturer_company_id:null,game_items_i18n:[]};
 export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly=false}:{componentsOnly?:boolean;locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
- const {ref:rosterRef,capacity}=useRosterCapacity();
  const [componentCatalog,setComponentCatalog]=useState<{definitions:{item_id:string;kind:string;family:string;type_code:string|null}[];types:{code:string;name_hu:string;name_en:string}[]}>({definitions:[],types:[]});
- const [search,setSearch]=useState(''),[familyFilter,setFamilyFilter]=useState(''),[typeFilter,setTypeFilter]=useState(''),[recordPage,setRecordPage]=useState(0);
+ const [search,setSearch]=useState(''),[familyFilter,setFamilyFilter]=useState(''),[typeFilter,setTypeFilter]=useState('');
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [factions,setFactions]=useState<Manufacturer[]>([]),[plants,setPlants]=useState<Plant[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState('');
  const [combat,setCombat]=useState<ItemCombat|null>(null),[combatSkills,setCombatSkills]=useState<Named[]>([]);
@@ -76,7 +73,6 @@ export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly
  useEffect(()=>{void load();},[]);
  const componentItems=items.filter(i=>componentCatalog.definitions.some(d=>d.item_id===i.id&&d.kind==='component'));
  const visibleItems=componentsOnly?componentItems.filter(i=>{const d=componentCatalog.definitions.find(d=>d.item_id===i.id);return (!familyFilter||d?.family===familyFilter)&&(!typeFilter||d?.type_code===typeFilter)&&(itemName(i)+' '+i.slug).toLocaleLowerCase().includes(search.toLocaleLowerCase());}):items;
- const pages=Math.max(1,Math.ceil(visibleItems.length/capacity)),currentPage=Math.min(recordPage,pages-1);
  const available=items.filter(x=>x.category==='material'&&x.is_published&&x.id!==draft.id);
  const local=text[language]||{name:'',description:''};
  const patch=(key:'name'|'description',value:string)=>setText(prev=>({...prev,[language]:{...local,[key]:value}}));
@@ -112,14 +108,14 @@ export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly
   <EditorNavigation locale={locale} active={componentsOnly?'components':'items'} onBack={()=>visualNavigate(onBack)} onSelect={s=>visualNavigate(()=>onSectionSelect(s))}/>
   <EditorRoster><div className="ed-roster-top"><strong>{componentsOnly?tr('Komponensek','Components'):tr('Tárgyak','Items')} ({componentsOnly?visibleItems.length+' / '+componentItems.length:items.length})</strong><button type="button" disabled={busy||loading} onClick={()=>visualNavigate(componentsOnly?()=>onSectionSelect('items'):newItem)} title={componentsOnly?tr('Új tárgy a Tárgyeditorban','New item in Item editor'):tr('Új tárgy','New item')}><LucidePlus/></button></div>
    {componentsOnly&&<div className="ed-roster-filters ed-general-grid">
-    <label>{tr('Keresés','Search')}<input aria-label={tr('Komponens keresése','Search components')} value={search} placeholder={tr('Név vagy azonosító…','Name or slug…')} onChange={e=>{setSearch(e.target.value);setRecordPage(0);}}/></label>
-    <label>{tr('Felszereléscsalád','Equipment family')}<select aria-label={tr('Család szűrő','Family filter')} value={familyFilter} onChange={e=>{setFamilyFilter(e.target.value);setRecordPage(0);}}><option value="">{tr('Minden család','All families')}</option>{[['weapon',tr('Fegyver','Weapon')],['sidearm',tr('Oldalfegyver','Sidearm')],['armor',tr('Páncél','Armor')],['helmet',tr('Sisak','Helmet')]].map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
-    <label>{tr('Komponensfajta','Component type')}<select aria-label={tr('Fajta szűrő','Type filter')} value={typeFilter} onChange={e=>{setTypeFilter(e.target.value);setRecordPage(0);}}><option value="">{tr('Minden fajta','All types')}</option>{componentCatalog.types.map(t=><option key={t.code} value={t.code}>{en?t.name_en:t.name_hu}</option>)}</select></label>
+    <label>{tr('Keresés','Search')}<input aria-label={tr('Komponens keresése','Search components')} value={search} placeholder={tr('Név vagy azonosító…','Name or slug…')} onChange={e=>{setSearch(e.target.value);}}/></label>
+    <label>{tr('Felszereléscsalád','Equipment family')}<select aria-label={tr('Család szűrő','Family filter')} value={familyFilter} onChange={e=>{setFamilyFilter(e.target.value);}}><option value="">{tr('Minden család','All families')}</option>{[['weapon',tr('Fegyver','Weapon')],['sidearm',tr('Oldalfegyver','Sidearm')],['armor',tr('Páncél','Armor')],['helmet',tr('Sisak','Helmet')]].map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
+    <label>{tr('Komponensfajta','Component type')}<select aria-label={tr('Fajta szűrő','Type filter')} value={typeFilter} onChange={e=>{setTypeFilter(e.target.value);}}><option value="">{tr('Minden fajta','All types')}</option>{componentCatalog.types.map(t=><option key={t.code} value={t.code}>{en?t.name_en:t.name_hu}</option>)}</select></label>
    </div>}
-   <div className="ed-roster-list" ref={rosterRef}>{(componentsOnly?visibleItems.slice(currentPage*capacity,(currentPage+1)*capacity):visibleItems).map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
+   <div className="ed-roster-list">{visibleItems.map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
     <span className="ed-thumbnail item-editor-symbol">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>
     <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {componentsOnly?componentCatalog.types.find(t=>t.code===componentCatalog.definitions.find(d=>d.item_id===item.id)?.type_code)?.[en?'name_en':'name_hu']||item.category:item.category}</small></span></button>)}</div>
-   {componentsOnly&&<>{!loading&&!visibleItems.length&&<p className="ed-helper">{tr('Nincs a szűrésnek megfelelő komponens.','No components match these filters.')}</p>}<div className="ed-pager"><button type="button" disabled={!currentPage} aria-label={tr('Előző oldal','Previous page')} onClick={()=>setRecordPage(currentPage-1)}><ChevronLeft size={16}/></button><span>{currentPage+1} / {pages}</span><button type="button" disabled={currentPage>=pages-1} aria-label={tr('Következő oldal','Next page')} onClick={()=>setRecordPage(currentPage+1)}><ChevronRight size={16}/></button></div></>}
+   {componentsOnly&&<>{!loading&&!visibleItems.length&&<p className="ed-helper">{tr('Nincs a szűrésnek megfelelő komponens.','No components match these filters.')}</p>}</>}
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></EditorHeader>

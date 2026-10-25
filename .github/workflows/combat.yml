@@ -9,7 +9,6 @@ on:
       - 'src/combat-visual-editor.css'
       - 'src/EquipmentBlueprintEditor.tsx'
       - 'src/BlueprintEditor.tsx'
-      - 'src/hooks/useRosterCapacity.ts'
       - 'src/equipment-blueprint-editor.css'
       - 'tools/qa/equipment-blueprints-*'
       - 'tools/qa/components-*'
