@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {useEffect,useRef,useState,type PointerEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -244,11 +245,7 @@ export default function WorldMapEditor({locale,level,parentId,parentName,nodes,r
     <button type="button" onClick={()=>dirty?setConfirmClose(true):onClose()}>{tr('Mégse','Cancel')}</button>
     <button type="button" className="wm-save" disabled={busy||!dirty} onClick={()=>void save()}>{busy?tr('Mentés…','Saving…'):tr('Térkép mentése','Save map')}</button>
    </footer>
-   {confirmClose&&<div className="wm-confirm"><section role="alertdialog" aria-modal="true">
-    <h3>{tr('Elveted a módosításokat?','Discard changes?')}</h3><p>{tr('A térkép és útvonalváltozások nem kerülnek mentésre.','Map and link changes will not be saved.')}</p>
-    <button type="button" onClick={()=>setConfirmClose(false)}>{tr('Folytatom','Continue editing')}</button>
-    <button type="button" className="wm-save" onClick={onClose}>{tr('Elvetés','Discard')}</button>
-   </section></div>}
+   {confirmClose&&<DiscardChangesDialog locale={locale} onCancel={()=>setConfirmClose(false)} onDiscard={onClose}/>}
   </section>
  </div>;
 }

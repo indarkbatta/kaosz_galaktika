@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {
   useCallback,
   useEffect,
@@ -999,44 +1000,7 @@ export default function CrewEditor({
           </button>
         </EditorFooter>
       </section>
-      {discard && (
-        <div className="ed-modal-mask">
-          <div
-            className="ed-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="crew-discard-title"
-          >
-            <h3 id="crew-discard-title">
-              {tr("Nem mentett módosítások", "Unsaved changes")}
-            </h3>
-            <p>{tr("Elveted a módosításokat?", "Discard changes?")}</p>
-            <div>
-              <button
-                autoFocus
-                onClick={() => {
-                  setDiscard(false);
-                  pending.current = null;
-                }}
-              >
-                {tr("Folytatom a szerkesztést", "Keep editing")}
-              </button>
-              <button
-                className="ed-danger"
-                onClick={() => {
-                  setDiscard(false);
-                  setDirty(false);
-                  const action = pending.current;
-                  pending.current = null;
-                  action?.();
-                }}
-              >
-                {tr("Elvetés", "Discard")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {discard&&<DiscardChangesDialog locale={locale} onCancel={()=>{setDiscard(false);pending.current=null;}} onDiscard={()=>{setDiscard(false);setDirty(false);const action=pending.current;pending.current=null;action?.();}}/>}
     </EditorFrame>
   );
 }

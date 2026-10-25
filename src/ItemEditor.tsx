@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import EquipmentBlueprintEditor from './EquipmentBlueprintEditor';
 import CombatVisualEditor from './CombatVisualEditor';
 import {useEffect,useState,type FormEvent} from 'react';
@@ -146,6 +147,6 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
    </form>}
    {tab!=='visuals'&&tab!=='assembly'&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
   </section>
- {visualPending&&<div className="ed-modal-mask"><section className="ed-modal" role="dialog" aria-modal="true"><h3>{tr('Mentetlen megjelenítés','Unsaved appearance')}</h3><p>{tr('Elveted a módosításokat?','Discard changes?')}</p><button type="button" onClick={()=>setVisualPending(null)}>{tr('Mégse','Cancel')}</button><button type="button" onClick={()=>{setVisualDirty(false);visualPending();setVisualPending(null);}}>{tr('Elvetés','Discard')}</button></section></div>}
+ {visualPending&&<DiscardChangesDialog locale={locale} onCancel={()=>setVisualPending(null)} onDiscard={()=>{setVisualDirty(false);visualPending();setVisualPending(null);}}/>}
  </EditorFrame>;
 }

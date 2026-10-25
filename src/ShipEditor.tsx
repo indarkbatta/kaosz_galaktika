@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -120,6 +121,7 @@ export default function ShipEditor({locale,onBack,onSectionSelect}:{locale:strin
     </fieldset>
    </form><EditorFooter><span className={dirty?'ed-unsaved':'ed-fine'}>{dirty?tr('● Nem mentett módosítások','● Unsaved changes'):tr('Minden módosítás mentve','All changes saved')}</span><button type="submit" form="ship-editor-form" disabled={busy||loading||!dirty} className="ed-submit">{busy?'…':tr('MENTÉS','SAVE')}</button></EditorFooter>
   </section>
-  {discard&&<div className="ed-modal-mask"><div className="ed-modal" role="dialog" aria-modal="true" aria-labelledby="ship-discard-title"><h3 id="ship-discard-title">{tr('Nem mentett módosítások','Unsaved changes')}</h3><p>{tr('Elveted a hajó módosításait?','Discard changes to this ship?')}</p><div><button autoFocus type="button" onClick={()=>{setDiscard(false);pending.current=null;}}>{tr('Folytatom a szerkesztést','Keep editing')}</button><button type="button" className="ed-danger" onClick={()=>{setDiscard(false);setDirty(false);pending.current?.();pending.current=null;}}>{tr('Elvetés','Discard')}</button></div></div></div>}
+  {discard&&<DiscardChangesDialog locale={locale} onCancel={()=>{setDiscard(false);pending.current=null;}} onDiscard={()=>{setDiscard(false);setDirty(false);pending.current?.();pending.current=null;}}/>}
+
  </EditorFrame>;
 }

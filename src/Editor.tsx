@@ -1,3 +1,5 @@
+import {editorMessage} from './lib/editorMessages';
+import {DecisionDialog,DiscardChangesDialog} from './components/DecisionDialog';
 import {useCallback,useEffect,useMemo,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -216,13 +218,13 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
      const replaced=await supabase.rpc('replace_catalog_skill_bonuses',{p_kind:kind,p_entity_id:id,p_bonuses:list});
      if(replaced.error)throw replaced.error;
      await refresh(kind,id);setMessage(t('saved'));
-   }catch(err){setError(err instanceof Error?err.message:t('saveError'));}
+   }catch(err){setError(editorMessage(err,locale));}
    finally{setBusy(false);}
  };
  const remove=async()=>{if(!form.id||busy)return;setBusy(true);
    const r=await supabase.from(table(kind)).delete().eq('id',form.id);
    setBusy(false);setModal(null);
-   if(r.error){setError(r.error.message);return;}
+   if(r.error){setError(editorMessage(r.error.message,locale));return;}
    await refresh(kind);setMessage(t('deleted'));setTab('general');
  };
  const addLocale=async()=>{
@@ -381,11 +383,6 @@ export default function Editor({locale,onBack,kind,onKindChange,onSectionSelect,
        <button type="submit" form="ed-form" className="ed-submit" disabled={busy}>{busy?t('saving'):t('save')}</button>
      </EditorFooter>
    </section>
-   {modal&&<div className="ed-modal-mask"><div className="ed-modal" role="dialog" aria-modal="true" aria-labelledby="ed-modal-title">
-     <h3 id="ed-modal-title">{modal==='delete'?t('delete'):t('unsaved')}</h3><p>{modal==='delete'?t('confirmDelete'):t('confirmLeave')}</p>
-     <div><button type="button" onClick={()=>{setModal(null);pending.current=null;}}>{t('cancel')}</button>
-       <button type="button" className="ed-danger" onClick={()=>{if(modal==='delete'){void remove();}else {setModal(null);setDirty(false);pending.current?.();pending.current=null;}}}>{modal==='delete'?t('delete'):t('discard')}</button>
-     </div>
-   </div></div>}
+   {modal==='delete'?<DecisionDialog danger title={locale==='en'?`Delete “${form.slug}”?`:`Törlöd ezt: „${form.slug}”?`} description={locale==='en'?'The entry will be permanently removed. This cannot be undone. Existing references may prevent deletion.':'A bejegyzés véglegesen törlődik; ezt nem lehet visszavonni. A rá hivatkozó tartalmak megakadályozhatják a törlést.'} confirmLabel={locale==='en'?'Delete entry':'Bejegyzés törlése'} cancelLabel={locale==='en'?'Keep entry':'Bejegyzés megtartása'} onCancel={()=>{setModal(null);pending.current=null;}} onConfirm={()=>void remove()} disabled={busy}/>:modal&&<DiscardChangesDialog locale={locale} onCancel={()=>{setModal(null);pending.current=null;}} onDiscard={()=>{setModal(null);setDirty(false);pending.current?.();pending.current=null;}}/>}
  </EditorFrame>;
 }

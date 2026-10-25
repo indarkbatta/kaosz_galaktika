@@ -1,3 +1,4 @@
+import {DecisionDialog} from './components/DecisionDialog';
 import GamePanelFrame from './components/GamePanelFrame';
 import {createPortal} from 'react-dom';
 import {lazy,Suspense,useCallback,useEffect,useRef,useState} from 'react';
@@ -202,7 +203,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    <h2>{actionRoll.title}</h2><DiceRollPanel locale={locale} result={actionRoll.result} rolling={!actionRoll.result} onComplete={revealDice}/>
    {diceDone&&<p>{actionRoll.message}</p>}<button disabled={!diceDone||busy} onClick={()=>setActionRoll(null)}>{tr('Vissza a hídra','Back to bridge')}</button>
   </section></div>}
-  {confirmReset&&<div className="cmd-modal-bg"><div className="cmd-modal" role="dialog" aria-modal="true"><h3>{tr('Tesztkarakter törlése','Reset test captain')}</h3><p>{tr('Ez csak a saját karakteredet törli! Írd be: RESET','Deletes only your own captain! Type RESET.')}</p><input autoFocus value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/><div><button onClick={()=>setConfirmReset(false)}>{tr('Mégse','Cancel')}</button><button disabled={busy||resetWord!=='RESET'} onClick={()=>void reset()}>{tr('Törlés','Delete')}</button></div></div></div>}
+  {confirmReset&&<DecisionDialog danger title={tr('Törlöd a saját tesztkarakteredet?','Delete your test captain?')} description={tr('A saját karaktered mentése véglegesen törlődik. Ezt nem lehet visszavonni. A megerősítéshez írd be az alábbi mezőbe: RESET.','Your own character save will be permanently deleted. This cannot be undone. To confirm, type RESET below.')} confirmLabel={tr('Tesztkarakter törlése','Delete test captain')} cancelLabel={tr('Karakter megtartása','Keep captain')} onCancel={()=>setConfirmReset(false)} onConfirm={()=>void reset()} disabled={busy||resetWord!=='RESET'}><label>{tr('Megerősítés','Confirmation')}<input value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/></label></DecisionDialog>}
  </section>
  </GamePanelFrame>;
 }

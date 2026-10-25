@@ -49,7 +49,7 @@ try{
    await page.getByRole('button',{name:'MENTÉS',exact:true}).click();await page.waitForFunction(()=>document.querySelector('.ed-footer span')?.textContent==='Mentve');
    await page.reload();await page.getByRole('button',{name:'Új társ '+name,exact:false}).waitFor();await page.getByRole('button',{name:'Vaskéz',exact:false}).click();
    // An unsaved edit cannot be lost by selecting another record.
-   await page.getByRole('button',{name:'Alapadatok',exact:true}).click();await page.getByLabel('Azonosító',{exact:true}).fill('unsaved');await page.getByRole('button',{name:'Új',exact:true}).click();await page.getByRole('dialog').waitFor();await page.getByRole('button',{name:'Mégse',exact:true}).click();assert.equal(await page.getByLabel('Azonosító',{exact:true}).inputValue(),'unsaved');
+   await page.getByRole('button',{name:'Alapadatok',exact:true}).click();await page.getByLabel('Azonosító',{exact:true}).fill('unsaved');await page.getByRole('button',{name:'Új',exact:true}).click();await page.getByRole('alertdialog').waitFor();await page.getByRole('button',{name:'Vissza a szerkesztéshez',exact:true}).click();assert.equal(await page.getByLabel('Azonosító',{exact:true}).inputValue(),'unsaved');
    await page.goto(url+'/?play=1');await page.locator('.exp-sheet-head button').waitFor();
    const owned=(await db.query('select count(*)::int n from private.expedition_actors where template_id=$1',[row.id])).rows[0].n;
    if(!owned){await page.getByRole('button',{name:/TOBORZÁS/}).dblclick();await page.getByRole('button',{name:'Karaktereim',exact:true}).waitFor();await page.waitForFunction(()=>document.querySelector('.exp-sheet-head h3')?.textContent==='Vaskéz');}
