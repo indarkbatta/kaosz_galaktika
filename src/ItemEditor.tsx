@@ -1,4 +1,7 @@
+import {useRosterCapacity} from './hooks/useRosterCapacity';
 import {DiscardChangesDialog} from './components/DecisionDialog';
+import EquipmentBlueprintEditor from './EquipmentBlueprintEditor';
+import {ChevronLeft,ChevronRight} from 'lucide-react';
 import CombatVisualEditor from './CombatVisualEditor';
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
@@ -19,7 +22,10 @@ type Manufacturer={id:string;name_hu:string;name_en:string};
 type Plant=Manufacturer&{faction_id:string};
 type Lang={code:string;native_name:string};
 const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published:false,image_path:null,equip_owner:null,equip_slot:null,capacity_bonus:0,manufacturer_faction_id:null,manufacturer_company_id:null,game_items_i18n:[]};
-export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
+export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly=false}:{componentsOnly?:boolean;locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
+ const {ref:rosterRef,capacity}=useRosterCapacity();
+ const [componentCatalog,setComponentCatalog]=useState<{definitions:{item_id:string;kind:string;family:string;type_code:string|null}[];types:{code:string;name_hu:string;name_en:string}[]}>({definitions:[],types:[]});
+ const [search,setSearch]=useState(''),[familyFilter,setFamilyFilter]=useState(''),[typeFilter,setTypeFilter]=useState(''),[recordPage,setRecordPage]=useState(0);
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [factions,setFactions]=useState<Manufacturer[]>([]),[plants,setPlants]=useState<Plant[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState('');
  const [combat,setCombat]=useState<ItemCombat|null>(null),[combatSkills,setCombatSkills]=useState<Named[]>([]);
@@ -27,8 +33,9 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
  const [languages,setLanguages]=useState<Lang[]>([]),[language,setLanguage]=useState('hu');
  const [draft,setDraft]=useState<Item>(empty),[text,setText]=useState<Record<string,{name:string;description:string}>>({});
  const [ingredients,setIngredients]=useState<Ingredient[]>([]);
+ const [componentBusy,setComponentBusy]=useState(false);
  const [visualDirty,setVisualDirty]=useState(false),[visualPending,setVisualPending]=useState<null|(()=>void)>(null);
- const visualNavigate=(fn:()=>void)=>{if(visualDirty)setVisualPending(()=>fn);else fn();};
+ const visualNavigate=(fn:()=>void)=>{if(busy||componentBusy)return;if(visualDirty)setVisualPending(()=>fn);else fn();};
  const [tab,setTab]=useState('general'),[busy,setBusy]=useState(false);
  const itemName=(item:Item)=>item.game_items_i18n.find(x=>x.locale===locale)?.name||
  item.game_items_i18n.find(x=>x.locale==='hu')?.name||item.slug;
@@ -37,32 +44,39 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   setDraft({...item,manufacturer_faction_id:item.manufacturer_faction_id||null,manufacturer_company_id:item.manufacturer_company_id||null});
   setText(Object.fromEntries(item.game_items_i18n.map(x=>[x.locale,{name:x.name,description:x.description}])));
   setIngredients(allRecipes.filter(x=>x.output_item_id===item.id).map(x=>({item_id:x.ingredient_item_id,quantity:x.quantity})));
-  setTab('general');
+  setTab(componentsOnly?'component':'general');
  }
  async function load(id?:string,expected?:{faction:string|null;company:string|null}){
   setLoading(true);setLoadError('');
   try{
-  const [i,r,l,f,c,sk]=await Promise.all([
+  const [i,r,l,f,c,sk,components]=await Promise.all([
    supabase.from('game_items').select('id,slug,category,rarity,is_published,image_path,equip_owner,equip_slot,capacity_bonus,manufacturer_faction_id,manufacturer_company_id,game_item_combat(*),game_items_i18n(locale,name,description)').order('slug'),
    supabase.from('game_item_recipes').select('output_item_id,ingredient_item_id,quantity'),
    supabase.from('game_locales').select('code,native_name').eq('is_enabled',true).order('sort_order'),
    supabase.from('game_factions').select('id,name_hu,name_en').order('slug'),
    supabase.from('game_faction_companies').select('id,faction_id,name_hu,name_en').order('sort_order'),
-   supabase.from('game_skills').select('id,slug,game_skills_i18n(locale,name)').eq('is_combat',true)
+   supabase.from('game_skills').select('id,slug,game_skills_i18n(locale,name)').eq('is_combat',true),
+   componentsOnly?supabase.rpc('get_equipment_blueprint_catalog'):Promise.resolve({data:null,error:null})
   ]);
-  const error=i.error||r.error||l.error||f.error||c.error||sk.error;if(error)throw new Error(error.message);
+  const error=i.error||r.error||l.error||f.error||c.error||sk.error||components.error;if(error)throw new Error(error.message);
   setCombatSkills((sk.data||[]).map(s=>({id:s.id,slug:s.slug,texts:s.game_skills_i18n} as Named)));
   setFactions((f.data||[]) as Manufacturer[]);setPlants((c.data||[]) as Plant[]);
   const arr=(i.data||[]) as unknown as Item[],all=(r.data||[]) as RecipeRow[];
+  const catalog=components.data as typeof componentCatalog|null;
+  if(catalog)setComponentCatalog(catalog);
+  const selectable=componentsOnly?arr.filter(x=>catalog?.definitions.some(d=>d.item_id===x.id&&d.kind==='component')):arr;
   setItems(arr);setRecipes(all);setLanguages((l.data||[]) as Lang[]);
   const saved=arr.find(x=>x.id===id);
   if(expected&&(!saved||saved.manufacturer_faction_id!==expected.faction||saved.manufacturer_company_id!==expected.company))throw new Error(tr('A mentett gyártó visszaellenőrzése sikertelen.','Saved manufacturer verification failed.'));
-  const selected=saved||arr.find(x=>x.id===draft.id)||arr[0];
-  if(selected)choose(selected,all);
+  const selected=selectable.find(x=>x.id===id)||selectable.find(x=>x.id===draft.id)||selectable[0];
+  if(selected)choose(selected,all);else{setDraft({...empty});setCombat(null);setText({});setIngredients([]);}
   return true;
   }catch(e){const message=e instanceof Error?e.message:'Loading failed';setLoadError(message);notify(message,'error');return false;}finally{setLoading(false);}
  }
  useEffect(()=>{void load();},[]);
+ const componentItems=items.filter(i=>componentCatalog.definitions.some(d=>d.item_id===i.id&&d.kind==='component'));
+ const visibleItems=componentsOnly?componentItems.filter(i=>{const d=componentCatalog.definitions.find(d=>d.item_id===i.id);return (!familyFilter||d?.family===familyFilter)&&(!typeFilter||d?.type_code===typeFilter)&&(itemName(i)+' '+i.slug).toLocaleLowerCase().includes(search.toLocaleLowerCase());}):items;
+ const pages=Math.max(1,Math.ceil(visibleItems.length/capacity)),currentPage=Math.min(recordPage,pages-1);
  const available=items.filter(x=>x.category==='material'&&x.is_published&&x.id!==draft.id);
  const local=text[language]||{name:'',description:''};
  const patch=(key:'name'|'description',value:string)=>setText(prev=>({...prev,[language]:{...local,[key]:value}}));
@@ -95,17 +109,23 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'),'error');}finally{setBusy(false);}
  }
  return <EditorFrame>
-  <EditorNavigation locale={locale} active="items" onBack={()=>visualNavigate(onBack)} onSelect={s=>visualNavigate(()=>onSectionSelect(s))}/>
-  <EditorRoster><div className="ed-roster-top"><strong>{tr('Tárgyak','Items')} ({items.length})</strong><button type="button" disabled={busy||loading} onClick={()=>visualNavigate(newItem)} title={tr('Új tárgy','New item')}><LucidePlus/></button></div>
-   <div className="ed-roster-list">{items.map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
+  <EditorNavigation locale={locale} active={componentsOnly?'components':'items'} onBack={()=>visualNavigate(onBack)} onSelect={s=>visualNavigate(()=>onSectionSelect(s))}/>
+  <EditorRoster><div className="ed-roster-top"><strong>{componentsOnly?tr('Komponensek','Components'):tr('Tárgyak','Items')} ({componentsOnly?visibleItems.length+' / '+componentItems.length:items.length})</strong><button type="button" disabled={busy||loading} onClick={()=>visualNavigate(componentsOnly?()=>onSectionSelect('items'):newItem)} title={componentsOnly?tr('Új tárgy a Tárgyeditorban','New item in Item editor'):tr('Új tárgy','New item')}><LucidePlus/></button></div>
+   {componentsOnly&&<div className="ed-roster-filters ed-general-grid">
+    <label>{tr('Keresés','Search')}<input aria-label={tr('Komponens keresése','Search components')} value={search} placeholder={tr('Név vagy azonosító…','Name or slug…')} onChange={e=>{setSearch(e.target.value);setRecordPage(0);}}/></label>
+    <label>{tr('Felszereléscsalád','Equipment family')}<select aria-label={tr('Család szűrő','Family filter')} value={familyFilter} onChange={e=>{setFamilyFilter(e.target.value);setRecordPage(0);}}><option value="">{tr('Minden család','All families')}</option>{[['weapon',tr('Fegyver','Weapon')],['sidearm',tr('Oldalfegyver','Sidearm')],['armor',tr('Páncél','Armor')],['helmet',tr('Sisak','Helmet')]].map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
+    <label>{tr('Komponensfajta','Component type')}<select aria-label={tr('Fajta szűrő','Type filter')} value={typeFilter} onChange={e=>{setTypeFilter(e.target.value);setRecordPage(0);}}><option value="">{tr('Minden fajta','All types')}</option>{componentCatalog.types.map(t=><option key={t.code} value={t.code}>{en?t.name_en:t.name_hu}</option>)}</select></label>
+   </div>}
+   <div className="ed-roster-list" ref={rosterRef}>{(componentsOnly?visibleItems.slice(currentPage*capacity,(currentPage+1)*capacity):visibleItems).map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
     <span className="ed-thumbnail item-editor-symbol">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>
-    <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {item.category}</small></span></button>)}</div>
+    <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {componentsOnly?componentCatalog.types.find(t=>t.code===componentCatalog.definitions.find(d=>d.item_id===item.id)?.type_code)?.[en?'name_en':'name_hu']||item.category:item.category}</small></span></button>)}</div>
+   {componentsOnly&&<>{!loading&&!visibleItems.length&&<p className="ed-helper">{tr('Nincs a szűrésnek megfelelő komponens.','No components match these filters.')}</p>}<div className="ed-pager"><button type="button" disabled={!currentPage} aria-label={tr('Előző oldal','Previous page')} onClick={()=>setRecordPage(currentPage-1)}><ChevronLeft size={16}/></button><span>{currentPage+1} / {pages}</span><button type="button" disabled={currentPage>=pages-1} aria-label={tr('Következő oldal','Next page')} onClick={()=>setRecordPage(currentPage+1)}><ChevronRight size={16}/></button></div></>}
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></EditorHeader>
-   <EditorTabs label="Item editor" selected={tab} onSelect={t=>visualNavigate(()=>setTab(t))} items={[{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
+   <EditorTabs label="Item editor" selected={tab} onSelect={t=>visualNavigate(()=>setTab(t))} items={[...(componentsOnly?[{id:'component',name:tr('Komponens','Component')}]:[]),{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
    {loadError&&<div role="alert" className="item-editor-load-error">{loadError}<button type="button" disabled={loading||busy} onClick={()=>void load(draft.id||undefined)}>{tr('Újratöltés','Reload')}</button></div>}
-   {tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
+   {componentsOnly&&!draft.id?<div className="ed-empty-state">{tr('Még nincs komponens. A Blueprint editor Besorolás fülén jelöld meg a tárgyat komponensként.','No components yet. Classify an item as a component in the Blueprint editor.')}</div>:tab==='component'?<EquipmentBlueprintEditor key={draft.id} itemId={draft.id} locale={locale} componentOnly onBusyChange={setComponentBusy} onDirtyChange={setVisualDirty} onSaved={()=>void load(draft.id)}/>:tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
     {tab==='general'&&<>
      <label>{tr('Azonosító','Slug')}<input required value={draft.slug} maxLength={80} onChange={e=>setDraft(x=>({...x,slug:e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'')}))}/></label>
      <div className="item-editor-fields"><label>{tr('Kategória','Category')}<select value={draft.category} onChange={e=>{const category=e.target.value;setDraft(x=>({...x,category}));if(category==='material')setIngredients([]);}}>
@@ -144,7 +164,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
      <label>{tr('Leírás','Description')} ({language.toUpperCase()})<textarea rows={4} value={local.description} onChange={e=>patch('description',e.target.value)}/></label>
     </>}
    </form>}
-   {tab!=='visuals'&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
+   {tab!=='visuals'&&tab!=='component'&&(!componentsOnly||!!draft.id)&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError||componentsOnly&&!draft.id}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
   </section>
  {visualPending&&<DiscardChangesDialog locale={locale} onCancel={()=>setVisualPending(null)} onDiscard={()=>{setVisualDirty(false);visualPending();setVisualPending(null);}}/>}
  </EditorFrame>;

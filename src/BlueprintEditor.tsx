@@ -1,3 +1,4 @@
+import {useRosterCapacity} from './hooks/useRosterCapacity';
 import {useEffect,useState} from 'react';
 import {ChevronLeft,ChevronRight,Package} from 'lucide-react';
 import EquipmentBlueprintEditor from './EquipmentBlueprintEditor';
@@ -11,6 +12,7 @@ import './editor.css';
 
 type Item={id:string;slug:string;image_path:string|null;texts:{locale:string;name:string}[]};
 export default function BlueprintEditor({locale,onBack,onSectionSelect}:{locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
+ const {ref:rosterRef,capacity}=useRosterCapacity();
  const tr=(hu:string,en:string)=>locale==='en'?en:hu;
  const [items,setItems]=useState<Item[]>([]),[selected,setSelected]=useState('');
  const [query,setQuery]=useState(''),[page,setPage]=useState(0),[version,setVersion]=useState(0);
@@ -29,15 +31,15 @@ export default function BlueprintEditor({locale,onBack,onSectionSelect}:{locale:
  function navigate(action:()=>void){if(busy)return;if(dirty)setPending(()=>action);else action();}
  const name=(i:Item)=>i.texts?.find(t=>t.locale===locale)?.name||i.texts?.find(t=>t.locale==='hu')?.name||i.slug;
  const filtered=items.filter(i=>(name(i)+' '+i.slug).toLocaleLowerCase().includes(query.toLocaleLowerCase()));
- const pages=Math.max(1,Math.ceil(filtered.length/4)),currentPage=Math.min(page,pages-1);
+ const pages=Math.max(1,Math.ceil(filtered.length/capacity)),currentPage=Math.min(page,pages-1);
  const item=items.find(i=>i.id===selected);
  return <EditorFrame>
   <EditorNavigation locale={locale} active="blueprints" onBack={()=>navigate(onBack)} onSelect={s=>navigate(()=>onSectionSelect(s))}/>
   <EditorRoster>
    <div className="ed-roster-top"><strong>{tr('Blueprint editor','Blueprint editor')}</strong><span>{items.length}</span></div>
    <input className="ed-roster-search" aria-label={tr('Tárgy keresése','Search items')} placeholder={tr('Név vagy azonosító…','Name or slug…')} value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}}/>
-   <div className="ed-roster-list">
-    {loading?<p>{tr('Betöltés…','Loading…')}</p>:filtered.slice(currentPage*4,currentPage*4+4).map(i=><button type="button" key={i.id} disabled={busy} className={'ed-record '+(i.id===selected?'selected':'')} onClick={()=>{if(i.id!==selected)navigate(()=>{setDirty(false);setSelected(i.id);});}}>
+   <div className="ed-roster-list" ref={rosterRef}>
+    {loading?<p>{tr('Betöltés…','Loading…')}</p>:filtered.slice(currentPage*capacity,(currentPage+1)*capacity).map(i=><button type="button" key={i.id} disabled={busy} className={'ed-record '+(i.id===selected?'selected':'')} onClick={()=>{if(i.id!==selected)navigate(()=>{setDirty(false);setSelected(i.id);});}}>
      <span className="ed-thumbnail">{i.image_path?<img src={worldImageUrl(i.image_path)} alt=""/>:<Package size={24}/>}</span><span className="ed-record-name"><strong>{name(i)}</strong><small>{i.slug}</small></span>
     </button>)}
     {!loading&&!filtered.length&&<p>{tr('Nincs találat. Új tárgyat a Tárgyeditorban hozhatsz létre.','No results. Create new items in the Item editor.')}</p>}

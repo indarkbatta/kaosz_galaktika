@@ -1,6 +1,6 @@
 # HV-081 — Blueprint és komponens editor
 
-Szerkesztők → Felszerelés és gazdaság → Blueprint editor. Önálló EditorFrame, kereshető, négyesével lapozott tárgylista; a Tárgyeditor Komponensek füle megszűnt. A tárgy alapadatait előbb a szokásos editorban kell létrehozni; a besorolás külön atomi, verziózott mentés. Nincs új inventory- vagy craftingmechanika.
+Szerkesztők → Felszerelés és gazdaság → Blueprint editor. Önálló EditorFrame, kereshető, képernyőmérethez igazodva lapozott tárgylista; a Tárgyeditor Komponensek füle megszűnt. A tárgy alapadatait előbb a szokásos editorban kell létrehozni; a besorolás külön atomi, verziózott mentés. Nincs új inventory- vagy craftingmechanika.
 
 ## Besorolás
 
@@ -23,3 +23,11 @@ EditorTemplate/editor.css mezők és gombok, geometriai modul CSS, Lucide ikonok
 Izolált authenticated SQL PASS: öt kompatibilis cső, kiválasztás/illesztés tárolása, fordított függőség, hibás és elavult mentés rollback, jogosultságok, új fajta. Chromium headless-shell PASS: React→HTTP→SQL authoring, lapozott ötcsöves kompatibilitás, mentés/újratöltés, képletöltés és közös mező computed style; HU/EN 1920×1080, 1366×768, 1280×720 overflow nélkül. Firefox helyben nem igazolt; CI mindkét böngészőt futtatja.
 
 Migráció: 20261025123052_equipment_blueprints.sql; előfeltétel a combat_visual_authoring migráció. Mindkettő és a power_action_cost migráció már éles. Az önálló editorra szervezés nem igényel adatbázis-migrációt. Ebben az átszervezési blokkban nincs deploy/main merge/harci renderer-bekötés.
+
+## Külön komponensnézet (2026-10-25)
+
+Felszerelés és gazdaság → Komponensek: ugyanaz a Tárgyeditor, kizárólag mentett `kind=component` besorolású tárgyakkal. Név/slug keresés, család- és komponensfajta-szűrő kombinálható; találatszám és a rendelkezésre álló listamagasságból és a kártyák tényleges méretéből számolt lapozás. A szűrés nem dobja el a jobb oldalon megnyitott szerkesztést. A Komponens fülön család és fajta szerkeszthető; a szerep itt rögzítetten komponens. Átsorolás a Blueprint editorban lehetséges. A típuslista az adatbázisból érkezik. Az alapadatok, fordítások, kép, harci kép/statok, gyártó és recept a szokásos tárgyszerkesztő füleken elérhetők. Nincsenek másolt tárgyrekordok: a Tárgyak listája továbbra is minden tárgyat, a komponenseket is tartalmazza. Új tárgy felvételéhez a + a Tárgyeditorba vezet, besorolás a Blueprint editorban.
+
+A komponensbesorolás és harci kép mentetlen módosításait a közös elvetésablak védi. A komponensmentés frissíti a szűrők alapjául szolgáló katalógust. Nincs adatbázis-migráció vagy játékadat-módosítás. QA: `tools/qa/components-browser.mjs`, böngésző → HTTP → izolált SQL katalógus/mentés; csak komponensek, lapozás, összetett és üres szűrés, HU/EN nevek és slug, mentetlen cancel/discard, valódi fajta-mentés és frissített lista, komponensek megmaradnak az Items alatt. Chromium headless-shell, mindhárom desktop méret.
+
+A Blueprint és Komponensek tárgylistája közös `useRosterCapacity` hookkal méri a belső listamagasságot és a kártyát. ResizeObserver és tartalomfigyelés újraszámolja a kapacitást átméretezéskor, szűréskor és névváltozáskor; kizárólag teljes kártyák férhetnek ki. Nem fix négyes lapozás.

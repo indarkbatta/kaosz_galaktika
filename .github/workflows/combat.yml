@@ -9,8 +9,10 @@ on:
       - 'src/combat-visual-editor.css'
       - 'src/EquipmentBlueprintEditor.tsx'
       - 'src/BlueprintEditor.tsx'
+      - 'src/hooks/useRosterCapacity.ts'
       - 'src/equipment-blueprint-editor.css'
       - 'tools/qa/equipment-blueprints-*'
+      - 'tools/qa/components-*'
       - 'supabase/migrations/*equipment_blueprints*'
       - 'supabase/migrations/*combat_visual_authoring*'
       - 'src/Crew*.tsx'
@@ -141,6 +143,10 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/combat-browser.mjs
+      - name: Component-only item editor filters and shared item records
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/components-browser.mjs
       - name: Existing Activity and Challenge SQL regression
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools

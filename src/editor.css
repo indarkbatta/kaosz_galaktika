@@ -245,3 +245,11 @@
 .ed-preview-caption{font-size:11px;letter-spacing:.08em;color:#9eafb9;text-transform:uppercase}.ed-helper{font-size:12px;line-height:1.6;color:#9cadb9}.ed-workbench-status{padding:9px 12px;border:1px solid #3e525f;background:#10212b;font-size:12px;color:#b7cbd8}.ed-control-heading{font-size:13px;line-height:1.5;color:#ecd3b3;margin:0}.ed-empty-state{display:flex;align-items:center;justify-content:center;text-align:center;flex:1;padding:24px;color:#9cadb9;font-size:14px;line-height:1.7}
 @media(max-width:600px){.ed-decision-head{padding:18px}.ed-decision-footer{flex-direction:column}.ed-decision-head h3{font-size:18px}}
 .ed-component-option{display:grid!important;grid-template-columns:54px minmax(0,1fr);gap:8px!important;align-items:center;padding:10px;border:1px solid #405461;background:#0b151d}.ed-component-option>img{width:54px;height:54px;object-fit:contain;background:#182630}.ed-component-option>span{font-size:13px;line-height:1.5;text-transform:none;letter-spacing:0;overflow-wrap:anywhere}.ed-component-option select{grid-column:1/-1;margin-top:0!important}.ed-thumbnail-choice{position:relative;display:flex;align-items:center;justify-content:center;background:#111e27;border:1px solid #455d6b;color:#cad6dd;border-radius:0;cursor:pointer;padding:3px;aspect-ratio:1;min-width:0}.ed-thumbnail-choice[aria-pressed=true]{border-color:#e6a77a;box-shadow:inset 0 0 0 1px #e6a77a}.ed-thumbnail-choice img{width:100%;height:100%;object-fit:contain}.ed-thumbnail-choice span{position:absolute;bottom:2px;right:4px;font-size:11px;background:#08121bcc;padding:1px 3px}.ed-draggable{cursor:grab;touch-action:none;user-select:none}.ed-draggable:active{cursor:grabbing}.ed-draggable:focus-visible{outline:2px dashed #e6b576;outline-offset:2px}
+
+/* Shared roster filter geometry; controls inherit ed-general-grid. */
+.ed-roster-filters{display:flex;flex:none;flex-direction:column;gap:6px;padding:8px}.ed-roster-filters label{margin:0}.ed-roster-filters input,.ed-roster-filters select{margin-top:4px}.ed-roster-filters~.ed-roster-list{overflow:hidden}
+
+/* Paginated rosters adapt their record count to the available height. */
+.ed-roster:has(>.ed-pager)>.ed-roster-list{overflow:hidden}
+
+.ed-roster:has(>.ed-pager) .ed-record-name small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
