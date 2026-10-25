@@ -1,3 +1,4 @@
+import EquipmentBlueprintEditor from './EquipmentBlueprintEditor';
 import CombatVisualEditor from './CombatVisualEditor';
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
@@ -102,9 +103,9 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></EditorHeader>
-   <EditorTabs label="Item editor" selected={tab} onSelect={t=>visualNavigate(()=>setTab(t))} items={[{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
+   <EditorTabs label="Item editor" selected={tab} onSelect={t=>visualNavigate(()=>setTab(t))} items={[{id:'assembly',name:tr('Komponensek','Components')},{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
    {loadError&&<div role="alert" className="item-editor-load-error">{loadError}<button type="button" disabled={loading||busy} onClick={()=>void load(draft.id||undefined)}>{tr('Újratöltés','Reload')}</button></div>}
-   {tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
+   {tab==='assembly'?<EquipmentBlueprintEditor key={draft.id} locale={locale} itemId={draft.id} onDirtyChange={setVisualDirty}/>:tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
     {tab==='general'&&<>
      <label>{tr('Azonosító','Slug')}<input required value={draft.slug} maxLength={80} onChange={e=>setDraft(x=>({...x,slug:e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'')}))}/></label>
      <div className="item-editor-fields"><label>{tr('Kategória','Category')}<select value={draft.category} onChange={e=>{const category=e.target.value;setDraft(x=>({...x,category}));if(category==='material')setIngredients([]);}}>
@@ -143,7 +144,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
      <label>{tr('Leírás','Description')} ({language.toUpperCase()})<textarea rows={4} value={local.description} onChange={e=>patch('description',e.target.value)}/></label>
     </>}
    </form>}
-   {tab!=='visuals'&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
+   {tab!=='visuals'&&tab!=='assembly'&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
   </section>
  {visualPending&&<div className="ed-modal-mask"><section className="ed-modal" role="dialog" aria-modal="true"><h3>{tr('Mentetlen megjelenítés','Unsaved appearance')}</h3><p>{tr('Elveted a módosításokat?','Discard changes?')}</p><button type="button" onClick={()=>setVisualPending(null)}>{tr('Mégse','Cancel')}</button><button type="button" onClick={()=>{setVisualDirty(false);visualPending();setVisualPending(null);}}>{tr('Elvetés','Discard')}</button></section></div>}
  </EditorFrame>;

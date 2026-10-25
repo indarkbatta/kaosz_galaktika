@@ -4,6 +4,10 @@ on:
     paths:
       - 'src/Combat*.tsx'
       - 'src/combat-visual-editor.css'
+      - 'src/EquipmentBlueprintEditor.tsx'
+      - 'src/equipment-blueprint-editor.css'
+      - 'tools/qa/equipment-blueprints-*'
+      - 'supabase/migrations/*equipment_blueprints*'
       - 'supabase/migrations/*combat_visual_authoring*'
       - 'src/Crew*.tsx'
       - 'src/crew-progression.css'
@@ -81,6 +85,14 @@ jobs:
         run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-combat-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14 embedded-postgres@17.10.0-beta.17 pg@8.16.3
       - name: Install browsers
         run: node "%RUNNER_TEMP%\hatarvilag-combat-tools\node_modules\playwright\cli.js" install chromium firefox
+      - name: Equipment blueprint compatibility and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/equipment-blueprints-database.mjs
+      - name: Equipment blueprint assembler in browsers
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/equipment-blueprints-browser.mjs
       - name: Combat artwork persistence and authorization
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
