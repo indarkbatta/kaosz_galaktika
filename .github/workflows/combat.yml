@@ -15,6 +15,8 @@ on:
       - 'tools/qa/blueprint-assembly-*'
       - 'src/equipment-blueprint-editor.css'
       - 'tools/qa/equipment-blueprints-*'
+      - 'tools/qa/equipment-record-actions-*'
+      - 'supabase/migrations/*equipment_editor_record_actions*'
       - 'tools/qa/components-*'
       - 'tools/qa/editor-roster-layout.mjs'
       - 'supabase/migrations/*equipment_blueprints*'
@@ -155,6 +157,10 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/blueprint-assembly-browser.mjs
+      - name: Equipment record copy delete and reference guards
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/equipment-record-actions-database.mjs
       - name: Existing Activity and Challenge SQL regression
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools

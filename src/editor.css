@@ -277,3 +277,6 @@
 .ed-workspace-dialog,.ed-workspace-dialog *{box-sizing:border-box}
 
 body:has(.ed-workspace-dialog) .bp-root>.ed-feedback{visibility:hidden}
+
+/* Shared editable slot cards and record actions. */
+.ed-slot-card{border:1px solid #364551;background:#0b141d;padding:12px}.ed-record-actions{display:flex;gap:6px;padding:8px}.ed-slot-card .ed-checkbox{display:flex;align-items:center;gap:6px;text-transform:none}.ed-slot-card .ed-secondary-button{white-space:nowrap}

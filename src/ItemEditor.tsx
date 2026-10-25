@@ -1,7 +1,10 @@
+import {Pencil,Copy,Trash2} from 'lucide-react';
+import {DecisionDialog} from './components/DecisionDialog';
+import {editorMessage} from './lib/editorMessages';
 import {DiscardChangesDialog} from './components/DecisionDialog';
 import EquipmentBlueprintEditor from './EquipmentBlueprintEditor';
 import CombatVisualEditor from './CombatVisualEditor';
-import {useEffect,useState,type FormEvent} from 'react';
+import {useEffect,useState,useRef,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
 import {EditorFrame,EditorTabs,EditorRoster,EditorHeader,EditorFooter} from './components/EditorTemplate';
@@ -21,7 +24,10 @@ type Plant=Manufacturer&{faction_id:string};
 type Lang={code:string;native_name:string};
 const empty:Item={id:'',slug:'',category:'material',rarity:'common',is_published:false,image_path:null,equip_owner:null,equip_slot:null,capacity_bonus:0,manufacturer_faction_id:null,manufacturer_company_id:null,game_items_i18n:[]};
 export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly=false,blueprintsOnly=false}:{blueprintsOnly?:boolean;componentsOnly?:boolean;locale:string;onBack:()=>void;onSectionSelect:(section:EditorSection)=>void}){
- const [componentCatalog,setComponentCatalog]=useState<{definitions:{item_id:string;kind:string;family:string;type_code:string|null}[];types:{code:string;name_hu:string;name_en:string}[]}>({definitions:[],types:[]});
+ const actionGuard=useRef(false);
+ const [deleteTarget,setDeleteTarget]=useState<Item|null>(null);
+ const [actionError,setActionError]=useState('');
+ const [componentCatalog,setComponentCatalog]=useState<{definitions:{item_id:string;kind:string;family:string;type_code:string|null;revision:number}[];types:{code:string;name_hu:string;name_en:string}[]}>({definitions:[],types:[]});
  const [search,setSearch]=useState(''),[familyFilter,setFamilyFilter]=useState(''),[typeFilter,setTypeFilter]=useState('');
  const en=locale==='en',tr=(hu:string,eng:string)=>en?eng:hu;
  const [factions,setFactions]=useState<Manufacturer[]>([]),[plants,setPlants]=useState<Plant[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState('');
@@ -46,7 +52,7 @@ export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly
   setDraft({...item,manufacturer_faction_id:item.manufacturer_faction_id||null,manufacturer_company_id:item.manufacturer_company_id||null});
   setText(Object.fromEntries(item.game_items_i18n.map(x=>[x.locale,{name:x.name,description:x.description}])));
   setIngredients(allRecipes.filter(x=>x.output_item_id===item.id).map(x=>({item_id:x.ingredient_item_id,quantity:x.quantity})));
-  setTab(specialized?'component':'general');
+  setTab(blueprintsOnly?'slots':componentsOnly?'component':'general');
  }
  async function load(id?:string,expected?:{faction:string|null;company:string|null}){
   setLoading(true);setLoadError('');
@@ -111,6 +117,10 @@ export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly
   }
   }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'),'error');}finally{setBusy(false);}
  }
+ async function recordAction(item:Item,action:'copy'|'delete'){
+  if(busy||componentBusy||actionGuard.current)return;actionGuard.current=true;setBusy(true);setActionError('');
+  try{const definition=componentCatalog.definitions.find(d=>d.item_id===item.id);const result=await supabase.rpc('equipment_editor_record_action',{p_item:item.id,p_action:action,p_revision:definition?.revision});if(result.error)throw new Error(result.error.message);setDeleteTarget(null);setVisualDirty(false);setItemDirty(false);await load(action==='copy'?(result.data as {id:string}).id:undefined);notify(action==='copy'?tr('Külön piszkozatmásolat létrehozva.','Created a separate draft copy.'):tr('Rekord törölve.','Record deleted.'),'success');}catch(e){const message=editorMessage(e instanceof Error?e.message:String(e),locale);setActionError(message);notify(message,'error');}finally{actionGuard.current=false;setBusy(false);}
+ }
  return <EditorFrame>
   <EditorNavigation locale={locale} active={blueprintsOnly?'blueprints':componentsOnly?'components':'items'} onBack={()=>visualNavigate(onBack)} onSelect={s=>visualNavigate(()=>onSectionSelect(s))}/>
   <EditorRoster><div className="ed-roster-top"><strong>{blueprintsOnly?tr('Blueprintek','Blueprints'):componentsOnly?tr('Komponensek','Components'):tr('Tárgyak','Items')} ({specialized?visibleItems.length+' / '+componentItems.length:items.length})</strong><button type="button" disabled={busy||loading} onClick={()=>visualNavigate(newItem)} title={blueprintsOnly?tr('Új blueprint','New blueprint'):componentsOnly?tr('Új komponens','New component'):tr('Új tárgy','New item')} aria-label={blueprintsOnly?tr('Új blueprint','New blueprint'):componentsOnly?tr('Új komponens','New component'):tr('Új tárgy','New item')}><LucidePlus/></button></div>
@@ -119,16 +129,16 @@ export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly
     <label>{tr('Felszereléscsalád','Equipment family')}<select aria-label={tr('Család szűrő','Family filter')} value={familyFilter} onChange={e=>{setFamilyFilter(e.target.value);}}><option value="">{tr('Minden család','All families')}</option>{[['weapon',tr('Fegyver','Weapon')],['sidearm',tr('Oldalfegyver','Sidearm')],['armor',tr('Páncél','Armor')],['helmet',tr('Sisak','Helmet')]].map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label>
     <label>{tr('Komponensfajta','Component type')}<select aria-label={tr('Fajta szűrő','Type filter')} value={typeFilter} onChange={e=>{setTypeFilter(e.target.value);}}><option value="">{tr('Minden fajta','All types')}</option>{componentCatalog.types.map(t=><option key={t.code} value={t.code}>{en?t.name_en:t.name_hu}</option>)}</select></label>
    </div>}
-   <div className="ed-roster-list">{visibleItems.map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
+   <div className="ed-roster-list">{visibleItems.map(item=><div className="ed-record-card" key={item.id}><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
     <span className="ed-thumbnail item-editor-symbol">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>
-    <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {componentsOnly?componentCatalog.types.find(t=>t.code===componentCatalog.definitions.find(d=>d.item_id===item.id)?.type_code)?.[en?'name_en':'name_hu']||item.category:item.category}</small></span></button>)}</div>
+    <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {componentsOnly?componentCatalog.types.find(t=>t.code===componentCatalog.definitions.find(d=>d.item_id===item.id)?.type_code)?.[en?'name_en':'name_hu']||item.category:item.category}</small></span></button>{specialized&&<div className="ed-record-actions"><button className="ed-secondary-button" type="button" disabled={busy||loading} onClick={()=>visualNavigate(()=>choose(item,recipes))}><Pencil size={15}/>{tr('Szerkesztés','Edit')}</button><button className="ed-secondary-button" type="button" disabled={busy||loading} onClick={()=>visualNavigate(()=>void recordAction(item,'copy'))}><Copy size={15}/>{tr('Másolás','Copy')}</button><button className="ed-secondary-button" type="button" disabled={busy||loading} onClick={()=>visualNavigate(()=>{setActionError('');setDeleteTarget(item);})}><Trash2 size={15}/>{tr('Törlés','Delete')}</button></div>}</div>)}</div>
    {specialized&&<>{!loading&&!visibleItems.length&&<p className="ed-helper">{tr('Nincs a szűrésnek megfelelő komponens.','No components match these filters.')}</p>}</>}
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):blueprintsOnly?tr('ÚJ BLUEPRINT','NEW BLUEPRINT'):componentsOnly?tr('ÚJ KOMPONENS','NEW COMPONENT'):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></EditorHeader>
-   <EditorTabs label="Item editor" selected={tab} onSelect={t=>{if(visualDirty)visualNavigate(()=>setTab(t));else setTab(t);}} items={[...(specialized?[{id:'component',name:blueprintsOnly?tr('Tervrajz','Blueprint'):tr('Komponens','Component')}]:[{id:'classification',name:tr('Besorolás','Classification')}]),{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
+   <EditorTabs label="Item editor" selected={tab} onSelect={t=>{if(visualDirty)visualNavigate(()=>setTab(t));else setTab(t);}} items={[...(specialized?[{id:blueprintsOnly?'slots':'component',name:blueprintsOnly?tr('Helyek','Slots'):tr('Komponens','Component')}]:[{id:'classification',name:tr('Besorolás','Classification')}]),{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
    {loadError&&<div role="alert" className="item-editor-load-error">{loadError}<button type="button" disabled={loading||busy} onClick={()=>void load(draft.id||undefined)}>{tr('Újratöltés','Reload')}</button></div>}
-   {specialized&&!draft.id&&!creating?<div className="ed-empty-state">{tr('Még nincs rekord. Az Új gombbal hozhatsz létre egyet.','No records yet. Use the New button to create one.')}</div>:(tab==='component'||tab==='classification')?<EquipmentBlueprintEditor key={draft.id} itemId={draft.id} locale={locale} componentOnly={componentsOnly} classificationOnly={!specialized} onBusyChange={setComponentBusy} onDirtyChange={setVisualDirty} onSaved={()=>void load(draft.id)}/>:tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save} onChangeCapture={()=>setItemDirty(true)}>
+   {specialized&&!draft.id&&!creating?<div className="ed-empty-state">{tr('Még nincs rekord. Az Új gombbal hozhatsz létre egyet.','No records yet. Use the New button to create one.')}</div>:(tab==='component'||tab==='classification'||tab==='slots')?<EquipmentBlueprintEditor key={draft.id} itemId={draft.id} locale={locale} pane={tab==='slots'?'slots':'type'} hideTabs componentOnly={componentsOnly} classificationOnly={!specialized} onBusyChange={setComponentBusy} onDirtyChange={setVisualDirty} onSaved={()=>void load(draft.id)}/>:tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save} onChangeCapture={()=>setItemDirty(true)}>
     {tab==='general'&&<>
      <label>{tr('Azonosító','Slug')}<input required value={draft.slug} maxLength={80} onChange={e=>setDraft(x=>({...x,slug:e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'')}))}/></label>
      <div className="item-editor-fields"><label>{tr('Kategória','Category')}<select value={draft.category} onChange={e=>{const category=e.target.value;setDraft(x=>({...x,category}));if(category==='material')setIngredients([]);}}>
@@ -167,8 +177,9 @@ export default function ItemEditor({locale,onBack,onSectionSelect,componentsOnly
      <label>{tr('Leírás','Description')} ({language.toUpperCase()})<textarea rows={4} value={local.description} onChange={e=>patch('description',e.target.value)}/></label>
     </>}
    </form>}
-   {tab!=='visuals'&&tab!=='component'&&tab!=='classification'&&(!specialized||!!draft.id||creating)&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError||specialized&&!draft.id&&!creating}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
+   {tab!=='visuals'&&tab!=='component'&&tab!=='classification'&&tab!=='slots'&&(!specialized||!!draft.id||creating)&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError||specialized&&!draft.id&&!creating}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
   </section>
+ {deleteTarget&&<DecisionDialog title={tr('Rekord törlése','Delete record')} description={tr('Végleg törlöd ezt a szerkesztői rekordot? ','Permanently delete this editor record? ')+itemName(deleteTarget)} confirmLabel={tr('Törlés','Delete')} cancelLabel={tr('Mégse','Cancel')} danger disabled={busy} onCancel={()=>{if(!busy)setDeleteTarget(null);}} onConfirm={()=>void recordAction(deleteTarget,'delete')}>{actionError&&<p className="ed-error" role="alert">{actionError}</p>}</DecisionDialog>}
  {visualPending&&<DiscardChangesDialog locale={locale} onCancel={()=>setVisualPending(null)} onDiscard={()=>{setVisualDirty(false);setItemDirty(false);visualPending();setVisualPending(null);}}/>}
  </EditorFrame>;
 }
