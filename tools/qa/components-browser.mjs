@@ -1,3 +1,4 @@
+import {assertEditorRosterLayout} from './editor-roster-layout.mjs';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {resolve} from 'node:path';
@@ -33,7 +34,7 @@ try{
   try{const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route('https://assets.voidnoir.net/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFklEQVR4nGOQc4siCTGMahjVMHw1AADIDr4BHZ+22QAAAABJRU5ErkJggg==','base64')}));
    for(const locale of ['hu','en'])for(const [width,height] of [[1920,1080],[1366,768],[1280,720]]){
-    const en=locale==='en';await page.setViewportSize({width,height});await page.goto(url+'?locale='+locale);const type=page.getByLabel(en?'Component type':'Komponensfajta',{exact:true});await type.waitFor();await page.waitForTimeout(80);const capacity=await page.locator('.ed-record').count();assert.ok(capacity>=3);if(height===1080)assert.ok(capacity>4,'Large screens show more than four cards');assert.equal(await page.getByLabel(en?'Item role':'Tárgy szerepe',{exact:true}).inputValue(),'component');assert.equal(await page.getByLabel(en?'Item role':'Tárgy szerepe',{exact:true}).isDisabled(),true);
+    const en=locale==='en';await page.setViewportSize({width,height});await page.goto(url+'?locale='+locale);const type=page.getByLabel(en?'Component type':'Komponensfajta',{exact:true});await type.waitFor();await assertEditorRosterLayout(page);await page.waitForTimeout(80);const capacity=await page.locator('.ed-record').count();assert.ok(capacity>=3);if(height===1080)assert.ok(capacity>4,'Large screens show more than four cards');assert.equal(await page.getByLabel(en?'Item role':'Tárgy szerepe',{exact:true}).inputValue(),'component');assert.equal(await page.getByLabel(en?'Item role':'Tárgy szerepe',{exact:true}).isDisabled(),true);
     assert.equal(await page.locator('.ed-roster').innerText().then(s=>s.includes('captain_rifle')),false);
     await page.getByRole('button',{name:en?'Next page':'Következő oldal',exact:true}).click();assert.ok((await page.locator('.ed-record').count())>0);
     const family=page.getByLabel(en?'Family filter':'Család szűrő',{exact:true}),kind=page.getByLabel(en?'Type filter':'Fajta szűrő',{exact:true}),search=page.getByLabel(en?'Search components':'Komponens keresése',{exact:true});

@@ -13,6 +13,7 @@ on:
       - 'src/equipment-blueprint-editor.css'
       - 'tools/qa/equipment-blueprints-*'
       - 'tools/qa/components-*'
+      - 'tools/qa/editor-roster-layout.mjs'
       - 'supabase/migrations/*equipment_blueprints*'
       - 'supabase/migrations/*combat_visual_authoring*'
       - 'src/Crew*.tsx'

@@ -3,7 +3,7 @@
 .scene:has(.ed-layout) .sidebar{display:none!important}
 .scene:has(.ed-layout) .ed-layout{height:min(800px,calc(100vh - 170px));min-height:520px}
 .ed-layout{width:100%;display:flex;align-items:center;justify-content:center;color:#dbe2e8;font-size:14px;isolation:isolate}
-.ed-shell{display:grid;grid-template-columns:208px 232px minmax(0,1fr);width:min(1400px,94vw);height:100%;min-height:0;overflow:hidden;background:#0a0e13ed;border:1px solid #46515a;box-shadow:0 24px 65px #000d,0 0 0 6px #05080a7d;position:relative}
+.ed-shell{display:grid;grid-template-columns:208px minmax(0,1fr) 464px;width:min(1632px,94vw);height:100%;min-height:0;overflow:hidden;background:#0a0e13ed;border:1px solid #46515a;box-shadow:0 24px 65px #000d,0 0 0 6px #05080a7d;position:relative}
 .ed-shell:before{content:'';position:absolute;top:-1px;right:18px;width:100px;height:2px;background:#eb4536;z-index:1}
 .ed-nav,.ed-roster,.ed-editor{min-width:0;min-height:0}
 .ed-nav{background:#090c10ee;border-right:1px solid #46505a;display:flex;flex-direction:column;padding:14px 10px;gap:3px;overflow-y:auto;overflow-x:hidden}
@@ -106,8 +106,8 @@
 .ed-modal h3{margin:0;color:#e9ebee}.ed-modal p{line-height:1.6;color:#c1c8ce}
 .ed-modal>div{display:flex;justify-content:flex-end;gap:10px}
 .ed-modal button{border:1px solid #53616e;background:#202a32}
-@media(max-width:1500px){.ed-shell{width:min(1340px,94vw);grid-template-columns:208px 232px minmax(0,1fr)}}
-@media(max-width:1150px){.ed-shell{width:calc(100vw - 28px);grid-template-columns:198px 222px minmax(0,1fr)}}
+@media(max-width:1500px){.ed-shell{width:min(1572px,94vw);grid-template-columns:208px minmax(0,1fr) 464px}}
+@media(max-width:1150px){.ed-shell{width:calc(100vw - 28px);grid-template-columns:198px minmax(0,1fr) 444px}}
 @media(max-width:760px){
  .scene:has(.ed-layout) .ed-layout{height:auto;max-height:none;min-height:0}
  .ed-shell{display:flex;flex-direction:column;overflow:visible;max-width:100%;height:auto}
@@ -253,3 +253,13 @@
 .ed-roster:has(>.ed-pager)>.ed-roster-list{overflow:hidden}
 
 .ed-roster:has(>.ed-pager) .ed-record-name small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Shared desktop order: navigation, editing surface, double-width record list. */
+@media(min-width:761px){
+ .ed-shell>.ed-nav{grid-column:1;grid-row:1}
+ .ed-shell>.ed-editor{grid-column:2;grid-row:1}
+ .ed-shell>.ed-roster{grid-column:3;grid-row:1;border-right:0;border-left:1px solid #46515d}
+}
+
+/* Keep every tab reachable when the editing column is narrower. */
+.ed-tabs{flex-shrink:0}.ed-tabs button{min-width:0;overflow-wrap:anywhere}

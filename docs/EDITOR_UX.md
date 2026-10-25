@@ -27,3 +27,9 @@ Build PASS. Chromium headless-shell, HU/EN, 1920×1080 / 1366×768 / 1280×720:
 1280×720 screenshot és döntési ablak vizuálisan átnézve. Firefox helyben nem igazolt; CI mindkét böngészőre felkészítve. Az érintett régi tesztek dialog-szerep- és gombnevei a közös komponenshez igazítva.
 
 Nincs migráció vagy deploy ebben a blokkban. A production a korábbi b48523cb kiadás marad, amíg külön élesítés nem történik.
+
+## Rekordlisták jobb oldalon (2026-10-25)
+
+Felhasználói kérésre minden közös EditorFrame-et használó tartalomszerkesztőben a sorrend: bal oldali EditorNavigation, középső ed-editor, jobb oldali EditorRoster. A rekordlista desktopon az eddigi 232 helyett 464 px; az 1150 px alatti régi 222 px helyett 444 px. A teljes ablak felső szélességhatára 232 px-lel nőtt (1632 / 1572 px), 94vw korláttal. A mezők, gombok, tabok közös stílusa változatlan, csak a közös elrendezés és a lista elválasztó oldala módosult. Mobilon a meglévő egymás alatti nézet marad. Az adaptív listakapacitás az új geometriát automatikusan méri.
+
+`tools/qa/editor-roster-layout.mjs`: közös böngészős geometriaellenőrzés a Komponensek, Blueprint és harci megjelenítés tesztjében; menü/szerkesztő/lista sorrend, 464 px listaszélesség és képernyőn belüli ablak HU/EN 1920×1080,1366×768,1280×720.
