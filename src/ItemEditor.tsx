@@ -1,3 +1,4 @@
+import CombatVisualEditor from './CombatVisualEditor';
 import {useEffect,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -25,6 +26,8 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
  const [languages,setLanguages]=useState<Lang[]>([]),[language,setLanguage]=useState('hu');
  const [draft,setDraft]=useState<Item>(empty),[text,setText]=useState<Record<string,{name:string;description:string}>>({});
  const [ingredients,setIngredients]=useState<Ingredient[]>([]);
+ const [visualDirty,setVisualDirty]=useState(false),[visualPending,setVisualPending]=useState<null|(()=>void)>(null);
+ const visualNavigate=(fn:()=>void)=>{if(visualDirty)setVisualPending(()=>fn);else fn();};
  const [tab,setTab]=useState('general'),[busy,setBusy]=useState(false);
  const itemName=(item:Item)=>item.game_items_i18n.find(x=>x.locale===locale)?.name||
  item.game_items_i18n.find(x=>x.locale==='hu')?.name||item.slug;
@@ -91,17 +94,17 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
   }catch(e){notify(e instanceof Error?e.message:tr('Mentési hiba.','Save failed.'),'error');}finally{setBusy(false);}
  }
  return <EditorFrame>
-  <EditorNavigation locale={locale} active="items" onBack={onBack} onSelect={onSectionSelect}/>
-  <EditorRoster><div className="ed-roster-top"><strong>{tr('Tárgyak','Items')} ({items.length})</strong><button type="button" disabled={busy||loading} onClick={newItem} title={tr('Új tárgy','New item')}><LucidePlus/></button></div>
-   <div className="ed-roster-list">{items.map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>choose(item,recipes)}>
+  <EditorNavigation locale={locale} active="items" onBack={()=>visualNavigate(onBack)} onSelect={s=>visualNavigate(()=>onSectionSelect(s))}/>
+  <EditorRoster><div className="ed-roster-top"><strong>{tr('Tárgyak','Items')} ({items.length})</strong><button type="button" disabled={busy||loading} onClick={()=>visualNavigate(newItem)} title={tr('Új tárgy','New item')}><LucidePlus/></button></div>
+   <div className="ed-roster-list">{items.map(item=><button type="button" disabled={busy||loading} className={'ed-record '+(draft.id===item.id?'selected':'')} key={item.id} onClick={()=>visualNavigate(()=>choose(item,recipes))}>
     <span className="ed-thumbnail item-editor-symbol">{item.image_path?<img src={'https://assets.voidnoir.net/'+item.image_path} alt="" style={{width:'100%',height:'100%',objectFit:'contain'}}/>:({material:'◈',data:'⌁',trade:'✦',equipment:'⚒',consumable:'◆'} as Record<string,string>)[item.category]}</span>
     <span className="ed-record-name"><strong>{itemName(item)}</strong><small>{item.slug} · {item.category}</small></span></button>)}</div>
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{draft.id?itemName(items.find(x=>x.id===draft.id)||draft):tr('ÚJ TÁRGY','NEW ITEM')}</strong><span>M5.4</span></EditorHeader>
-   <EditorTabs label="Item editor" selected={tab} onSelect={setTab} items={[{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
+   <EditorTabs label="Item editor" selected={tab} onSelect={t=>visualNavigate(()=>setTab(t))} items={[{id:'visuals',name:tr('Harci kép','Combat artwork')},{id:'general',name:tr('Alapadatok','General')},{id:'combat',name:tr('Harci statok','Combat stats')},{id:'manufacturer',name:tr('Gyártó','Manufacturer')},{id:'recipe',name:tr('Recept / alapanyagok','Recipe / Materials')},{id:'dictionary',name:tr('Szótár','Dictionary')}]}/>
    {loadError&&<div role="alert" className="item-editor-load-error">{loadError}<button type="button" disabled={loading||busy} onClick={()=>void load(draft.id||undefined)}>{tr('Újratöltés','Reload')}</button></div>}
-   <form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
+   {tab==='visuals'?<CombatVisualEditor key={draft.id} locale={locale} embeddedItemId={draft.id} onDirtyChange={setVisualDirty}/>:<form id="item-editor-form" className="ed-form item-editor-form" onSubmit={save}>
     {tab==='general'&&<>
      <label>{tr('Azonosító','Slug')}<input required value={draft.slug} maxLength={80} onChange={e=>setDraft(x=>({...x,slug:e.target.value.toLowerCase().replace(/[^a-z0-9_]/g,'')}))}/></label>
      <div className="item-editor-fields"><label>{tr('Kategória','Category')}<select value={draft.category} onChange={e=>{const category=e.target.value;setDraft(x=>({...x,category}));if(category==='material')setIngredients([]);}}>
@@ -139,8 +142,9 @@ export default function ItemEditor({locale,onBack,onSectionSelect}:{locale:strin
      <label>{tr('Név','Name')} ({language.toUpperCase()})<input value={local.name} onChange={e=>patch('name',e.target.value)}/></label>
      <label>{tr('Leírás','Description')} ({language.toUpperCase()})<textarea rows={4} value={local.description} onChange={e=>patch('description',e.target.value)}/></label>
     </>}
-   </form>
-   <EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError}>{tr('MENTÉS','SAVE')}</button></EditorFooter>
+   </form>}
+   {tab!=='visuals'&&<EditorFooter><span className="ed-fine">1–5 · HU/EN · RLS</span><button type="submit" form="item-editor-form" className="ed-submit" disabled={busy||loading||!!loadError}>{tr('MENTÉS','SAVE')}</button></EditorFooter>}
   </section>
+ {visualPending&&<div className="ed-modal-mask"><section className="ed-modal" role="dialog" aria-modal="true"><h3>{tr('Mentetlen megjelenítés','Unsaved appearance')}</h3><p>{tr('Elveted a módosításokat?','Discard changes?')}</p><button type="button" onClick={()=>setVisualPending(null)}>{tr('Mégse','Cancel')}</button><button type="button" onClick={()=>{setVisualDirty(false);visualPending();setVisualPending(null);}}>{tr('Elvetés','Discard')}</button></section></div>}
  </EditorFrame>;
 }

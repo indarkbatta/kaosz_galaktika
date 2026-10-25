@@ -2,7 +2,7 @@ import {Users,Orbit,Package,Gamepad2,Swords,Settings,Dna,Shield,Sparkles,UserRou
 import {useEffect,useState} from 'react';
 
 export type EditorSection=
- 'expedition-companions'|'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
+ 'combat-visuals'|'expedition-companions'|'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
  'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|
  'ui-layout'|'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
 
@@ -31,6 +31,7 @@ const groups:MenuGroup[]=[
   {id:'challenges',icon:'dice',hu:'Skill challenge-ek',en:'Skill challenges'},
   {id:'salvage',icon:'map-pin',hu:'Roncskutatás',en:'Salvage exploration'}]},
  {id:'combat',icon:'swords',hu:'Harc',en:'Combat',items:[
+  {id:'combat-visuals',icon:'users',hu:'Harci megjelenítés',en:'Combat appearance'},
   {id:'encounters',icon:'crosshair',hu:'Encounterek',en:'Encounters'},
   {id:'enemies',icon:'skull',hu:'Ellenségek',en:'Enemies'},
   {id:'powers',icon:'zap',hu:'Powerek',en:'Powers'},

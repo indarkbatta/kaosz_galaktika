@@ -16,13 +16,14 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='expedition-companions'|'ui-layout'|'dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'crew-classes'|'admin'|'factions'|'powers'|'talents'|'combat'|'enemies'|'encounters'|'combat-rules'|'balance'|'languages'|'salvage'|'talent-trees';
+type Page='combat-visuals'|'expedition-companions'|'ui-layout'|'dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'crew-classes'|'admin'|'factions'|'powers'|'talents'|'combat'|'enemies'|'encounters'|'combat-rules'|'balance'|'languages'|'salvage'|'talent-trees';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
 
 const TalentTreeEditor=lazy(()=>import('./TalentTreeEditor'));
 const SalvageEditor=lazy(()=>import('./SalvageEditor'));
+const CombatVisualEditor=lazy(()=>import('./CombatVisualEditor'));
 const CombatEditor=lazy(()=>import('./CombatEditor'));
 const FactionEditor=lazy(()=>import('./FactionEditor'));
 const UILayoutEditor=lazy(()=>import('./UILayoutEditor'));
@@ -182,6 +183,7 @@ function App(){
     :page==='salvage'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><SalvageEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='factions'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><FactionEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='ships'&&(role==='editor'||role==='admin')?<ShipEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='combat-visuals'&&(role==='editor'||role==='admin')?<Suspense fallback={<p>…</p>}><CombatVisualEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='ui-layout'&&(role==='editor'||role==='admin')?<Suspense fallback={<p>…</p>}><UILayoutEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='expedition-companions'&&(role==='editor'||role==='admin')?<Suspense fallback={<p>…</p>}><ExpeditionCompanionEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='crew-classes'&&(role==='editor'||role==='admin')?<Suspense fallback={<p>…</p>}><CrewProgressionEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
