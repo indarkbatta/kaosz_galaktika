@@ -1,2 +1,5 @@
-import {createRoot} from 'react-dom/client';import EquipmentBlueprintEditor from '../../src/EquipmentBlueprintEditor';import {EditorFrame,EditorRoster,EditorHeader,EditorTabs} from '../../src/components/EditorTemplate';import {EditorNavigation} from '../../src/components/EditorNavigation';import '../../src/styles.css';import '../../src/editor.css';
-const p=new URLSearchParams(location.search),locale=p.get('locale')||'hu';createRoot(document.getElementById('root')!).render(<div className="scene"><EditorFrame><EditorNavigation locale={locale} active="items" onBack={()=>{}} onSelect={()=>{}}/><EditorRoster/><section className="ed-editor"><EditorHeader>Item editor</EditorHeader><EditorTabs label="Items" selected="assembly" onSelect={()=>{}} items={['assembly','visuals','general','combat','manufacturer','recipe','dictionary'].map(id=>({id,name:id}))}/><EquipmentBlueprintEditor itemId={p.get('item')||''} locale={locale} onDirtyChange={()=>{}}/></section></EditorFrame></div>);
+import {createRoot} from 'react-dom/client';
+import BlueprintEditor from '../../src/BlueprintEditor';
+import '../../src/styles.css';
+const p=new URLSearchParams(location.search),locale=p.get('locale')||'hu';
+createRoot(document.getElementById('root')!).render(<div className="scene"><BlueprintEditor locale={locale} onBack={()=>{document.body.dataset.destination='dashboard';}} onSectionSelect={section=>{document.body.dataset.destination=section;}}/></div>);

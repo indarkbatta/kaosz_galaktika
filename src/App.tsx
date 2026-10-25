@@ -16,13 +16,14 @@ import ToastViewport from './components/ToastViewport';
 import {notify} from './lib/toast';
 
 type Mode='login'|'register'|'recover'|'change';
-type Page='combat-visuals'|'expedition-companions'|'ui-layout'|'dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'crew-classes'|'admin'|'factions'|'powers'|'talents'|'combat'|'enemies'|'encounters'|'combat-rules'|'balance'|'languages'|'salvage'|'talent-trees';
+type Page='blueprints'|'combat-visuals'|'expedition-companions'|'ui-layout'|'dashboard'|'editor'|'skills'|'challenges'|'gameplay'|'galaxy'|'sector'|'items'|'ships'|'crew'|'crew-classes'|'admin'|'factions'|'powers'|'talents'|'combat'|'enemies'|'encounters'|'combat-rules'|'balance'|'languages'|'salvage'|'talent-trees';
 type Profile={id:string;display_name:string;preferred_locale:Locale};
 type RoleRow={user_id:string;role:Role};
 const assetOrigin=(import.meta.env.VITE_ASSET_BASE_URL||'https://assets.voidnoir.net').replace(/\/$/,'');
 
 const TalentTreeEditor=lazy(()=>import('./TalentTreeEditor'));
 const SalvageEditor=lazy(()=>import('./SalvageEditor'));
+const BlueprintEditor=lazy(()=>import('./BlueprintEditor'));
 const CombatVisualEditor=lazy(()=>import('./CombatVisualEditor'));
 const CombatEditor=lazy(()=>import('./CombatEditor'));
 const FactionEditor=lazy(()=>import('./FactionEditor'));
@@ -178,6 +179,7 @@ function App(){
     :page==='galaxy'&&(role==='editor'||role==='admin')?<GalaxyEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='sector'&&(role==='editor'||role==='admin')?<SectorEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
     :page==='items'&&(role==='editor'||role==='admin')?<ItemEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/>
+    :page==='blueprints'&&(role==='editor'||role==='admin')?<Suspense fallback={<p>…</p>}><BlueprintEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :(page==='powers'||page==='talents'||page==='combat'||page==='enemies'||page==='encounters'||page==='combat-rules')&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><CombatEditor key={page} section={page==='combat'?'enemies':page} locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='talent-trees'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><TalentTreeEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>
     :page==='salvage'&&(role==='editor'||role==='admin')?<Suspense fallback={<div className="terminal">{locale==='hu'?'Szerkesztő betöltése…':'Loading editor…'}</div>}><SalvageEditor locale={locale} onSectionSelect={openEditorSection} onBack={()=>setPage('dashboard')}/></Suspense>

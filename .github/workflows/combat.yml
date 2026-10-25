@@ -8,6 +8,7 @@ on:
       - 'tools/qa/decision-dialog-*'
       - 'src/combat-visual-editor.css'
       - 'src/EquipmentBlueprintEditor.tsx'
+      - 'src/BlueprintEditor.tsx'
       - 'src/equipment-blueprint-editor.css'
       - 'tools/qa/equipment-blueprints-*'
       - 'supabase/migrations/*equipment_blueprints*'

@@ -2,7 +2,7 @@ import {Users,Orbit,Package,Gamepad2,Swords,Settings,Dna,Shield,Sparkles,UserRou
 import {useEffect,useState} from 'react';
 
 export type EditorSection=
- 'combat-visuals'|'expedition-companions'|'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
+ 'blueprints'|'combat-visuals'|'expedition-companions'|'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
  'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|
  'ui-layout'|'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
 
@@ -25,6 +25,7 @@ const groups:MenuGroup[]=[
   {id:'factions',icon:'flag',hu:'Frakciók',en:'Factions'}]},
  {id:'equipment',icon:'package',hu:'Felszerelés és gazdaság',en:'Equipment & economy',items:[
   {id:'items',icon:'box',hu:'Tárgyak',en:'Items'},
+  {id:'blueprints',icon:'sliders',hu:'Blueprint editor',en:'Blueprint editor'},
   {id:'ships',icon:'rocket',hu:'Hajók és modulok',en:'Ships & modules'}]},
  {id:'gameplay',icon:'gamepad',hu:'Játékmenet',en:'Gameplay',items:[
   {id:'gameplay',icon:'list-checks',hu:'Aktivitások és zsákmány',en:'Activities & loot'},
