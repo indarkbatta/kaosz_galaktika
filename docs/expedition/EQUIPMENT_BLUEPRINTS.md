@@ -35,3 +35,7 @@ A Blueprint és Komponensek tárgylistája közös `useRosterCapacity` hookkal m
 ### Frissítés: görgetés váltja a lapozást
 
 2026-10-25 legújabb felhasználói döntése: a Blueprint és Komponensek teljes szűrt rekordlistája görgethető a jobb oldali panelen. Nincs sem fix, sem méretfüggő lapozás; a korábbi kapacitás-hook kivezetve. Ez felülírja a fenti történeti leírás lapozásra vonatkozó részeit.
+
+### Blueprint-lista kizárólagos besorolással
+
+A Blueprint editor rekordlistája és induló kiválasztása kizárólag `kind=blueprint` elemeket tartalmaz. A keresés ezen belül működik; a kompatibilitási alkatrészkatalógus teljes marad. Szerepváltás mentése után a lista újratöltődik, az átbesorolt rekord eltűnik belőle. Új blueprint vagy komponens létrehozásához a Tárgyeditor Besorolás füle a közös besorolásmezőket biztosítja, összeállítás nélkül. Nincs másolt adat, migráció vagy deploy.

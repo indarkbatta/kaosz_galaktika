@@ -21,7 +21,9 @@ export default function BlueprintEditor({locale,onBack,onSectionSelect}:{locale:
   void supabase.rpc('get_equipment_blueprint_catalog').then(r=>{
    if(!alive)return;
    if(r.error){setError(editorMessage(r.error.message,locale));setLoading(false);return;}
-   const list=(r.data as {items:Item[]}).items;
+   const catalog=r.data as {items:Item[];definitions:{item_id:string;kind:string}[]};
+   const blueprintIds=new Set(catalog.definitions.filter(d=>d.kind==='blueprint').map(d=>d.item_id));
+   const list=catalog.items.filter(i=>blueprintIds.has(i.id));
    setItems(list);setSelected(id=>list.some(i=>i.id===id)?id:list[0]?.id||'');setLoading(false);
   });
   return()=>{alive=false;};
@@ -39,12 +41,12 @@ export default function BlueprintEditor({locale,onBack,onSectionSelect}:{locale:
     {loading?<p>{tr('Betöltés…','Loading…')}</p>:filtered.map(i=><button type="button" key={i.id} disabled={busy} className={'ed-record '+(i.id===selected?'selected':'')} onClick={()=>{if(i.id!==selected)navigate(()=>{setDirty(false);setSelected(i.id);});}}>
      <span className="ed-thumbnail">{i.image_path?<img src={worldImageUrl(i.image_path)} alt=""/>:<Package size={24}/>}</span><span className="ed-record-name"><strong>{name(i)}</strong><small>{i.slug}</small></span>
     </button>)}
-    {!loading&&!filtered.length&&<p>{tr('Nincs találat. Új tárgyat a Tárgyeditorban hozhatsz létre.','No results. Create new items in the Item editor.')}</p>}
+    {!loading&&!filtered.length&&<p>{tr('Nincs találat. A Tárgyeditor Besorolás fülén jelölhetsz meg tárgyat blueprintként.','No results. Classify an item as a blueprint in the Item editor’s Classification tab.')}</p>}
    </div>
   </EditorRoster>
   <section className="ed-editor">
    <EditorHeader><strong>{tr('Blueprint editor','Blueprint editor')}{item?' · '+name(item):''}</strong></EditorHeader>
-   {error?<div className="ed-feedback ed-error" role="alert">{error}<button type="button" className="ed-secondary-button" onClick={()=>setVersion(v=>v+1)}>{tr('Újratöltés','Reload')}</button></div>:selected?<EquipmentBlueprintEditor key={selected} itemId={selected} locale={locale} onDirtyChange={setDirty} onBusyChange={setBusy}/>:<div className="ed-empty-state">{loading?tr('Adatok betöltése…','Loading data…'):tr('Először hozz létre egy tárgyat a Tárgyeditorban.','Create an item in the Item editor first.')}</div>}
+   {error?<div className="ed-feedback ed-error" role="alert">{error}<button type="button" className="ed-secondary-button" onClick={()=>setVersion(v=>v+1)}>{tr('Újratöltés','Reload')}</button></div>:selected?<EquipmentBlueprintEditor key={selected} itemId={selected} locale={locale} onDirtyChange={setDirty} onBusyChange={setBusy} onSaved={()=>{setDirty(false);setBusy(false);setVersion(v=>v+1);}}/>:<div className="ed-empty-state">{loading?tr('Adatok betöltése…','Loading data…'):tr('Még nincs blueprint. A Tárgyeditor Besorolás fülén jelöld meg a tárgyat blueprintként.','No blueprints yet. Classify an item as a blueprint in the Item editor’s Classification tab.')}</div>}
   </section>
   {pending&&<DiscardChangesDialog locale={locale} onCancel={()=>setPending(null)} onDiscard={()=>{setDirty(false);pending();setPending(null);}}/>}
  </EditorFrame>;
