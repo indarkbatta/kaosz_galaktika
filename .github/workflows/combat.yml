@@ -4,6 +4,8 @@ on:
     paths:
       - 'src/Combat*.tsx'
       - 'src/components/DecisionDialog.tsx'
+      - 'src/components/EditorWorkspaceDialog.tsx'
+      - 'supabase/migrations/*blueprint_layer_flags*'
       - 'src/lib/editorMessages.ts'
       - 'tools/qa/decision-dialog-*'
       - 'src/combat-visual-editor.css'

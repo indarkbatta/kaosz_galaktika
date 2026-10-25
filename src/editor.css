@@ -271,3 +271,9 @@
 
 /* Assembly focus mode gives the canvas the space occupied by metadata tabs. */
 .ed-editor:has(.ba-root)>.ed-tabs,.ed-editor:has(.ba-root)>.ed-editor-head,.bp-root:has(.ba-root)>.ed-tabs{display:none}
+
+/* Shared full workspace modal and transform affordances. */
+.ed-workspace-dialog{display:flex;flex-direction:column;width:calc(100vw - 64px);height:calc(100dvh - 64px);max-width:1800px;background:#0a1017;border:1px solid #586471;box-shadow:0 24px 65px #000d;color:#dce3e9}.ed-workspace-dialog>.ed-editor-head,.ed-workspace-dialog>.ed-footer{flex-shrink:0;width:100%}.ed-workspace-dialog .ed-footer>div{display:flex;gap:8px}.ed-workspace-dialog .ed-layer-row{display:flex;gap:4px;align-items:center;padding:8px;border:1px solid #354351;background:#101b26;cursor:grab}.ed-workspace-dialog .ed-layer-row.is-selected{border-color:#bc5646;background:#3d1c1c}.ed-workspace-dialog .ed-layer-row.is-drop-target{border-top:3px solid #e87857}.ed-transform-handle{position:absolute;width:10px;height:10px;padding:0;border:1px solid #ffb18a;background:#1c1010;transform:translate(-50%,-50%);pointer-events:auto;touch-action:none;cursor:nwse-resize}.ba-selection{border:1px solid #ed9a72;pointer-events:none}.ed-workspace-dialog .ba-rotate{border-radius:50%;cursor:crosshair}body:has(.ed-workspace-dialog) .bp-root>.ed-footer{visibility:hidden}
+.ed-workspace-dialog,.ed-workspace-dialog *{box-sizing:border-box}
+
+body:has(.ed-workspace-dialog) .bp-root>.ed-feedback{visibility:hidden}

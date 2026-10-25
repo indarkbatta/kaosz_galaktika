@@ -1,0 +1,9 @@
+import {useEffect,useId,useRef,type ReactNode} from 'react';
+import {createPortal} from 'react-dom';
+import {X} from 'lucide-react';
+import {EditorHeader,EditorFooter} from './EditorTemplate';
+export default function EditorWorkspaceDialog({title,children,footer,onClose}:{title:string;children:ReactNode;footer:ReactNode;onClose:()=>void}){
+ const root=useRef<HTMLElement>(null),close=useRef(onClose),id=useId();close.current=onClose;
+ useEffect(()=>{const previous=document.activeElement as HTMLElement|null,overflow=document.body.style.overflow;document.body.style.overflow='hidden';root.current?.querySelector<HTMLButtonElement>('button')?.focus();const key=(e:KeyboardEvent)=>{if(document.querySelector('[role=alertdialog]'))return;if(e.key==='Escape'){e.preventDefault();close.current();}if(e.key==='Tab'){const elements=Array.from(root.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]')||[]).filter(e=>e.getClientRects().length);const first=elements[0],last=elements.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}}};document.addEventListener('keydown',key,true);return()=>{document.body.style.overflow=overflow;document.removeEventListener('keydown',key,true);if(previous?.isConnected)previous.focus();};},[]);
+ return createPortal(<div className="ed-modal-mask"><section ref={root} role="dialog" aria-modal="true" aria-labelledby={id} className="ed-workspace-dialog ed-layout ed-general-grid"><EditorHeader><strong id={id}>{title}</strong><button type="button" className="ed-secondary-button" aria-label="Close / Bezárás" onClick={onClose}><X size={18}/></button></EditorHeader>{children}<EditorFooter>{footer}</EditorFooter></section></div>,document.body);
+}
