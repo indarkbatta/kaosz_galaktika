@@ -4,3 +4,5 @@
 
 .bp-assembly{container-type:size}.bp-stage{width:min(100%,100cqh);height:auto;max-height:none;aspect-ratio:1}
  .bp-assembly .bp-fields{gap:7px}
+/* Full item editors include an outer tab row; retain usable assembly space. */
+.bp-form{overflow-y:auto}
