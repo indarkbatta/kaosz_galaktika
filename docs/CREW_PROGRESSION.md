@@ -1,3 +1,7 @@
+# Historical implementation — replacement planned
+
+See [expedition transition](expedition/TRANSITION.md). This describes the current live crew implementation, not the new four-character expedition rules. Ship service crew will remain, without equipment; simplified expedition combat classes will be removed.
+
 # Simplified crew — HV-061
 
 Crew use independent `game_crew_classes`, not captain classes or talent trees. Existing captain-class references remain portrait metadata. Existing crew IDs, names, portraits, equipment and ship-station bonuses are retained. The migration assigns a crew class by specialty; template selection overrides this for future recruits.

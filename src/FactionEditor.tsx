@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -105,6 +106,7 @@ export default function FactionEditor({locale,onBack,onSectionSelect}:{locale:st
    </fieldset></form>
    <EditorFooter><span className={dirty?'ed-unsaved':'ed-fine'}>{dirty?tr('● Nem mentett módosítások','● Unsaved changes'):tr('Nincs mentetlen módosítás','No unsaved changes')}</span><button type="submit" form="faction-editor-form" disabled={busy||loading||!dirty} className="ed-submit">{busy?'…':tr('MENTÉS','SAVE')}</button></EditorFooter>
   </section>
-  {discard&&<div className="ed-modal-mask"><div className="ed-modal" role="dialog" aria-modal="true" aria-labelledby="faction-discard-title"><h3 id="faction-discard-title">{tr('Nem mentett módosítások','Unsaved changes')}</h3><p>{tr('Elveted a frakció módosításait?','Discard faction changes?')}</p><div><button autoFocus type="button" onClick={()=>{setDiscard(false);pending.current=null;}}>{tr('Folytatom a szerkesztést','Keep editing')}</button><button type="button" className="ed-danger" onClick={()=>{setDiscard(false);pending.current?.();pending.current=null;}}>{tr('Elvetés','Discard')}</button></div></div></div>}
+  {discard&&<DiscardChangesDialog locale={locale} onCancel={()=>{setDiscard(false);pending.current=null;}} onDiscard={()=>{setDiscard(false);pending.current?.();pending.current=null;}}/>}
+
  </EditorFrame>;
 }

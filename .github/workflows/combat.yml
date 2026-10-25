@@ -3,6 +3,24 @@ on:
   pull_request:
     paths:
       - 'src/Combat*.tsx'
+      - 'src/components/DecisionDialog.tsx'
+      - 'src/components/EditorWorkspaceDialog.tsx'
+      - 'supabase/migrations/*blueprint_layer_flags*'
+      - 'src/lib/editorMessages.ts'
+      - 'tools/qa/decision-dialog-*'
+      - 'src/combat-visual-editor.css'
+      - 'src/EquipmentBlueprintEditor.tsx'
+      - 'src/BlueprintEditor.tsx'
+      - 'src/BlueprintAssembly.tsx'
+      - 'tools/qa/blueprint-assembly-*'
+      - 'src/equipment-blueprint-editor.css'
+      - 'tools/qa/equipment-blueprints-*'
+      - 'tools/qa/equipment-record-actions-*'
+      - 'supabase/migrations/*equipment_editor_record_actions*'
+      - 'tools/qa/components-*'
+      - 'tools/qa/editor-roster-layout.mjs'
+      - 'supabase/migrations/*equipment_blueprints*'
+      - 'supabase/migrations/*combat_visual_authoring*'
       - 'src/Crew*.tsx'
       - 'src/crew-progression.css'
       - 'src/lib/crewProgression.ts'
@@ -31,6 +49,27 @@ on:
       - 'supabase/migrations/*m87*'
       - 'tools/qa/combat-*'
       - 'tools/qa/unified-*'
+      - 'tools/qa/expedition-actors-*'
+      - 'tools/qa/expedition-recruit-*'
+      - 'tools/qa/expedition-party-*'
+      - 'tools/qa/expedition-backpacks-*'
+      - 'tools/qa/expedition-concurrency.mjs'
+      - 'supabase/migrations/*expedition_actor_backpacks*'
+      - 'tools/qa/expedition-loadout-*'
+      - 'src/ExpeditionLoadout.tsx'
+      - 'src/ExpeditionPartyPanel.tsx'
+      - 'src/EquipmentInventory.tsx'
+      - 'src/expedition-loadout.css'
+      - 'supabase/migrations/*expedition_party_loadouts*'
+      - 'src/ExpeditionCompanionEditor.tsx'
+      - 'src/ExpeditionRecruitment.tsx'
+      - 'src/expedition-companions.css'
+      - 'src/expedition-companion-editor.css'
+      - 'src/editor.css'
+      - 'src/lib/expeditionActors.ts'
+      - 'src/PlayerTalents.tsx'
+      - 'supabase/migrations/*expedition_companion_recruitment*'
+      - 'supabase/migrations/*expedition_actor_foundation*'
       - 'supabase/migrations/*unified_talents*'
       - 'supabase/migrations/*passive_defense_target*'
       - '.github/workflows/combat.yml'
@@ -55,17 +94,73 @@ jobs:
       - name: Build
         run: npm run build
       - name: Install QA tools
-        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-combat-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14
+        run: npm install --prefix "%RUNNER_TEMP%\hatarvilag-combat-tools" --no-save --no-fund --no-audit playwright@1.56.1 @electric-sql/pglite@0.3.14 embedded-postgres@17.10.0-beta.17 pg@8.16.3
       - name: Install browsers
         run: node "%RUNNER_TEMP%\hatarvilag-combat-tools\node_modules\playwright\cli.js" install chromium firefox
+      - name: Shared decision dialogs and safe keyboard interactions
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/decision-dialog-browser.mjs
+      - name: Equipment blueprint compatibility and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/equipment-blueprints-database.mjs
+      - name: Equipment blueprint assembler in browsers
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/equipment-blueprints-browser.mjs
+      - name: Combat artwork persistence and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/combat-visuals-database.mjs
+      - name: Combat artwork editor and class anchors in browsers
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/combat-visuals-browser.mjs
+      - name: Real PostgreSQL two-connection expedition races
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-concurrency.mjs
       - name: Combat rules, commands, talents and RLS in isolated PostgreSQL
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/combat-database.mjs
+      - name: Shared expedition actors, captain parity and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-actors-database.mjs
+      - name: Four-position team, actor powers and shared equipment authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-party-database.mjs
+      - name: Independent actor backpacks, transfer and capacity rollback
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-backpacks-database.mjs
+      - name: Full expedition recruitment, progression and authorization
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-recruit-database.mjs
+      - name: Expedition companion editor and recruitment in browsers
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/expedition-recruit-browser.mjs
       - name: Power, Enemy, Item editors and complete PvE through HTTP and PostgreSQL
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/combat-browser.mjs
+      - name: Component-only item editor filters and shared item records
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/components-browser.mjs
+      - name: Blueprint assembly layers, snap points and zoom
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/blueprint-assembly-browser.mjs
+      - name: Equipment record copy delete and reference guards
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/equipment-record-actions-database.mjs
       - name: Existing Activity and Challenge SQL regression
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools

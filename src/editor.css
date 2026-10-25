@@ -3,7 +3,7 @@
 .scene:has(.ed-layout) .sidebar{display:none!important}
 .scene:has(.ed-layout) .ed-layout{height:min(800px,calc(100vh - 170px));min-height:520px}
 .ed-layout{width:100%;display:flex;align-items:center;justify-content:center;color:#dbe2e8;font-size:14px;isolation:isolate}
-.ed-shell{display:grid;grid-template-columns:208px 232px minmax(0,1fr);width:min(1400px,94vw);height:100%;min-height:0;overflow:hidden;background:#0a0e13ed;border:1px solid #46515a;box-shadow:0 24px 65px #000d,0 0 0 6px #05080a7d;position:relative}
+.ed-shell{display:grid;grid-template-columns:208px minmax(0,1fr) 464px;width:min(1632px,94vw);height:100%;min-height:0;overflow:hidden;background:#0a0e13ed;border:1px solid #46515a;box-shadow:0 24px 65px #000d,0 0 0 6px #05080a7d;position:relative}
 .ed-shell:before{content:'';position:absolute;top:-1px;right:18px;width:100px;height:2px;background:#eb4536;z-index:1}
 .ed-nav,.ed-roster,.ed-editor{min-width:0;min-height:0}
 .ed-nav{background:#090c10ee;border-right:1px solid #46505a;display:flex;flex-direction:column;padding:14px 10px;gap:3px;overflow-y:auto;overflow-x:hidden}
@@ -106,8 +106,8 @@
 .ed-modal h3{margin:0;color:#e9ebee}.ed-modal p{line-height:1.6;color:#c1c8ce}
 .ed-modal>div{display:flex;justify-content:flex-end;gap:10px}
 .ed-modal button{border:1px solid #53616e;background:#202a32}
-@media(max-width:1500px){.ed-shell{width:min(1340px,94vw);grid-template-columns:208px 232px minmax(0,1fr)}}
-@media(max-width:1150px){.ed-shell{width:calc(100vw - 28px);grid-template-columns:198px 222px minmax(0,1fr)}}
+@media(max-width:1500px){.ed-shell{width:min(1572px,94vw);grid-template-columns:208px minmax(0,1fr) 464px}}
+@media(max-width:1150px){.ed-shell{width:calc(100vw - 28px);grid-template-columns:198px minmax(0,1fr) 444px}}
 @media(max-width:760px){
  .scene:has(.ed-layout) .ed-layout{height:auto;max-height:none;min-height:0}
  .ed-shell{display:flex;flex-direction:column;overflow:visible;max-width:100%;height:auto}
@@ -216,7 +216,7 @@
 .ed-origin-editor .ed-dictionary-fields{gap:10px;padding:12px}.ed-origin-editor .ed-dictionary-fields textarea{height:clamp(90px,16vh,180px);min-height:0;resize:none}
 .ed-origin-editor .ed-language-list{margin-bottom:10px}.ed-origin-editor .ed-language-list button{padding:7px 10px}
 .ed-origin-editor .ed-new-language{margin-top:10px}.ed-origin-editor .ed-language-form{gap:8px;padding:8px}.ed-origin-editor .ed-language-form input{height:32px;padding:5px}
-.ed-origin-editor .ed-roster-list{overflow:hidden}.ed-origin-editor .ed-record{min-height:65px;padding:8px}
+.ed-origin-editor .ed-record{min-height:65px;padding:8px}
 .ed-origin-editor .ed-homeworld{margin:0;padding:12px;border-radius:0}.ed-origin-editor .ed-homeworld-fields{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .ed-origin-editor .ed-general-grid{height:100%}.ed-origin-editor .ed-image-frame{height:calc(100% - 65px);max-height:390px;min-height:120px}
 .ed-origin-editor .ed-general-fields{gap:14px}
@@ -224,3 +224,59 @@
 @media(max-height:780px){.ed-origin-editor .ed-tab-pane{padding:10px}.ed-origin-editor .ed-origin-settings h3{font-size:16px}.ed-origin-editor .ed-origin-settings p{font-size:11px;margin:5px 0}.ed-origin-editor .ed-origin-resistances>.cb-stat-grid{gap:8px}.ed-origin-editor .ed-branch-combat .cb-stat-grid{gap:10px;margin:10px 0}.ed-origin-editor .ed-origin-settings label{font-size:11px;gap:4px}.ed-origin-editor .ed-origin-settings input,.ed-origin-editor .ed-origin-settings select{height:34px}.ed-origin-editor .ed-tab-help{margin:0 0 8px;font-size:11px}.ed-origin-editor .ed-dictionary-fields textarea{height:64px}}
 .ed-origin-editor .ed-nav,.ed-origin-editor .ed-nav-groups{overflow:hidden}
 @media(max-height:780px){.ed-origin-editor .ed-nav{padding:8px}.ed-origin-editor .ed-nav h2{font-size:11px;padding:4px 6px 8px}.ed-origin-editor .ed-nav>button.ed-nav-exit{min-height:32px;padding:6px}.ed-origin-editor .ed-nav-bottom{display:none}.ed-origin-editor .ed-nav-group-trigger{min-height:32px;padding:6px;font-size:12px}.ed-origin-editor .ed-nav-leaf{min-height:29px;padding:4px 6px;font-size:12px}}
+
+/* Shared compact navigation for every editor; modules must not restyle their own menu. */
+@media(max-height:780px) and (min-width:761px){
+ .ed-layout .ed-nav{padding:8px}
+ .ed-layout .ed-nav h2{font-size:11px;padding:4px 6px 8px}
+ .ed-layout .ed-nav>button.ed-nav-exit{min-height:32px;padding:6px}
+ .ed-layout .ed-nav-bottom{display:none}
+ .ed-layout .ed-nav-group-trigger{min-height:32px;padding:6px;font-size:12px}
+ .ed-layout .ed-nav-leaf{min-height:29px;padding:4px 6px;font-size:12px}
+}
+.ed-submit>svg,.ed-secondary-button>svg,.ed-roster-action>svg,.ed-roster-top button>svg{vertical-align:middle;margin-inline-end:6px}
+/* Shared decision windows and authoring workbenches. */
+.ed-decision-mask{z-index:1000;padding:24px;backdrop-filter:blur(5px);background:#02070bba}
+.ed-modal.ed-decision{width:min(600px,calc(100vw - 32px));max-width:600px;padding:0;border:1px solid #59636b;background:#10191f;box-shadow:0 24px 100px #000b,inset 0 0 0 3px #080e12}
+.ed-decision-head{display:flex;align-items:center;gap:15px;padding:24px;border-bottom:1px solid #36444e}.ed-decision-head>div{flex:1;min-width:0}.ed-decision-head h3{font-size:21px;line-height:1.3;margin:5px 0 0}.ed-eyebrow{font-size:10px;letter-spacing:.13em;color:#a9b9c4}.ed-decision-icon{display:grid;place-items:center;width:48px;height:48px;flex:none;background:#b4822e19;color:#e1b96f;border:1px solid #9c7c43}.ed-decision-head>button{padding:6px!important;display:flex;align-items:center}
+.ed-modal.ed-decision>.ed-decision-body{display:block;padding:22px 24px}.ed-decision-body p{margin:0;font-size:15px;line-height:1.7;color:#c0cdd5}.ed-decision-body input{width:100%;padding:12px;margin-top:14px;background:#080d13;color:#edf2f5;border:1px solid #42515c;font:inherit}
+.ed-decision-footer{display:flex;justify-content:flex-end;gap:10px;padding:18px 24px;border-top:1px solid #36444e;background:#0b1217}.ed-decision-footer button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;border-radius:0;font:inherit}.ed-decision-footer .ed-submit{background:#8b3829;border-color:#d37858}.ed-decision-footer button:disabled{opacity:.4;cursor:default}.ed-decision :focus-visible{outline:2px solid #e6b576;outline-offset:3px}
+.ed-preview{background-color:#101b23;background-image:linear-gradient(45deg,#ffffff08 25%,transparent 25%),linear-gradient(-45deg,#ffffff08 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ffffff08 75%),linear-gradient(-45deg,transparent 75%,#ffffff08 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;border:1px solid #455a68}
+.ed-preview-caption{font-size:11px;letter-spacing:.08em;color:#9eafb9;text-transform:uppercase}.ed-helper{font-size:12px;line-height:1.6;color:#9cadb9}.ed-workbench-status{padding:9px 12px;border:1px solid #3e525f;background:#10212b;font-size:12px;color:#b7cbd8}.ed-control-heading{font-size:13px;line-height:1.5;color:#ecd3b3;margin:0}.ed-empty-state{display:flex;align-items:center;justify-content:center;text-align:center;flex:1;padding:24px;color:#9cadb9;font-size:14px;line-height:1.7}
+@media(max-width:600px){.ed-decision-head{padding:18px}.ed-decision-footer{flex-direction:column}.ed-decision-head h3{font-size:18px}}
+.ed-component-option{display:grid!important;grid-template-columns:54px minmax(0,1fr);gap:8px!important;align-items:center;padding:10px;border:1px solid #405461;background:#0b151d}.ed-component-option>img{width:54px;height:54px;object-fit:contain;background:#182630}.ed-component-option>span{font-size:13px;line-height:1.5;text-transform:none;letter-spacing:0;overflow-wrap:anywhere}.ed-component-option select{grid-column:1/-1;margin-top:0!important}.ed-thumbnail-choice{position:relative;display:flex;align-items:center;justify-content:center;background:#111e27;border:1px solid #455d6b;color:#cad6dd;border-radius:0;cursor:pointer;padding:3px;aspect-ratio:1;min-width:0}.ed-thumbnail-choice[aria-pressed=true]{border-color:#e6a77a;box-shadow:inset 0 0 0 1px #e6a77a}.ed-thumbnail-choice img{width:100%;height:100%;object-fit:contain}.ed-thumbnail-choice span{position:absolute;bottom:2px;right:4px;font-size:11px;background:#08121bcc;padding:1px 3px}.ed-draggable{cursor:grab;touch-action:none;user-select:none}.ed-draggable:active{cursor:grabbing}.ed-draggable:focus-visible{outline:2px dashed #e6b576;outline-offset:2px}
+
+/* Shared roster filter geometry; controls inherit ed-general-grid. */
+.ed-roster-filters{display:flex;flex:none;flex-direction:column;gap:6px;padding:8px}.ed-roster-filters label{margin:0}.ed-roster-filters input,.ed-roster-filters select{margin-top:4px}
+
+
+.ed-roster .ed-record-name small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Shared desktop order: navigation, editing surface, double-width record list. */
+@media(min-width:761px){
+ .ed-shell>.ed-nav{grid-column:1;grid-row:1}
+ .ed-shell>.ed-editor{grid-column:2;grid-row:1}
+ .ed-shell>.ed-roster{grid-column:3;grid-row:1;border-right:0;border-left:1px solid #46515d}
+}
+
+/* Keep every tab reachable when the editing column is narrower. */
+.ed-tabs{flex-shrink:0}.ed-tabs button{min-width:0;overflow-wrap:anywhere}
+
+/* All editor record catalogues scroll inside their fixed right-hand panel. */
+.ed-shell>.ed-roster>.ed-roster-list{overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#576773 #090f15;scrollbar-gutter:stable}
+.ed-shell>.ed-roster>.ed-roster-list::-webkit-scrollbar{display:block;width:8px}
+.ed-shell>.ed-roster>.ed-roster-list::-webkit-scrollbar-track{background:#090f15}
+.ed-shell>.ed-roster>.ed-roster-list::-webkit-scrollbar-thumb{background:#576773;border:2px solid #090f15}
+.ed-shell>.ed-roster>.ed-roster-list>.ed-record{flex-shrink:0}
+
+/* Assembly focus mode gives the canvas the space occupied by metadata tabs. */
+.ed-editor:has(.ba-root)>.ed-tabs,.ed-editor:has(.ba-root)>.ed-editor-head,.bp-root:has(.ba-root)>.ed-tabs{display:none}
+
+/* Shared full workspace modal and transform affordances. */
+.ed-workspace-dialog{display:flex;flex-direction:column;width:calc(100vw - 64px);height:calc(100dvh - 64px);max-width:1800px;background:#0a1017;border:1px solid #586471;box-shadow:0 24px 65px #000d;color:#dce3e9}.ed-workspace-dialog>.ed-editor-head,.ed-workspace-dialog>.ed-footer{flex-shrink:0;width:100%}.ed-workspace-dialog .ed-footer>div{display:flex;gap:8px}.ed-workspace-dialog .ed-layer-row{display:flex;gap:4px;align-items:center;padding:8px;border:1px solid #354351;background:#101b26;cursor:grab}.ed-workspace-dialog .ed-layer-row.is-selected{border-color:#bc5646;background:#3d1c1c}.ed-workspace-dialog .ed-layer-row.is-drop-target{border-top:3px solid #e87857}.ed-transform-handle{position:absolute;width:10px;height:10px;padding:0;border:1px solid #ffb18a;background:#1c1010;transform:translate(-50%,-50%);pointer-events:auto;touch-action:none;cursor:nwse-resize}.ba-selection{border:1px solid #ed9a72;pointer-events:none}.ed-workspace-dialog .ba-rotate{border-radius:50%;cursor:crosshair}body:has(.ed-workspace-dialog) .bp-root>.ed-footer{visibility:hidden}
+.ed-workspace-dialog,.ed-workspace-dialog *{box-sizing:border-box}
+
+body:has(.ed-workspace-dialog) .bp-root>.ed-feedback{visibility:hidden}
+
+/* Shared editable slot cards and record actions. */
+.ed-slot-card{border:1px solid #364551;background:#0b141d;padding:12px}.ed-record-actions{display:flex;gap:6px;padding:8px}.ed-slot-card .ed-checkbox{display:flex;align-items:center;gap:6px;text-transform:none}.ed-slot-card .ed-secondary-button{white-space:nowrap}

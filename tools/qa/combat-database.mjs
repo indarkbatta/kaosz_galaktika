@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';import {createRequire} from 'node:module
 const require=createRequire(resolve(process.env.WORLD_BROWSER_TOOLS,'package.json'));const {PGlite}=require('@electric-sql/pglite');const db=new PGlite();
 try{
  await setupCombatDatabase(db);
- for(const f of ['20261021174408_m83_combat_state_and_commands.sql','20261021174740_m84_combat_editor_and_starter_content.sql','20261021181303_m86_combat_content_integrity.sql','20261021182023_m87_combat_encounter_revisions.sql']){console.log('Replay',f);await db.exec(await readFile('supabase/migrations/'+f,'utf8'));}
+ for(const f of ['20261021174408_m83_combat_state_and_commands.sql','20261021174740_m84_combat_editor_and_starter_content.sql','20261021181303_m86_combat_content_integrity.sql','20261021182023_m87_combat_encounter_revisions.sql','20261024190619_power_action_cost.sql']){console.log('Replay',f);await db.exec(await readFile('supabase/migrations/'+f,'utf8'));}
  const q=async(s,args)=>(await db.query(s,args)).rows;
  console.log('Catalog');let cat=(await q('select public.get_combat_state() data'))[0].data;assert.equal(cat.encounters.length,3);assert.equal(cat.hero.powers.length,7);assert.ok(cat.hero.max_health>20);
  const roll=async(pips,mode)=>(await q('select private.combat_roll($1,$2) r',[pips,mode]))[0].r;
@@ -55,7 +55,17 @@ try{
  await assert.rejects(q('select public.learn_combat_talent($1,0)',[talent.id]),/rank changed/);
  // Editor atomic save/reload and stale revision. Invalid definitions never reach persistence.
  const saved=(await q("select public.save_combat_content('powers',null,$1,$2,'[]',null) r",[{slug:'qa_support',kind:'active',target:'self',range_kind:'self',requires_hit:false,effects:[{type:'heal',formula:{dice:1}}]},[{locale:'hu',name:'Teszt',description:''},{locale:'en',name:'Test',description:''}]]))[0].r;
- assert.equal(saved.slug,'qa_support');
+ assert.equal(saved.slug,'qa_support');assert.equal(saved.action_cost,'standard');
+ // Match the public item catalog SELECT access of the linked database.
+ await db.exec('grant select on game_items,game_items_i18n to authenticated;set role authenticated');
+ const actionDoc={...saved,action_cost:'partial'};delete actionDoc.id;delete actionDoc.revision;
+ const partial=(await q("select public.save_combat_content('powers',$1,$2,$3,'[]',$4) r",[saved.id,actionDoc,[{locale:'hu',name:'Teszt'},{locale:'en',name:'Test'}],saved.revision]))[0].r;
+ assert.equal(partial.action_cost,'partial');
+ assert.equal((await q('select public.get_combat_editor_catalog() c'))[0].c.powers.find(p=>p.id===saved.id).action_cost,'partial');
+ await assert.rejects(q("select public.save_combat_content('powers',$1,$2,$3,'[]',$4)",[saved.id,{...actionDoc,action_cost:'free'},[{locale:'hu',name:'Teszt'},{locale:'en',name:'Test'}],partial.revision]),/game_powers_action_cost_check/);
+ assert.equal((await q('select public.get_combat_editor_catalog() c'))[0].c.powers.find(p=>p.id===saved.id).revision,partial.revision);
+ await assert.rejects(q("select public.save_combat_content('powers',$1,$2,$3,'[]',$4)",[saved.id,{...actionDoc,action_cost:null},[{locale:'hu',name:'Teszt'},{locale:'en',name:'Test'}],partial.revision]),/null value/);
+ await db.exec('reset role');
  const preview=(await q('select public.simulate_power($1,$2,null) r',[saved.id,cat.encounters[0].enemy_id]))[0].r;assert.equal(preview.available_powers.length,1);assert.equal(preview.available_powers[0].id,saved.id);assert.equal(preview.simulation,true);
  await assert.rejects(q("select public.save_combat_content('powers',$1,'{\"slug\":\"qa_support\"}',$2,'[]',0)",[saved.id,[{locale:'hu',name:'Teszt'},{locale:'en',name:'Test'}]]),/Content changed/);
  await assert.rejects(q("insert into game_powers(slug,requires_hit,effects) values('invalid_formula',false,$1)",[[{type:'damage',formula:{javascript:'bad'},damage_types:['kinetic']}]]),/Invalid formula/);

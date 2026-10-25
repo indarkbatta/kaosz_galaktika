@@ -125,7 +125,7 @@ try{
    // Legacy world coordinates (22,40) are snapped in the modal and make it dirty.
    // Discard that unsaved preview movement before exercising artwork forms.
    const discard=page.getByRole('alertdialog');
-   if(await discard.count())await discard.getByRole('button',{name:'Elvetés'}).click();
+   if(await discard.count())await discard.getByRole('button',{name:'Módosítások elvetése'}).click();
    // Persist artwork through the real GalaxyEditor form for every catalog level.
    for(const name of ['Szektor','Kvadráns','Galaxis']){
     await levels.getByRole('button',{name,exact:true}).click();

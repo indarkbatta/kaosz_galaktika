@@ -23,8 +23,8 @@ const js=out.outputFiles.find(x=>x.path.endsWith('.js')).text,css=out.outputFile
 const html='<!doctype html><meta charset="utf-8"><style>'+css+'</style><div id="root"></div><script>window.__fixture='+JSON.stringify(initial)+'</script><script>'+js+'</script>';
 const server=createServer((_,res)=>{res.writeHead(200,{'Content-Type':'text/html'});res.end(html)});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));
-try{for(const [name,driver] of [['chromium',chromium],['firefox',firefox]]){
- const browser=await driver.launch({headless:true});try{
+try{for(const [name,driver] of (process.env.TREE_LOCAL_CHROMIUM?[['chromium',chromium]]:[['chromium',chromium],['firefox',firefox]])){
+ const browser=await driver.launch(process.env.TREE_LOCAL_CHROMIUM?{executablePath:process.env.TREE_LOCAL_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage']}:{headless:true});try{
  const page=await browser.newPage({viewport:{width:1350,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('https://assets.voidnoir.net/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFklEQVR4nGOQc4siCTGMahjVMHw1AADIDr4BHZ+22QAAAABJRU5ErkJggg==','base64')}));
  await page.goto('http://127.0.0.1:'+server.address().port);

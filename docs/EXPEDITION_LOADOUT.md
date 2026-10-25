@@ -1,3 +1,7 @@
+# Aktuális fejlesztési szerződés — HV-070
+
+A négyfős, actoronkénti Loadout implementációja és pontos kiadási/QA állapota: [TEAM_LOADOUT.md](expedition/TEAM_LOADOUT.md). A HV-063 alábbi leírása történeti; a régi két-crew-s és captain-only írási útvonalat az új migráció lezárja. HV-070 még nincs élesítve.
+
 # Expedition loadout (HV-063)
 
 Loadout is a separate player navigation tab with Equipment, Companions and Powers. Equipment uses the existing authoritative captain and crew equipment records and the inventory slot persistence from HV-062. Only the two saved companions are shown beside the captain; the complete crew remains available in Companions. Cargo now opens crafting, with inventory handled under Loadout.

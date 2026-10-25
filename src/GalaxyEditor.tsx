@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -182,10 +183,7 @@ export default function GalaxyEditor({locale,onBack,onSectionSelect}:{
     nodes={children} routes={childRoutes}
     onClose={()=>setMapOpen(false)} onSaved={async savedRoutes=>{await load(level,draft.id,
      mapLevel==='sector'?{sectorId:draft.id,routes:savedRoutes!}:undefined);}}/>}
-  {discard&&<div className="ed-modal-mask"><section className="ed-modal" role="alertdialog" aria-modal="true">
-   <h3>{tr('Nem mentett módosítások','Unsaved changes')}</h3><p>{tr('Elveted a változtatásokat?','Discard your changes?')}</p>
-   <div><button type="button" onClick={()=>{setDiscard(false);pending.current=null;}}>{tr('Folytatom','Keep editing')}</button>
-    <button type="button" className="ed-danger" onClick={()=>{setDiscard(false);setDirty(false);const fn=pending.current;pending.current=null;fn?.();}}>{tr('Elvetés','Discard')}</button></div>
-  </section></div>}
+  {discard&&<DiscardChangesDialog locale={locale} onCancel={()=>{setDiscard(false);pending.current=null;}} onDiscard={()=>{setDiscard(false);setDirty(false);const fn=pending.current;pending.current=null;fn?.();}}/>}
+
  </EditorFrame>;
 }

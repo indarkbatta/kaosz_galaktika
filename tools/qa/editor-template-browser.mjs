@@ -21,8 +21,8 @@ try{
  });
  await new Promise(r=>server.listen(0,"127.0.0.1",r));
  const url="http://127.0.0.1:"+server.address().port;
- for(const [name,browserType] of [["chromium",chromium],["firefox",firefox]]){
-   const browser=await browserType.launch({headless:true});
+ for(const [name,browserType] of (process.env.TREE_LOCAL_CHROMIUM?[["chromium",chromium]]:[["chromium",chromium],["firefox",firefox]])){
+   const browser=await browserType.launch(process.env.TREE_LOCAL_CHROMIUM?{headless:true,executablePath:process.env.TREE_LOCAL_CHROMIUM,args:['--no-sandbox','--disable-dev-shm-usage']}:{headless:true});
    try{
      const page=await browser.newPage({viewport:{width:1440,height:900}});
      page.on("pageerror",error=>{throw error;});
@@ -48,7 +48,7 @@ try{
            detailCount:document.querySelectorAll(".ed-tabs-detail").length};
        });
        assert.ok(Math.abs(dimensions.nav.width-208)<2,label+" nav width "+JSON.stringify(dimensions));
-       assert.ok(Math.abs(dimensions.roster.width-232)<2,label+" roster width "+JSON.stringify(dimensions));
+       assert.ok(Math.abs(dimensions.roster.width-464)<2,label+" roster width "+JSON.stringify(dimensions));
        assert.ok(dimensions.content.width>350,label+" detail too narrow "+JSON.stringify(dimensions));
        assert.ok(dimensions.content.scroll<=dimensions.content.client+2,label+" horizontal content overflow "+JSON.stringify(dimensions));
        assert.ok(dimensions.navFont>=14&&dimensions.detailTabFont>=14&&dimensions.catalogTabFont>=12,label+" tab/menu font too small "+JSON.stringify(dimensions));
@@ -65,7 +65,7 @@ try{
      assert.equal(await page.getByRole("navigation",{name:"Legénységszerkesztő fülek"}).getByRole("button").count(),2);
      await modes.getByRole("button",{name:"Egyedi"}).click();
      assert.equal(await page.getByRole("navigation",{name:"Legénységszerkesztő fülek"}).getByRole("button").count(),4);
-     await page.setViewportSize({width:900,height:900});
+     await page.setViewportSize({width:1280,height:720});
      await verify(name+" narrow");
      await page.getByRole("button",{name:"EN",exact:true}).click();
      assert.equal(await page.locator(".ed-nav h2").textContent(),"Editor dashboard");

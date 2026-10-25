@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -51,6 +52,7 @@ export default function SalvageEditor({locale,onBack,onSectionSelect}:{locale:st
  <h4>{tr('Átjárók','Passages')}</h4>{draft.connections.map((e,i)=>({edge:e,index:i})).filter(({edge:e})=>e.from_room_id===room.id||e.to_room_id===room.id).map(({edge:e,index})=>{const other=draft.rooms.find(r=>r.id===(e.from_room_id===room.id?e.to_room_id:e.from_room_id));return <div className="sv-passage" key={index}><button type="button" onClick={()=>selectRoom(other?.id||null)}>{other?salvageName(other,en):'—'}</button><button type="button" aria-label={tr('Átjáró törlése','Delete passage')+' '+(index+1)} onClick={()=>{patch({connections:draft.connections.filter((_,i)=>i!==index)});setConnection(null);}}>×</button></div>;})}</>:
  edge?<><strong>{tr('Kijelölt átjáró','Selected passage')}</strong><p>{draft.rooms.filter(r=>r.id===edge.from_room_id||r.id===edge.to_room_id).map(r=>salvageName(r,en)).join(' ↔ ')}</p><button type="button" onClick={()=>{patch({connections:draft.connections.filter((_,i)=>i!==connection)});setConnection(null);}}>{tr('Átjáró törlése','Delete passage')}</button></>:<p className="sv-note">{tr('Jelölj ki egy szobát vagy átjárót a térképen.','Select a room or passage on the map.')}</p>}</aside></div></>}
  </fieldset></form><EditorFooter><span role="status">{dirty?tr('Mentetlen módosítások','Unsaved changes'):tr('Nincs mentetlen módosítás','No unsaved changes')}{issues.length>0?' · '+issues.length+' '+tr('ellenőrizendő','issues'):''}</span><button className="action" form="salvage-editor-form" type="submit" disabled={busy||loading||issues.length>0}>{busy?tr('MENTÉS…','SAVING…'):tr('MENTÉS','SAVE')}</button></EditorFooter></section>
- {discard&&<div className="sv-discard-backdrop"><section className="sv-discard-dialog" role="dialog" aria-modal="true" aria-labelledby="salvage-discard-title"><h3 id="salvage-discard-title">{tr('Mentetlen módosítások','Unsaved changes')}</h3><p>{tr('Elveted a térkép mentetlen módosításait?','Discard unsaved map changes?')}</p><button type="button" onClick={()=>{setDiscard(false);pending.current=null;}}>{tr('Maradok','Stay')}</button><button type="button" onClick={()=>{setDiscard(false);const next=pending.current;pending.current=null;next?.();}}>{tr('Elvetés','Discard')}</button></section></div>}
+ {discard&&<DiscardChangesDialog locale={locale} onCancel={()=>{setDiscard(false);pending.current=null;}} onDiscard={()=>{setDiscard(false);const next=pending.current;pending.current=null;next?.();}}/>}
+
  </EditorFrame>;
 }

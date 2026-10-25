@@ -10,6 +10,6 @@ function Fixture(){
  const [page,setPage]=useState('activity'),[locale,setLocale]=useState('hu');
  return <><nav><button onClick={()=>setPage('activity')}>Activity Editor</button><button onClick={()=>setPage('challenge')}>Challenge Editor</button><button onClick={()=>setPage('bridge')}>Bridge</button><button onClick={()=>setLocale(locale==='hu'?'en':'hu')}>Language</button></nav>
  {page==='activity'?<GameplayEditor locale={locale} onBack={()=>{}} onSectionSelect={()=>{}}/>:page==='challenge'?<SkillChallengeEditor locale={locale} onBack={()=>{}} onSectionSelect={()=>{}}/>:
- <CaptainDashboard locale={locale} captain={{id:'captain',captain_name:'QA',species_id:'',class_id:'',starter_ship_id:'',attribute_pips:{mind:11},skill_bonus_pips:{}}} species={[]} classes={[]} ships={[]} skills={skills} crew={[]} isEditor={false} onReset={()=>{}}/>}</>;
+ <div className="ch-v2-mount"><CaptainDashboard locale={locale} captain={{id:'captain',captain_name:'QA',species_id:'',class_id:'',starter_ship_id:'',attribute_pips:{mind:11},skill_bonus_pips:{}}} species={[]} classes={[]} ships={[]} skills={skills} crew={[]} isEditor={false} onReset={()=>{}}/></div>}</>;
 }
-createRoot(document.getElementById('root')!).render(<Fixture/>);
+createRoot(document.getElementById('root')!).render(<div className="shell"><header className="topbar">HATÁRVILÁG</header><main className="scene"><Fixture/></main><footer className="footer">QA</footer></div>);

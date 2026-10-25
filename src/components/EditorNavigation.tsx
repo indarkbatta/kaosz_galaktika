@@ -2,7 +2,7 @@ import {Users,Orbit,Package,Gamepad2,Swords,Settings,Dna,Shield,Sparkles,UserRou
 import {useEffect,useState} from 'react';
 
 export type EditorSection=
- 'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
+ 'components'|'blueprints'|'combat-visuals'|'expedition-companions'|'species'|'classes'|'skills'|'crew'|'crew-classes'|'galaxy'|'sector'|'factions'|'items'|'ships'|
  'gameplay'|'challenges'|'powers'|'talents'|'enemies'|'encounters'|
  'ui-layout'|'combat-rules'|'balance'|'languages'|'combat'|'salvage'|'talent-trees';
 
@@ -16,6 +16,7 @@ const groups:MenuGroup[]=[
   {id:'classes',icon:'shield',hu:'Kasztok',en:'Classes'},
   {id:'skills',icon:'sparkles',hu:'Skillek',en:'Skills'},
   {id:'talent-trees',icon:'git-branch',hu:'Talentfák',en:'Talent trees'},
+  {id:'expedition-companions',icon:'users',hu:'Expedíciós társak',en:'Expedition companions'},
   {id:'crew-classes',icon:'shield',hu:'Legénységi kasztok',en:'Crew classes'},
   {id:'crew',icon:'user-round',hu:'Legénységi sablonok',en:'Crew templates'}]},
  {id:'world',icon:'orbit',hu:'Világ',en:'World',items:[
@@ -24,12 +25,15 @@ const groups:MenuGroup[]=[
   {id:'factions',icon:'flag',hu:'Frakciók',en:'Factions'}]},
  {id:'equipment',icon:'package',hu:'Felszerelés és gazdaság',en:'Equipment & economy',items:[
   {id:'items',icon:'box',hu:'Tárgyak',en:'Items'},
+  {id:'components',icon:'package',hu:'Komponensek',en:'Components'},
+  {id:'blueprints',icon:'sliders',hu:'Blueprint editor',en:'Blueprint editor'},
   {id:'ships',icon:'rocket',hu:'Hajók és modulok',en:'Ships & modules'}]},
  {id:'gameplay',icon:'gamepad',hu:'Játékmenet',en:'Gameplay',items:[
   {id:'gameplay',icon:'list-checks',hu:'Aktivitások és zsákmány',en:'Activities & loot'},
   {id:'challenges',icon:'dice',hu:'Skill challenge-ek',en:'Skill challenges'},
   {id:'salvage',icon:'map-pin',hu:'Roncskutatás',en:'Salvage exploration'}]},
  {id:'combat',icon:'swords',hu:'Harc',en:'Combat',items:[
+  {id:'combat-visuals',icon:'users',hu:'Harci megjelenítés',en:'Combat appearance'},
   {id:'encounters',icon:'crosshair',hu:'Encounterek',en:'Encounters'},
   {id:'enemies',icon:'skull',hu:'Ellenségek',en:'Enemies'},
   {id:'powers',icon:'zap',hu:'Powerek',en:'Powers'},

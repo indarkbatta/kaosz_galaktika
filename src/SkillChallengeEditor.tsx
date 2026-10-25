@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {useCallback,useEffect,useRef,useState,type FormEvent} from 'react';
 import {supabase} from './lib/supabase';
 import {notify} from './lib/toast';
@@ -185,10 +186,7 @@ export default function SkillChallengeEditor({locale,onBack,onSectionSelect}:{
     <button type="submit" form="skill-challenge-form" className="ed-submit" disabled={busy||loading}>{busy?tr('Mentés…','Saving…'):tr('MENTÉS','SAVE')}</button>
    </EditorFooter>
   </section>
-  {confirm&&<div className="ed-modal-mask"><section className="ed-modal" role="alertdialog" aria-modal="true">
-   <h3>{tr('Elveted a módosításokat?','Discard unsaved changes?')}</h3>
-   <div><button type="button" onClick={()=>{setConfirm(false);pending.current=null;}}>{tr('Folytatom','Continue editing')}</button>
-    <button type="button" className="ed-danger" onClick={()=>{setConfirm(false);setDirty(false);const f=pending.current;pending.current=null;f?.();}}>{tr('Elvetés','Discard')}</button></div>
-  </section></div>}
+  {confirm&&<DiscardChangesDialog locale={locale} onCancel={()=>{setConfirm(false);pending.current=null;}} onDiscard={()=>{setConfirm(false);setDirty(false);const f=pending.current;pending.current=null;f?.();}}/>}
+
  </EditorFrame>;
 }

@@ -1,3 +1,4 @@
+import {DecisionDialog} from './components/DecisionDialog';
 import GamePanelFrame from './components/GamePanelFrame';
 import {createPortal} from 'react-dom';
 import {lazy,Suspense,useCallback,useEffect,useRef,useState} from 'react';
@@ -16,6 +17,7 @@ import './captain-dashboard.css';
 import {BridgeEncounterCard} from './components/BridgeEncounterCard';
 import {DiceRollPanel,type DiceResult} from './components/DiceRollPanel';
 
+const ExpeditionRecruitment=lazy(()=>import('./ExpeditionRecruitment'));
 const ExpeditionLoadout=lazy(()=>import('./ExpeditionLoadout'));
 const CombatPanel=lazy(()=>import('./CombatPanel'));
 type I18n={locale:string;name:string;description?:string;success_message?:string;failure_message?:string};
@@ -50,6 +52,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
  const [shipStatus,setShipStatus]=useState<{ready:boolean;base_speed:number;speed:number}|null>(null);
  const [upgrades,setUpgrades]=useState<{skill_id:string;bonus_pips:number}[]>([]);
  const [tab,setTab]=useState<GameTab>('bridge'),[group,setGroup]=useState('body');
+ const [cantinaTab,setCantinaTab]=useState<'expedition'|'service'>('expedition');
  const [busy,setBusy]=useState(false);
  const actionGate=useRef(false);
  const actionRequest=useRef<{slug:string;id:string}|null>(null);
@@ -187,8 +190,8 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
     <div className="cmd-skills">{skills.filter(s=>s.attribute===group).map(s=><div key={s.id}><SkillArt slug={s.slug} path={s.icon_path}/><span>{local(s.game_skills_i18n)?.name}</span><strong>{toDice(pool(s))}</strong><button title={tr('Skill fejlesztése','Upgrade skill')} disabled={busy||!progress?.upgrade_points||(upgrades.find(u=>u.skill_id===s.id)?.bonus_pips||0)>=12} onClick={()=>void upgrade(s.id)}><LucidePlus/></button></div>)}</div>
    </>}
    {tab==='ship'&&<ShipLoadout characterId={captain.id} shipSlug={ship?.slug||'vagabond'} shipImage={ship?.image_path} shipName={local(ship?.game_starter_ships_i18n)?.name||'—'} locale={locale} onChanged={refresh}/>}
-   {tab==='cantina'&&<><div className="cmd-title"><h2>{tr('HATÁRVIDÉKI KANTIN // TOBORZÁS','FRONTIER CANTINA // RECRUITMENT')}</h2><small>⚡ {energy}</small></div><Cantina locale={locale} atStation={here?.slug==='frontier_station'} crew={activeCrew} energy={energy} onChanged={refresh}/></>}
-   {tab==='loadout'&&<Suspense fallback={<p>{tr('Loadout betöltése…','Loading loadout…')}</p>}><ExpeditionLoadout characterId={captain.id} captainName={captain.captain_name} locale={locale} crew={activeCrew} onChanged={refresh}/></Suspense>}
+   {tab==='cantina'&&<><div className="cmd-title"><h2>{tr('HATÁRVIDÉKI KANTIN // TOBORZÁS','FRONTIER CANTINA // RECRUITMENT')}</h2><small>⚡ {energy}</small></div><nav className="exp-local-tabs" aria-label={tr('Toborzás típusa','Recruitment type')}><button type="button" aria-pressed={cantinaTab==='expedition'} onClick={()=>setCantinaTab('expedition')}>{tr('Expedíciós társak','Expedition companions')}</button><button type="button" aria-pressed={cantinaTab==='service'} onClick={()=>setCantinaTab('service')}>{tr('Hajós személyzet','Ship service crew')}</button></nav>{cantinaTab==='expedition'?<Suspense fallback={<p>…</p>}><ExpeditionRecruitment locale={locale} atStation={here?.slug==='frontier_station'} energy={energy} skills={skills} onChanged={refresh}/></Suspense>:<Cantina locale={locale} atStation={here?.slug==='frontier_station'} crew={activeCrew} energy={energy} onChanged={refresh}/>}</>}
+   {tab==='loadout'&&<Suspense fallback={<p>{tr('Loadout betöltése…','Loading loadout…')}</p>}><ExpeditionLoadout characterId={captain.id} captainName={captain.captain_name} locale={locale} onChanged={refresh}/></Suspense>}
    {tab==='inventory'&&<><div className="cmd-title"><h2>{tr('RAKTÉR // GYÁRTÁS','CARGO // CRAFTING')}</h2></div><CraftingPanel locale={locale} inventory={inventory} onCrafted={refresh}/></>}
    {tab==='log'&&<><div className="cmd-title"><h2>{tr('ESEMÉNYNAPLÓ','ACTIVITY LOG')}</h2></div><div className="cmd-log">{timeline.length?timeline.map(x=><div key={x.key}><small>{new Date(x.at).toLocaleString(en?'en-GB':'hu-HU')}</small><strong>{x.title}</strong><span>{x.detail}</span>{x.key.startsWith('act')&&<details><summary>{tr('Kockaeredmények','Dice results')}</summary><DiceRollPanel locale={locale} result={logs.find(log=>'act'+log.id===x.key)!}/></details>}</div>):<p>{tr('Még nincs végrehajtott akció vagy utazás.','No actions or travel yet.')}</p>}</div></>}
   </main>
@@ -200,7 +203,7 @@ export default function CaptainDashboard({captain,species,classes,ships,skills,c
    <h2>{actionRoll.title}</h2><DiceRollPanel locale={locale} result={actionRoll.result} rolling={!actionRoll.result} onComplete={revealDice}/>
    {diceDone&&<p>{actionRoll.message}</p>}<button disabled={!diceDone||busy} onClick={()=>setActionRoll(null)}>{tr('Vissza a hídra','Back to bridge')}</button>
   </section></div>}
-  {confirmReset&&<div className="cmd-modal-bg"><div className="cmd-modal" role="dialog" aria-modal="true"><h3>{tr('Tesztkarakter törlése','Reset test captain')}</h3><p>{tr('Ez csak a saját karakteredet törli! Írd be: RESET','Deletes only your own captain! Type RESET.')}</p><input autoFocus value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/><div><button onClick={()=>setConfirmReset(false)}>{tr('Mégse','Cancel')}</button><button disabled={busy||resetWord!=='RESET'} onClick={()=>void reset()}>{tr('Törlés','Delete')}</button></div></div></div>}
+  {confirmReset&&<DecisionDialog danger title={tr('Törlöd a saját tesztkarakteredet?','Delete your test captain?')} description={tr('A saját karaktered mentése véglegesen törlődik. Ezt nem lehet visszavonni. A megerősítéshez írd be az alábbi mezőbe: RESET.','Your own character save will be permanently deleted. This cannot be undone. To confirm, type RESET below.')} confirmLabel={tr('Tesztkarakter törlése','Delete test captain')} cancelLabel={tr('Karakter megtartása','Keep captain')} onCancel={()=>setConfirmReset(false)} onConfirm={()=>void reset()} disabled={busy||resetWord!=='RESET'}><label>{tr('Megerősítés','Confirmation')}<input value={resetWord} onChange={e=>setResetWord(e.target.value)} placeholder="RESET"/></label></DecisionDialog>}
  </section>
  </GamePanelFrame>;
 }

@@ -1,3 +1,4 @@
+import {DiscardChangesDialog} from './components/DecisionDialog';
 import {
   useCallback,
   useEffect,
@@ -119,7 +120,6 @@ export default function CrewEditor({
     [draft, setDraft] = useState<CrewDraft>(blank("named")),
     [dirty, setDirty] = useState(false),
     [search, setSearch] = useState(""),
-    [page, setPage] = useState(0),
     [language, setLanguage] = useState(locale),
     [portraitPage, setPortraitPage] = useState(0),
     [discard, setDiscard] = useState(false),
@@ -213,8 +213,6 @@ export default function CrewEditor({
   ).filter((x) =>
     (label(x) + " " + x.slug).toLowerCase().includes(search.toLowerCase()),
   );
-  const pages = Math.max(1, Math.ceil(rows.length / 5)),
-    safePage = Math.min(page, pages - 1);
   const activeSet = catalog.sets.find((x) => x.id === draft.portrait_set_id),
     species = catalog.species.find((x) => x.id === draft.species_id);
   const matchingSets = catalog.sets.filter(
@@ -325,7 +323,6 @@ export default function CrewEditor({
   const switchMode = (m: Mode) =>
     navigate(() => {
       setMode(m);
-      setPage(0);
       setSearch("");
       setTab("general");
       choose(
@@ -396,11 +393,10 @@ export default function CrewEditor({
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setPage(0);
           }}
         />
         <div className="ed-roster-list ce-list">
-          {rows.slice(safePage * 5, safePage * 5 + 5).map((r) => {
+          {rows.map((r) => {
             const path =
               r.portrait_path ||
               (mode === "set"
@@ -447,20 +443,6 @@ export default function CrewEditor({
                 : tr("Nincs találat.", "No records.")}
             </p>
           )}
-        </div>
-        <div className="ed-pager">
-          <button disabled={!safePage} onClick={() => setPage(safePage - 1)}>
-            ‹
-          </button>
-          <span>
-            {safePage + 1} / {pages}
-          </span>
-          <button
-            disabled={safePage >= pages - 1}
-            onClick={() => setPage(safePage + 1)}
-          >
-            ›
-          </button>
         </div>
         <button
           className="ed-roster-action"
@@ -999,44 +981,7 @@ export default function CrewEditor({
           </button>
         </EditorFooter>
       </section>
-      {discard && (
-        <div className="ed-modal-mask">
-          <div
-            className="ed-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="crew-discard-title"
-          >
-            <h3 id="crew-discard-title">
-              {tr("Nem mentett módosítások", "Unsaved changes")}
-            </h3>
-            <p>{tr("Elveted a módosításokat?", "Discard changes?")}</p>
-            <div>
-              <button
-                autoFocus
-                onClick={() => {
-                  setDiscard(false);
-                  pending.current = null;
-                }}
-              >
-                {tr("Folytatom a szerkesztést", "Keep editing")}
-              </button>
-              <button
-                className="ed-danger"
-                onClick={() => {
-                  setDiscard(false);
-                  setDirty(false);
-                  const action = pending.current;
-                  pending.current = null;
-                  action?.();
-                }}
-              >
-                {tr("Elvetés", "Discard")}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {discard&&<DiscardChangesDialog locale={locale} onCancel={()=>{setDiscard(false);pending.current=null;}} onDiscard={()=>{setDiscard(false);setDirty(false);const action=pending.current;pending.current=null;action?.();}}/>}
     </EditorFrame>
   );
 }

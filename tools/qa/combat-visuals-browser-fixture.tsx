@@ -1,0 +1,3 @@
+import {createRoot} from 'react-dom/client';import CombatVisualEditor from '../../src/CombatVisualEditor';import {EditorFrame,EditorRoster} from '../../src/components/EditorTemplate';import {EditorNavigation} from '../../src/components/EditorNavigation';import '../../src/styles.css';import '../../src/editor.css';
+const p=new URLSearchParams(location.search),locale=p.get('locale')||'hu',item=p.get('item');
+createRoot(document.getElementById('root')!).render(<div className="scene">{item?<EditorFrame><EditorNavigation locale={locale} active="items" onBack={()=>{}} onSelect={()=>{}}/><EditorRoster/><section className="ed-editor"><CombatVisualEditor locale={locale} embeddedItemId={item}/></section></EditorFrame>:<CombatVisualEditor locale={locale}/>}</div>);
