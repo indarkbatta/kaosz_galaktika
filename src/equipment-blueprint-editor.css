@@ -6,3 +6,9 @@
  .bp-assembly .bp-fields{gap:7px}
 /* Full item editors include an outer tab row; retain usable assembly space. */
 .bp-form{overflow-y:auto}
+
+.ba-root{display:flex;flex-direction:column;flex:1;min-height:360px;min-width:0;gap:8px}.ba-toolbar,.ba-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.ba-toolbar label{display:flex;align-items:center;gap:6px}.ba-workspace{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:8px;flex:1;min-height:280px}.ba-viewport{overflow:auto;min-width:0;min-height:0}.ba-canvas{position:relative;aspect-ratio:1;min-width:0;overflow:hidden}.ba-canvas img{position:absolute;height:auto;max-width:none;touch-action:none}.ba-inspector{display:flex;flex-direction:column;min-width:0;min-height:0}.ba-inspector .ed-tabs{padding:0}.ba-inspector-content{overflow:auto;flex:1;min-height:0;padding:8px}.ba-layers{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow:auto}.ba-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ba-fields>label:first-child,.ba-fields>button,.ba-fields>p{grid-column:1/-1}.ba-point{position:absolute;transform:translate(-50%,-50%);width:22px;height:22px;padding:0!important}.ba-point-row{display:flex;align-items:center;justify-content:space-between;gap:4px}.ba-root{container-type:inline-size}
+
+.ba-workspace{grid-template-columns:minmax(0,1fr) minmax(180px,36%)}.ba-root{min-height:300px}.ba-workspace{min-height:240px}
+
+.ba-fields>label:nth-child(n+4){grid-column:1/-1}

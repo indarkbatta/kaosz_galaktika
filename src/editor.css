@@ -268,3 +268,6 @@
 .ed-shell>.ed-roster>.ed-roster-list::-webkit-scrollbar-track{background:#090f15}
 .ed-shell>.ed-roster>.ed-roster-list::-webkit-scrollbar-thumb{background:#576773;border:2px solid #090f15}
 .ed-shell>.ed-roster>.ed-roster-list>.ed-record{flex-shrink:0}
+
+/* Assembly focus mode gives the canvas the space occupied by metadata tabs. */
+.ed-editor:has(.ba-root)>.ed-tabs,.ed-editor:has(.ba-root)>.ed-editor-head,.bp-root:has(.ba-root)>.ed-tabs{display:none}

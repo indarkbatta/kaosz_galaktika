@@ -9,6 +9,8 @@ on:
       - 'src/combat-visual-editor.css'
       - 'src/EquipmentBlueprintEditor.tsx'
       - 'src/BlueprintEditor.tsx'
+      - 'src/BlueprintAssembly.tsx'
+      - 'tools/qa/blueprint-assembly-*'
       - 'src/equipment-blueprint-editor.css'
       - 'tools/qa/equipment-blueprints-*'
       - 'tools/qa/components-*'
@@ -147,6 +149,10 @@ jobs:
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
         run: node tools/qa/components-browser.mjs
+      - name: Blueprint assembly layers, snap points and zoom
+        env:
+          WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools
+        run: node tools/qa/blueprint-assembly-browser.mjs
       - name: Existing Activity and Challenge SQL regression
         env:
           WORLD_BROWSER_TOOLS: ${{ runner.temp }}\hatarvilag-combat-tools

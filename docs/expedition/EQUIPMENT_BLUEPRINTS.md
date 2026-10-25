@@ -39,3 +39,11 @@ A Blueprint és Komponensek tárgylistája közös `useRosterCapacity` hookkal m
 ### Blueprint-lista kizárólagos besorolással
 
 A Blueprint editor rekordlistája és induló kiválasztása kizárólag `kind=blueprint` elemeket tartalmaz. A keresés ezen belül működik; a kompatibilitási alkatrészkatalógus teljes marad. Szerepváltás mentése után a lista újratöltődik, az átbesorolt rekord eltűnik belőle. Új blueprint vagy komponens létrehozásához a Tárgyeditor Besorolás füle a közös besorolásmezőket biztosítja, összeállítás nélkül. Nincs másolt adat, migráció vagy deploy.
+
+## Réteges összeállító és snap pontok
+
+Összeállításkor a metaadat-tabok helyett fókuszált vászon és oldalsó eszközpanel jelenik meg; Vissza visszaadja a tabokat. Rétegek: legfelül az előtér, a lista és a canvas rajzolási sorrendje a mentett slots sorrendből származik. Előtérbe/háttérbe egy szinttel rendez. Pozíció: kompatibilis tárgycsere, X/Y, méretarány, forgatás, húzás/nyílbillentyű és Shift+húzás méretezés. 25–400% zoom, vászonon belüli görgetés, Illesztés a rendelkezésre álló területhez; a zoom nézeti állapot, nem módosítja a tárolt koordinátákat.
+
+Pontok: a kiválasztott réteghez felvehető legfeljebb 32 szerelési célpont, típusválasztóval és vászonkattintással; törölhető pontok. A pont koordinátája az összeállítás vásznához rögzített százalék, nem a komponens helyi képpontja, és nem követi a tulajdonos réteg mozgatását. Csak a megadott komponensfajtájú másik réteg közepe illeszkedik hozzá. Húzás közben 14 képernyőpixel közelségnél mágneses illesztés, kapcsolható; külön gomb a legközelebbi megfelelő pontra illeszt.
+
+A slot JSON opcionális snap_points mezője id/type_code/x/y elemeket tárol. A célzott migráció a meglévő private mentőfüggvénybe illeszt validálást, változatlan auth/revízió/zár logikával. Régi dokumentumok módosítás nélkül érvényesek. Koordináta 0–100, létező típus, egyedi pont-ID és maximum 32 pont/réteg, hibánál rollback. Migráció még nincs élesben. QA: új blueprint-assembly-browser rétegsorrend/típusos pont/elutasított fajta/illesztés/zoom/méret/forgatás; kibővített authenticated SQL snap roundtrip és negatív tesztek; teljes blueprint browser regresszió három méretben HU/EN.
